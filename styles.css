@@ -1,0 +1,344 @@
+/* Shepherd — Member Management Panel */
+
+.shepherd-panel {
+  padding: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Header */
+.shepherd-header {
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  background: var(--background-secondary);
+}
+
+.shepherd-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-normal);
+  margin-bottom: 2px;
+}
+
+.shepherd-details {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.shepherd-address {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.shepherd-where {
+  font-size: 12px;
+  color: var(--text-faint);
+  margin-top: 6px;
+  font-style: italic;
+  border-top: 1px solid var(--background-modifier-border);
+  padding-top: 6px;
+}
+
+/* Contact Bar */
+.shepherd-contact-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.shepherd-contact-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  cursor: pointer;
+  font-size: 13px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  justify-content: center;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.shepherd-contact-btn:active {
+  background: var(--background-modifier-hover);
+}
+
+/* Pill Controls */
+.shepherd-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.shepherd-pill-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.shepherd-pill-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.shepherd-pills {
+  display: flex;
+  gap: 4px;
+}
+
+.shepherd-pills-wrap {
+  flex-wrap: wrap;
+}
+
+.shepherd-pill {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  cursor: pointer;
+  color: var(--text-muted);
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.shepherd-pill:active {
+  opacity: 0.8;
+}
+
+.shepherd-pill-active {
+  border-color: transparent;
+  font-weight: 600;
+}
+
+/* Mobile: bigger touch targets */
+body.is-mobile .shepherd-pill {
+  min-height: 44px;
+  padding: 8px 14px;
+  font-size: 12px;
+}
+
+body.is-mobile .shepherd-contact-btn {
+  min-height: 48px;
+  font-size: 14px;
+}
+
+/* Last Contact */
+.shepherd-last-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.shepherd-last-contact-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.shepherd-last-contact-value {
+  font-size: 13px;
+  color: var(--text-normal);
+}
+
+.shepherd-overdue {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.shepherd-contact-today-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: var(--background-secondary);
+  color: var(--interactive-accent);
+  cursor: pointer;
+  font-size: 13px;
+  text-align: center;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.shepherd-contact-today-btn:active {
+  background: var(--background-modifier-hover);
+}
+
+/* Sections */
+.shepherd-section {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.shepherd-section-header {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.shepherd-empty-text {
+  font-size: 12px;
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+/* Tasks */
+.shepherd-task {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 4px;
+  cursor: pointer;
+  border-radius: 4px;
+  min-height: 36px;
+}
+
+.shepherd-task:active {
+  background: var(--background-modifier-hover);
+}
+
+body.is-mobile .shepherd-task {
+  min-height: 44px;
+  padding: 8px 4px;
+}
+
+.shepherd-task-done {
+  opacity: 0.5;
+}
+
+.shepherd-task-done .shepherd-task-text {
+  text-decoration: line-through;
+}
+
+.shepherd-task-check {
+  font-size: 16px;
+  flex-shrink: 0;
+  width: 20px;
+}
+
+.shepherd-task-text {
+  font-size: 13px;
+  color: var(--text-normal);
+}
+
+.shepherd-add-btn {
+  display: inline-block;
+  padding: 6px 12px;
+  color: var(--interactive-accent);
+  cursor: pointer;
+  font-size: 13px;
+  min-height: 36px;
+}
+
+body.is-mobile .shepherd-add-btn {
+  min-height: 44px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.shepherd-task-add-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.shepherd-task-input {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 13px;
+  min-height: 36px;
+}
+
+body.is-mobile .shepherd-task-input {
+  min-height: 44px;
+}
+
+/* Quick Log */
+.shepherd-log-input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 13px;
+  resize: vertical;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.shepherd-log-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+/* Interactions */
+.shepherd-interaction {
+  display: flex;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 12px;
+}
+
+.shepherd-interaction-date {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  min-width: 70px;
+}
+
+.shepherd-interaction-preview {
+  color: var(--text-normal);
+}
+
+/* Empty State */
+.shepherd-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  gap: 12px;
+}
+
+.shepherd-empty-icon {
+  font-size: 48px;
+}
+
+.shepherd-empty .shepherd-empty-text {
+  text-align: center;
+}
+
+.shepherd-empty-link {
+  color: var(--interactive-accent);
+  cursor: pointer;
+  font-size: 14px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.shepherd-empty-link:active {
+  opacity: 0.7;
+}

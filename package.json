@@ -1,0 +1,22 @@
+{
+  "name": "obsidian-shepherd",
+  "version": "0.1.0",
+  "description": "Contextual action panel for ward member files",
+  "main": "main.js",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "node esbuild.config.mjs production"
+  },
+  "author": "Josh Penrod",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^16.18.0",
+    "builtin-modules": "^3.3.0",
+    "esbuild": "^0.17.0",
+    "obsidian": "latest",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "preact": "^10.25.0"
+  }
+}
