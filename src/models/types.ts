@@ -8,6 +8,7 @@ export type Ordinance = 'unknown' | 'baptism' | 'confirmation'
   | 'aaronic-priesthood' | 'melchizedek-priesthood'
   | 'endowment' | 'sealing';
 export type Recommend = 'current' | 'expired' | 'none' | 'unknown';
+export type PriesthoodOffice = 'none' | 'deacon' | 'teacher' | 'priest' | 'elder' | 'high-priest';
 
 export const PRIORITIES: Priority[] = ['top-5', 'urgent', 'high', 'normal', 'low'];
 export const STATUSES: MemberStatus[] = [
@@ -48,6 +49,10 @@ export interface MemberState {
   status: MemberStatus;
   nextOrdinance: Ordinance;
   recommend: Recommend;
+  priesthood: PriesthoodOffice;
+  ministeringBrothers: string[];
+  ministeringSisters: string[];
+  patriarchalBlessing: boolean;
   calling: string;
   lastContact: string;
   convertDate: string;

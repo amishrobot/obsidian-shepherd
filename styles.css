@@ -198,6 +198,54 @@ body.is-mobile .shepherd-contact-btn {
   font-style: italic;
 }
 
+/* Member Info */
+.shepherd-info-section {
+  padding-bottom: 0;
+}
+
+.shepherd-info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.shepherd-info-row {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 12px;
+}
+
+.shepherd-info-label {
+  color: var(--text-muted);
+  min-width: 85px;
+  flex-shrink: 0;
+}
+
+.shepherd-info-value {
+  color: var(--text-normal);
+}
+
+.shepherd-info-dim {
+  color: var(--text-faint);
+}
+
+.shepherd-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.shepherd-tag {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  background: var(--background-secondary);
+  color: var(--text-muted);
+  border: 1px solid var(--background-modifier-border);
+}
+
 /* Tasks */
 .shepherd-task {
   display: flex;

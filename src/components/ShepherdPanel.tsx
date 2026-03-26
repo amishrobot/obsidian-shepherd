@@ -6,6 +6,7 @@ import { StatusPill } from './StatusPill';
 import { OrdinancePill } from './OrdinancePill';
 import { RecommendPill } from './RecommendPill';
 import { LastContactBadge } from './LastContactBadge';
+import { MemberInfo } from './MemberInfo';
 import { TaskList } from './TaskList';
 import { QuickLog } from './QuickLog';
 import { InteractionList } from './InteractionList';
@@ -72,6 +73,15 @@ export function ShepherdPanel({
           onMarkContacted={onMarkContacted}
         />
       </div>
+
+      {/* Member Info */}
+      <MemberInfo
+        priesthood={m.priesthood}
+        ministeringBrothers={m.ministeringBrothers}
+        ministeringSisters={m.ministeringSisters}
+        patriarchalBlessing={m.patriarchalBlessing}
+        tags={m.tags}
+      />
 
       {/* Tasks */}
       <TaskList

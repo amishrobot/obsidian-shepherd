@@ -496,6 +496,20 @@ function LastContactBadge({ lastContact, daysSince, isOverdue, onMarkContacted }
   return /* @__PURE__ */ _("div", { class: "shepherd-last-contact" }, /* @__PURE__ */ _("div", { class: "shepherd-last-contact-row" }, /* @__PURE__ */ _("span", { class: "shepherd-pill-label" }, "Last Contact"), /* @__PURE__ */ _("span", { class: `shepherd-last-contact-value ${isOverdue ? "shepherd-overdue" : ""}` }, display)), /* @__PURE__ */ _("span", { class: "shepherd-contact-today-btn", onClick: onMarkContacted }, "\u{1F4DD} Mark contacted today"));
 }
 
+// src/components/MemberInfo.tsx
+var PRIESTHOOD_LABELS = {
+  "none": "None",
+  "deacon": "Deacon",
+  "teacher": "Teacher",
+  "priest": "Priest",
+  "elder": "Elder",
+  "high-priest": "High Priest"
+};
+function MemberInfo({ priesthood, ministeringBrothers, ministeringSisters, patriarchalBlessing, tags }) {
+  const hasMinistering = ministeringBrothers.length > 0 || ministeringSisters.length > 0;
+  return /* @__PURE__ */ _("div", { class: "shepherd-section shepherd-info-section" }, /* @__PURE__ */ _("div", { class: "shepherd-info-grid" }, /* @__PURE__ */ _("div", { class: "shepherd-info-row" }, /* @__PURE__ */ _("span", { class: "shepherd-info-label" }, "Priesthood"), /* @__PURE__ */ _("span", { class: `shepherd-info-value ${priesthood === "none" ? "shepherd-info-dim" : ""}` }, PRIESTHOOD_LABELS[priesthood] || priesthood)), /* @__PURE__ */ _("div", { class: "shepherd-info-row" }, /* @__PURE__ */ _("span", { class: "shepherd-info-label" }, "Pat. Blessing"), /* @__PURE__ */ _("span", { class: `shepherd-info-value ${!patriarchalBlessing ? "shepherd-info-dim" : ""}` }, patriarchalBlessing ? "Yes" : "No")), hasMinistering && /* @__PURE__ */ _("div", { class: "shepherd-info-row" }, /* @__PURE__ */ _("span", { class: "shepherd-info-label" }, "Ministering"), /* @__PURE__ */ _("span", { class: "shepherd-info-value" }, [...ministeringBrothers, ...ministeringSisters].join(", ")))), tags.length > 0 && /* @__PURE__ */ _("div", { class: "shepherd-tags" }, tags.map((tag, i3) => /* @__PURE__ */ _("span", { key: i3, class: "shepherd-tag" }, tag))));
+}
+
 // node_modules/preact/hooks/dist/hooks.module.js
 var t2;
 var r2;
@@ -740,6 +754,15 @@ function ShepherdPanel({
       onMarkContacted
     }
   )), /* @__PURE__ */ _(
+    MemberInfo,
+    {
+      priesthood: m3.priesthood,
+      ministeringBrothers: m3.ministeringBrothers,
+      ministeringSisters: m3.ministeringSisters,
+      patriarchalBlessing: m3.patriarchalBlessing,
+      tags: m3.tags
+    }
+  ), /* @__PURE__ */ _(
     TaskList,
     {
       tasks: m3.tasks,
@@ -785,6 +808,10 @@ var MemberService = class {
       status: fm.status || "new",
       nextOrdinance: fm["next-ordinance"] || "unknown",
       recommend: fm.recommend || "unknown",
+      priesthood: fm.priesthood || "none",
+      ministeringBrothers: Array.isArray(fm["ministering-brothers"]) ? fm["ministering-brothers"] : [],
+      ministeringSisters: Array.isArray(fm["ministering-sisters"]) ? fm["ministering-sisters"] : [],
+      patriarchalBlessing: fm["patriarchal-blessing"] === true,
       calling: String(fm.calling || ""),
       lastContact,
       convertDate: String(fm["convert-date"] || ""),
