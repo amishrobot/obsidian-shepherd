@@ -357,9 +357,11 @@ var STATUSES = [
 var ORDINANCES = [
   "unknown",
   "baptism",
+  "confirmation",
+  "aaronic-priesthood",
+  "melchizedek-priesthood",
   "endowment",
-  "sealing",
-  "living-ordinances"
+  "sealing"
 ];
 var DEFAULT_SETTINGS = {
   memberDir: "Personal/Church/Members",
@@ -434,12 +436,14 @@ function StatusPill({ current, onChange }) {
 var LABELS = {
   "unknown": "unknown",
   "baptism": "baptism",
+  "confirmation": "confirmation",
+  "aaronic-priesthood": "aaronic",
+  "melchizedek-priesthood": "melchizedek",
   "endowment": "endowment",
-  "sealing": "sealing",
-  "living-ordinances": "living ord."
+  "sealing": "sealing"
 };
 function OrdinancePill({ current, onChange }) {
-  return /* @__PURE__ */ _("div", { class: "shepherd-pill-row" }, /* @__PURE__ */ _("span", { class: "shepherd-pill-label" }, "Next Ordinance"), /* @__PURE__ */ _("div", { class: "shepherd-pills" }, ORDINANCES.map((o3) => /* @__PURE__ */ _(
+  return /* @__PURE__ */ _("div", { class: "shepherd-pill-row" }, /* @__PURE__ */ _("span", { class: "shepherd-pill-label" }, "Next Ordinance"), /* @__PURE__ */ _("div", { class: "shepherd-pills shepherd-pills-wrap" }, ORDINANCES.map((o3) => /* @__PURE__ */ _(
     "span",
     {
       key: o3,
@@ -594,6 +598,9 @@ function D2(n2, t3) {
 }
 
 // src/components/TaskList.tsx
+function renderInlineMarkdown(text) {
+  return text.replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\*(.+?)\*/g, "<em>$1</em>").replace(/~~(.+?)~~/g, "<del>$1</del>");
+}
 function TaskList({ tasks, onToggle, onAdd }) {
   const [adding, setAdding] = d2(false);
   const [newText, setNewText] = d2("");
@@ -613,7 +620,7 @@ function TaskList({ tasks, onToggle, onAdd }) {
       onClick: () => onToggle(t3.line)
     },
     /* @__PURE__ */ _("span", { class: "shepherd-task-check" }, t3.completed ? "\u2611" : "\u2610"),
-    /* @__PURE__ */ _("span", { class: "shepherd-task-text" }, t3.text)
+    /* @__PURE__ */ _("span", { class: "shepherd-task-text", dangerouslySetInnerHTML: { __html: renderInlineMarkdown(t3.text) } })
   )), adding ? /* @__PURE__ */ _("div", { class: "shepherd-task-add-row" }, /* @__PURE__ */ _(
     "input",
     {
@@ -668,7 +675,7 @@ function QuickLog({ onLog }) {
 function InteractionList({ interactions }) {
   if (interactions.length === 0)
     return null;
-  return /* @__PURE__ */ _("div", { class: "shepherd-section" }, /* @__PURE__ */ _("div", { class: "shepherd-section-header" }, "Recent Interactions"), interactions.slice(0, 5).map((ix, i3) => /* @__PURE__ */ _("div", { key: i3, class: "shepherd-interaction" }, /* @__PURE__ */ _("span", { class: "shepherd-interaction-date" }, ix.date || "Undated"), /* @__PURE__ */ _("span", { class: "shepherd-interaction-preview" }, ix.preview || ix.title))), interactions.length > 5 && /* @__PURE__ */ _("div", { class: "shepherd-empty-text" }, interactions.length - 5, " more in file"));
+  return /* @__PURE__ */ _("div", { class: "shepherd-section" }, /* @__PURE__ */ _("div", { class: "shepherd-section-header" }, "Recent Interactions"), interactions.slice(0, 5).map((ix, i3) => /* @__PURE__ */ _("div", { key: i3, class: "shepherd-interaction" }, /* @__PURE__ */ _("span", { class: "shepherd-interaction-date" }, ix.date || "Undated"), /* @__PURE__ */ _("span", { class: "shepherd-interaction-preview" }, (ix.preview || ix.title).substring(0, 200)))), interactions.length > 5 && /* @__PURE__ */ _("div", { class: "shepherd-empty-text" }, interactions.length - 5, " more in file"));
 }
 
 // src/components/ShepherdPanel.tsx
@@ -832,8 +839,12 @@ var MemberService = class {
         };
         continue;
       }
-      if (current && !current.preview && line.trim()) {
-        current.preview = line.trim().substring(0, 120);
+      if (current && line.trim()) {
+        if (current.preview) {
+          current.preview += " \xB7 " + line.trim();
+        } else {
+          current.preview = line.trim();
+        }
       }
     }
     if (current)

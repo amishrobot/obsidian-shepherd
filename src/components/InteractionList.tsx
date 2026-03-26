@@ -14,7 +14,7 @@ export function InteractionList({ interactions }: Props) {
       {interactions.slice(0, 5).map((ix, i) => (
         <div key={i} class="shepherd-interaction">
           <span class="shepherd-interaction-date">{ix.date || 'Undated'}</span>
-          <span class="shepherd-interaction-preview">{ix.preview || ix.title}</span>
+          <span class="shepherd-interaction-preview">{(ix.preview || ix.title).substring(0, 200)}</span>
         </div>
       ))}
       {interactions.length > 5 && (

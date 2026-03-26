@@ -9,16 +9,18 @@ interface Props {
 const LABELS: Record<string, string> = {
   'unknown': 'unknown',
   'baptism': 'baptism',
+  'confirmation': 'confirmation',
+  'aaronic-priesthood': 'aaronic',
+  'melchizedek-priesthood': 'melchizedek',
   'endowment': 'endowment',
   'sealing': 'sealing',
-  'living-ordinances': 'living ord.',
 };
 
 export function OrdinancePill({ current, onChange }: Props) {
   return (
     <div class="shepherd-pill-row">
       <span class="shepherd-pill-label">Next Ordinance</span>
-      <div class="shepherd-pills">
+      <div class="shepherd-pills shepherd-pills-wrap">
         {ORDINANCES.map((o) => (
           <span
             key={o}

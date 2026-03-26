@@ -4,8 +4,9 @@ export type Priority = 'top-5' | 'urgent' | 'high' | 'normal' | 'low';
 export type MemberStatus = 'active' | 'inactive' | 'fence' | 'occasional'
   | 'new' | 'returning' | 'moving' | 'attending-home-ward'
   | 'convert-baptism' | 'needs-outreach';
-export type Ordinance = 'unknown' | 'baptism' | 'endowment' | 'sealing'
-  | 'living-ordinances' | null;
+export type Ordinance = 'unknown' | 'baptism' | 'confirmation'
+  | 'aaronic-priesthood' | 'melchizedek-priesthood'
+  | 'endowment' | 'sealing';
 
 export const PRIORITIES: Priority[] = ['top-5', 'urgent', 'high', 'normal', 'low'];
 export const STATUSES: MemberStatus[] = [
@@ -13,7 +14,8 @@ export const STATUSES: MemberStatus[] = [
   'inactive', 'moving', 'attending-home-ward', 'convert-baptism', 'needs-outreach',
 ];
 export const ORDINANCES: (Ordinance & string)[] = [
-  'unknown', 'baptism', 'endowment', 'sealing', 'living-ordinances',
+  'unknown', 'baptism', 'confirmation', 'aaronic-priesthood',
+  'melchizedek-priesthood', 'endowment', 'sealing',
 ];
 
 export interface Task {

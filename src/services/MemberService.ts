@@ -121,8 +121,12 @@ export class MemberService {
         continue;
       }
 
-      if (current && !current.preview && line.trim()) {
-        current.preview = line.trim().substring(0, 120);
+      if (current && line.trim()) {
+        if (current.preview) {
+          current.preview += ' · ' + line.trim();
+        } else {
+          current.preview = line.trim();
+        }
       }
     }
     if (current) interactions.push(current);
