@@ -7,6 +7,7 @@ export type MemberStatus = 'active' | 'inactive' | 'fence' | 'occasional'
 export type Ordinance = 'unknown' | 'baptism' | 'confirmation'
   | 'aaronic-priesthood' | 'melchizedek-priesthood'
   | 'endowment' | 'sealing';
+export type Recommend = 'current' | 'expired' | 'none' | 'unknown';
 
 export const PRIORITIES: Priority[] = ['top-5', 'urgent', 'high', 'normal', 'low'];
 export const STATUSES: MemberStatus[] = [
@@ -16,6 +17,9 @@ export const STATUSES: MemberStatus[] = [
 export const ORDINANCES: (Ordinance & string)[] = [
   'unknown', 'baptism', 'confirmation', 'aaronic-priesthood',
   'melchizedek-priesthood', 'endowment', 'sealing',
+];
+export const RECOMMENDS: (Recommend & string)[] = [
+  'current', 'expired', 'none', 'unknown',
 ];
 
 export interface Task {
@@ -43,6 +47,7 @@ export interface MemberState {
   priority: Priority;
   status: MemberStatus;
   nextOrdinance: Ordinance;
+  recommend: Recommend;
   calling: string;
   lastContact: string;
   convertDate: string;

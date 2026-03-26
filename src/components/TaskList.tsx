@@ -2,6 +2,15 @@ import { h } from 'preact';
 import { useState } from 'preact/hooks';
 import { Task } from '../models/types';
 
+/** Parse inline markdown (bold, italic, strikethrough, code) to HTML */
+function renderInlineMarkdown(text: string): string {
+  return text
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/~~(.+?)~~/g, '<del>$1</del>');
+}
+
 interface Props {
   tasks: Task[];
   onToggle: (taskLine: number) => void;
@@ -34,7 +43,7 @@ export function TaskList({ tasks, onToggle, onAdd }: Props) {
           onClick={() => onToggle(t.line)}
         >
           <span class="shepherd-task-check">{t.completed ? '☑' : '☐'}</span>
-          <span class="shepherd-task-text">{t.text}</span>
+          <span class="shepherd-task-text" dangerouslySetInnerHTML={{ __html: renderInlineMarkdown(t.text) }} />
         </div>
       ))}
       {adding ? (

@@ -1,5 +1,5 @@
 import { App, TFile } from 'obsidian';
-import { Priority, MemberStatus, Ordinance } from '../models/types';
+import { Priority, MemberStatus, Ordinance, Recommend } from '../models/types';
 
 export class WriteService {
   constructor(private app: App) {}
@@ -19,6 +19,12 @@ export class WriteService {
   async setOrdinance(file: TFile, ordinance: Ordinance): Promise<void> {
     await this.app.fileManager.processFrontMatter(file, (fm) => {
       fm['next-ordinance'] = ordinance;
+    });
+  }
+
+  async setRecommend(file: TFile, recommend: Recommend): Promise<void> {
+    await this.app.fileManager.processFrontMatter(file, (fm) => {
+      fm.recommend = recommend;
     });
   }
 

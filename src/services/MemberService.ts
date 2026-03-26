@@ -1,5 +1,5 @@
 import { App, TFile, parseYaml } from 'obsidian';
-import { MemberState, Priority, MemberStatus, Ordinance, Task, Interaction, ShepherdSettings } from '../models/types';
+import { MemberState, Priority, MemberStatus, Ordinance, Recommend, Task, Interaction, ShepherdSettings } from '../models/types';
 
 export class MemberService {
   constructor(private app: App, private settings: ShepherdSettings) {}
@@ -39,6 +39,7 @@ export class MemberService {
       priority: (fm.priority || 'normal') as Priority,
       status: (fm.status || 'new') as MemberStatus,
       nextOrdinance: (fm['next-ordinance'] || 'unknown') as Ordinance,
+      recommend: (fm.recommend || 'unknown') as Recommend,
       calling: String(fm.calling || ''),
       lastContact,
       convertDate: String(fm['convert-date'] || ''),

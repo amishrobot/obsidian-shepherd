@@ -363,6 +363,12 @@ var ORDINANCES = [
   "endowment",
   "sealing"
 ];
+var RECOMMENDS = [
+  "current",
+  "expired",
+  "none",
+  "unknown"
+];
 var DEFAULT_SETTINGS = {
   memberDir: "Personal/Church/Members",
   dashboardPath: "Personal/Church/_dashboard.md",
@@ -452,6 +458,26 @@ function OrdinancePill({ current, onChange }) {
       onClick: () => onChange(o3)
     },
     LABELS[o3] || o3
+  ))));
+}
+
+// src/components/RecommendPill.tsx
+var COLORS = {
+  "current": "#22c55e",
+  "expired": "#ef4444",
+  "none": "#6b7280",
+  "unknown": "#6b7280"
+};
+function RecommendPill({ current, onChange }) {
+  return /* @__PURE__ */ _("div", { class: "shepherd-pill-row" }, /* @__PURE__ */ _("span", { class: "shepherd-pill-label" }, "Recommend"), /* @__PURE__ */ _("div", { class: "shepherd-pills" }, RECOMMENDS.map((r3) => /* @__PURE__ */ _(
+    "span",
+    {
+      key: r3,
+      class: `shepherd-pill ${r3 === current ? "shepherd-pill-active" : ""}`,
+      style: r3 === current ? { background: COLORS[r3], color: "#fff" } : {},
+      onClick: () => onChange(r3)
+    },
+    r3
   ))));
 }
 
@@ -684,6 +710,7 @@ function ShepherdPanel({
   onPriorityChange,
   onStatusChange,
   onOrdinanceChange,
+  onRecommendChange,
   onMarkContacted,
   onToggleTask,
   onAddTask,
@@ -704,7 +731,7 @@ function ShepherdPanel({
     details.length > 0 && /* @__PURE__ */ _("div", { class: "shepherd-details" }, details.join(" \xB7 ")),
     m3.address && /* @__PURE__ */ _("div", { class: "shepherd-address" }, "\u{1F4CD} ", m3.address),
     m3.whereTheyAre && /* @__PURE__ */ _("div", { class: "shepherd-where" }, m3.whereTheyAre)
-  ), /* @__PURE__ */ _(ContactBar, { phone: m3.phone, email: m3.email }), /* @__PURE__ */ _("div", { class: "shepherd-controls" }, /* @__PURE__ */ _(PriorityPill, { current: m3.priority, onChange: onPriorityChange }), /* @__PURE__ */ _(StatusPill, { current: m3.status, onChange: onStatusChange }), /* @__PURE__ */ _(OrdinancePill, { current: m3.nextOrdinance, onChange: onOrdinanceChange }), /* @__PURE__ */ _(
+  ), /* @__PURE__ */ _(ContactBar, { phone: m3.phone, email: m3.email }), /* @__PURE__ */ _("div", { class: "shepherd-controls" }, /* @__PURE__ */ _(PriorityPill, { current: m3.priority, onChange: onPriorityChange }), /* @__PURE__ */ _(StatusPill, { current: m3.status, onChange: onStatusChange }), /* @__PURE__ */ _(OrdinancePill, { current: m3.nextOrdinance, onChange: onOrdinanceChange }), /* @__PURE__ */ _(RecommendPill, { current: m3.recommend, onChange: onRecommendChange }), /* @__PURE__ */ _(
     LastContactBadge,
     {
       lastContact: m3.lastContact,
@@ -757,6 +784,7 @@ var MemberService = class {
       priority: fm.priority || "normal",
       status: fm.status || "new",
       nextOrdinance: fm["next-ordinance"] || "unknown",
+      recommend: fm.recommend || "unknown",
       calling: String(fm.calling || ""),
       lastContact,
       convertDate: String(fm["convert-date"] || ""),
@@ -887,6 +915,11 @@ var WriteService = class {
   async setOrdinance(file, ordinance) {
     await this.app.fileManager.processFrontMatter(file, (fm) => {
       fm["next-ordinance"] = ordinance;
+    });
+  }
+  async setRecommend(file, recommend) {
+    await this.app.fileManager.processFrontMatter(file, (fm) => {
+      fm.recommend = recommend;
     });
   }
   async setCalling(file, calling) {
@@ -1054,6 +1087,10 @@ var ShepherdView = class extends import_obsidian2.ItemView {
         },
         onOrdinanceChange: async (o3) => {
           await this.writeService.setOrdinance(file, o3);
+          await refresh();
+        },
+        onRecommendChange: async (r3) => {
+          await this.writeService.setRecommend(file, r3);
           await refresh();
         },
         onMarkContacted: async () => {

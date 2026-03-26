@@ -3,7 +3,7 @@ import { h, render } from 'preact';
 import { ShepherdPanel } from './components/ShepherdPanel';
 import { MemberService } from './services/MemberService';
 import { WriteService } from './services/WriteService';
-import { MemberState, Priority, MemberStatus, Ordinance, ShepherdSettings } from './models/types';
+import { MemberState, Priority, MemberStatus, Ordinance, Recommend, ShepherdSettings } from './models/types';
 
 export const VIEW_TYPE_SHEPHERD = 'shepherd-view';
 
@@ -111,6 +111,10 @@ export class ShepherdView extends ItemView {
         },
         onOrdinanceChange: async (o: Ordinance) => {
           await this.writeService.setOrdinance(file, o);
+          await refresh();
+        },
+        onRecommendChange: async (r: Recommend) => {
+          await this.writeService.setRecommend(file, r);
           await refresh();
         },
         onMarkContacted: async () => {

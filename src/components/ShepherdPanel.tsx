@@ -1,9 +1,10 @@
 import { h } from 'preact';
-import { MemberState, Priority, MemberStatus, Ordinance, PRIORITY_COLORS } from '../models/types';
+import { MemberState, Priority, MemberStatus, Ordinance, Recommend, PRIORITY_COLORS } from '../models/types';
 import { ContactBar } from './ContactBar';
 import { PriorityPill } from './PriorityPill';
 import { StatusPill } from './StatusPill';
 import { OrdinancePill } from './OrdinancePill';
+import { RecommendPill } from './RecommendPill';
 import { LastContactBadge } from './LastContactBadge';
 import { TaskList } from './TaskList';
 import { QuickLog } from './QuickLog';
@@ -14,6 +15,7 @@ interface Props {
   onPriorityChange: (p: Priority) => void;
   onStatusChange: (s: MemberStatus) => void;
   onOrdinanceChange: (o: Ordinance) => void;
+  onRecommendChange: (r: Recommend) => void;
   onMarkContacted: () => void;
   onToggleTask: (line: number) => void;
   onAddTask: (text: string) => void;
@@ -25,6 +27,7 @@ export function ShepherdPanel({
   onPriorityChange,
   onStatusChange,
   onOrdinanceChange,
+  onRecommendChange,
   onMarkContacted,
   onToggleTask,
   onAddTask,
@@ -61,6 +64,7 @@ export function ShepherdPanel({
         <PriorityPill current={m.priority} onChange={onPriorityChange} />
         <StatusPill current={m.status} onChange={onStatusChange} />
         <OrdinancePill current={m.nextOrdinance} onChange={onOrdinanceChange} />
+        <RecommendPill current={m.recommend} onChange={onRecommendChange} />
         <LastContactBadge
           lastContact={m.lastContact}
           daysSince={m.daysSinceContact}
