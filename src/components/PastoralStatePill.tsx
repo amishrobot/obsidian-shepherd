@@ -8,7 +8,7 @@ interface Props {
 
 const LABELS: Record<PastoralState, string> = {
   '': 'none',
-  'working-through': 'working through',
+  'working-with': 'working with',
   'under-restrictions': 'restrictions',
 };
 
