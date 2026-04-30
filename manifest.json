@@ -1,7 +1,7 @@
 {
   "id": "shepherd",
   "name": "Shepherd",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "minAppVersion": "0.15.0",
   "description": "Contextual action panel for ward member files — priority toggles, contact buttons, interaction logging",
   "author": "Josh Penrod",

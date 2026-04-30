@@ -343,7 +343,7 @@ n = v.slice, l = { __e: function(n2, l3, u3, t3) {
 // src/models/types.ts
 var PRIORITIES = ["top-5", "high", "normal"];
 var STATUSES = ["active", "inactive", "moving"];
-var PASTORAL_STATES = ["", "working-through", "under-restrictions"];
+var PASTORAL_STATES = ["", "working-with", "under-restrictions"];
 var ORDINANCES = [
   "unknown",
   "baptism",
@@ -377,7 +377,7 @@ var STATUS_COLORS = {
   "moving": "#6b7280"
 };
 var PASTORAL_STATE_COLORS = {
-  "working-through": "#eab308",
+  "working-with": "#eab308",
   "under-restrictions": "#dc2626"
 };
 
@@ -427,7 +427,7 @@ function StatusPill({ current, onChange }) {
 // src/components/PastoralStatePill.tsx
 var LABELS = {
   "": "none",
-  "working-through": "working through",
+  "working-with": "working with",
   "under-restrictions": "restrictions"
 };
 function PastoralStatePill({ current, onChange }) {
