@@ -1,9 +1,8 @@
 import type { TFile } from 'obsidian';
 
 export type Priority = 'top-5' | 'high' | 'normal';
-export type MemberStatus = 'active' | 'inactive' | 'fence' | 'occasional'
-  | 'new' | 'returning' | 'moving' | 'attending-home-ward'
-  | 'convert-baptism' | 'needs-outreach';
+export type MemberStatus = 'active' | 'new' | 'inactive' | 'moving';
+export type PastoralState = '' | 'working-through' | 'under-restrictions';
 export type Ordinance = 'unknown' | 'baptism' | 'confirmation'
   | 'aaronic-priesthood' | 'melchizedek-priesthood'
   | 'endowment' | 'sealing';
@@ -11,10 +10,9 @@ export type Recommend = 'current' | 'expired' | 'none' | 'unknown';
 export type PriesthoodOffice = 'none' | 'deacon' | 'teacher' | 'priest' | 'elder' | 'high-priest';
 
 export const PRIORITIES: Priority[] = ['top-5', 'high', 'normal'];
-export const STATUSES: MemberStatus[] = [
-  'active', 'new', 'returning', 'occasional', 'fence',
-  'inactive', 'moving', 'attending-home-ward', 'convert-baptism', 'needs-outreach',
-];
+// 'new' is auto-assigned on import and not user-selectable in the picker.
+export const STATUSES: MemberStatus[] = ['active', 'inactive', 'moving'];
+export const PASTORAL_STATES: PastoralState[] = ['', 'working-through', 'under-restrictions'];
 export const ORDINANCES: (Ordinance & string)[] = [
   'unknown', 'baptism', 'confirmation', 'aaronic-priesthood',
   'melchizedek-priesthood', 'endowment', 'sealing',
@@ -47,6 +45,7 @@ export interface MemberState {
   gender: string;
   priority: Priority;
   status: MemberStatus;
+  pastoralState: PastoralState;
   nextOrdinance: Ordinance;
   recommend: Recommend;
   recommendExp: string;
@@ -86,15 +85,14 @@ export const PRIORITY_COLORS: Record<Priority, string> = {
   'normal': '#6b7280',
 };
 
-export const STATUS_COLORS: Record<string, string> = {
+export const STATUS_COLORS: Record<MemberStatus, string> = {
   'active': '#22c55e',
   'new': '#3b82f6',
-  'returning': '#8b5cf6',
-  'occasional': '#eab308',
-  'fence': '#f97316',
   'inactive': '#ef4444',
   'moving': '#6b7280',
-  'attending-home-ward': '#6b7280',
-  'convert-baptism': '#06b6d4',
-  'needs-outreach': '#f97316',
+};
+
+export const PASTORAL_STATE_COLORS: Record<Exclude<PastoralState, ''>, string> = {
+  'working-through': '#eab308',
+  'under-restrictions': '#dc2626',
 };

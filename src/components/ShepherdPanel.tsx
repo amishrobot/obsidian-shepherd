@@ -1,8 +1,9 @@
 import { h } from 'preact';
-import { MemberState, Priority, MemberStatus, Ordinance, Recommend, PRIORITY_COLORS } from '../models/types';
+import { MemberState, Priority, MemberStatus, PastoralState, Ordinance, Recommend, PRIORITY_COLORS } from '../models/types';
 import { ContactBar } from './ContactBar';
 import { PriorityPill } from './PriorityPill';
 import { StatusPill } from './StatusPill';
+import { PastoralStatePill } from './PastoralStatePill';
 import { OrdinancePill } from './OrdinancePill';
 import { RecommendPill } from './RecommendPill';
 import { LastContactBadge } from './LastContactBadge';
@@ -15,6 +16,7 @@ interface Props {
   member: MemberState;
   onPriorityChange: (p: Priority) => void;
   onStatusChange: (s: MemberStatus) => void;
+  onPastoralStateChange: (s: PastoralState) => void;
   onOrdinanceChange: (o: Ordinance) => void;
   onRecommendChange: (r: Recommend) => void;
   onMarkContacted: () => void;
@@ -27,6 +29,7 @@ export function ShepherdPanel({
   member: m,
   onPriorityChange,
   onStatusChange,
+  onPastoralStateChange,
   onOrdinanceChange,
   onRecommendChange,
   onMarkContacted,
@@ -64,6 +67,7 @@ export function ShepherdPanel({
       <div class="shepherd-controls">
         <PriorityPill current={m.priority} onChange={onPriorityChange} />
         <StatusPill current={m.status} onChange={onStatusChange} />
+        <PastoralStatePill current={m.pastoralState} onChange={onPastoralStateChange} />
         <OrdinancePill current={m.nextOrdinance} onChange={onOrdinanceChange} />
         <RecommendPill current={m.recommend} onChange={onRecommendChange} />
         <LastContactBadge

@@ -1,5 +1,5 @@
 import { App, TFile } from 'obsidian';
-import { Priority, MemberStatus, Ordinance, Recommend } from '../models/types';
+import { Priority, MemberStatus, PastoralState, Ordinance, Recommend } from '../models/types';
 
 export class WriteService {
   constructor(private app: App) {}
@@ -13,6 +13,12 @@ export class WriteService {
   async setStatus(file: TFile, status: MemberStatus): Promise<void> {
     await this.app.fileManager.processFrontMatter(file, (fm) => {
       fm.status = status;
+    });
+  }
+
+  async setPastoralState(file: TFile, state: PastoralState): Promise<void> {
+    await this.app.fileManager.processFrontMatter(file, (fm) => {
+      fm['pastoral-state'] = state;
     });
   }
 
