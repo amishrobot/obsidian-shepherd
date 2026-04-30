@@ -1238,8 +1238,10 @@ var ShepherdPlugin = class extends import_obsidian3.Plugin {
   }
   getView() {
     const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_SHEPHERD);
-    if (leaves.length > 0) {
-      return leaves[0].view;
+    for (const leaf of leaves) {
+      if (leaf.view instanceof ShepherdView) {
+        return leaf.view;
+      }
     }
     return null;
   }
