@@ -1,5 +1,8 @@
 import { Plugin, WorkspaceLeaf, TFile } from 'obsidian';
 import { ShepherdView, VIEW_TYPE_SHEPHERD } from './ShepherdView';
+// On workspace restore, custom-view leaves exist as deferred placeholders
+// before the plugin's view type is registered. instanceof guards against
+// TypeError when methods like refresh() are called on those placeholders.
 import { ShepherdSettings, DEFAULT_SETTINGS } from './models/types';
 
 export default class ShepherdPlugin extends Plugin {
@@ -77,8 +80,10 @@ export default class ShepherdPlugin extends Plugin {
 
   private getView(): ShepherdView | null {
     const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_SHEPHERD);
-    if (leaves.length > 0) {
-      return leaves[0].view as ShepherdView;
+    for (const leaf of leaves) {
+      if (leaf.view instanceof ShepherdView) {
+        return leaf.view;
+      }
     }
     return null;
   }
