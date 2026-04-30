@@ -457,8 +457,10 @@ var LABELS2 = {
   "endowment": "endowment",
   "sealing": "sealing"
 };
-function OrdinancePill({ current, onChange }) {
-  return /* @__PURE__ */ _("div", { class: "shepherd-pill-row" }, /* @__PURE__ */ _("span", { class: "shepherd-pill-label" }, "Next Ordinance"), /* @__PURE__ */ _("div", { class: "shepherd-pills shepherd-pills-wrap" }, ORDINANCES.map((o3) => /* @__PURE__ */ _(
+var PRIESTHOOD_ORDINANCES = ["aaronic-priesthood", "melchizedek-priesthood"];
+function OrdinancePill({ current, gender, onChange }) {
+  const options = gender === "M" ? ORDINANCES : ORDINANCES.filter((o3) => !PRIESTHOOD_ORDINANCES.includes(o3));
+  return /* @__PURE__ */ _("div", { class: "shepherd-pill-row" }, /* @__PURE__ */ _("span", { class: "shepherd-pill-label" }, "Next Ordinance"), /* @__PURE__ */ _("div", { class: "shepherd-pills shepherd-pills-wrap" }, options.map((o3) => /* @__PURE__ */ _(
     "span",
     {
       key: o3,
@@ -514,9 +516,10 @@ var PRIESTHOOD_LABELS = {
   "elder": "Elder",
   "high-priest": "High Priest"
 };
-function MemberInfo({ priesthood, ministeringBrothers, ministeringSisters, patriarchalBlessing, tags }) {
+function MemberInfo({ priesthood, gender, ministeringBrothers, ministeringSisters, patriarchalBlessing, tags }) {
   const hasMinistering = ministeringBrothers.length > 0 || ministeringSisters.length > 0;
-  return /* @__PURE__ */ _("div", { class: "shepherd-section shepherd-info-section" }, /* @__PURE__ */ _("div", { class: "shepherd-info-grid" }, /* @__PURE__ */ _("div", { class: "shepherd-info-row" }, /* @__PURE__ */ _("span", { class: "shepherd-info-label" }, "Priesthood"), /* @__PURE__ */ _("span", { class: `shepherd-info-value ${priesthood === "none" ? "shepherd-info-dim" : ""}` }, PRIESTHOOD_LABELS[priesthood] || priesthood)), /* @__PURE__ */ _("div", { class: "shepherd-info-row" }, /* @__PURE__ */ _("span", { class: "shepherd-info-label" }, "Pat. Blessing"), /* @__PURE__ */ _("span", { class: `shepherd-info-value ${!patriarchalBlessing ? "shepherd-info-dim" : ""}` }, patriarchalBlessing ? "Yes" : "No")), hasMinistering && /* @__PURE__ */ _("div", { class: "shepherd-info-row" }, /* @__PURE__ */ _("span", { class: "shepherd-info-label" }, "Ministering"), /* @__PURE__ */ _("span", { class: "shepherd-info-value" }, [...ministeringBrothers, ...ministeringSisters].join(", ")))), tags.length > 0 && /* @__PURE__ */ _("div", { class: "shepherd-tags" }, tags.map((tag, i3) => /* @__PURE__ */ _("span", { key: i3, class: "shepherd-tag" }, tag))));
+  const showPriesthood = gender === "M";
+  return /* @__PURE__ */ _("div", { class: "shepherd-section shepherd-info-section" }, /* @__PURE__ */ _("div", { class: "shepherd-info-grid" }, showPriesthood && /* @__PURE__ */ _("div", { class: "shepherd-info-row" }, /* @__PURE__ */ _("span", { class: "shepherd-info-label" }, "Priesthood"), /* @__PURE__ */ _("span", { class: `shepherd-info-value ${priesthood === "none" ? "shepherd-info-dim" : ""}` }, PRIESTHOOD_LABELS[priesthood] || priesthood)), /* @__PURE__ */ _("div", { class: "shepherd-info-row" }, /* @__PURE__ */ _("span", { class: "shepherd-info-label" }, "Pat. Blessing"), /* @__PURE__ */ _("span", { class: `shepherd-info-value ${!patriarchalBlessing ? "shepherd-info-dim" : ""}` }, patriarchalBlessing ? "Yes" : "No")), hasMinistering && /* @__PURE__ */ _("div", { class: "shepherd-info-row" }, /* @__PURE__ */ _("span", { class: "shepherd-info-label" }, "Ministering"), /* @__PURE__ */ _("span", { class: "shepherd-info-value" }, [...ministeringBrothers, ...ministeringSisters].join(", ")))), tags.length > 0 && /* @__PURE__ */ _("div", { class: "shepherd-tags" }, tags.map((tag, i3) => /* @__PURE__ */ _("span", { key: i3, class: "shepherd-tag" }, tag))));
 }
 
 // node_modules/preact/hooks/dist/hooks.module.js
@@ -755,7 +758,7 @@ function ShepherdPanel({
     details.length > 0 && /* @__PURE__ */ _("div", { class: "shepherd-details" }, details.join(" \xB7 ")),
     m3.address && /* @__PURE__ */ _("div", { class: "shepherd-address" }, "\u{1F4CD} ", m3.address),
     m3.whereTheyAre && /* @__PURE__ */ _("div", { class: "shepherd-where" }, m3.whereTheyAre)
-  ), /* @__PURE__ */ _(ContactBar, { phone: m3.phone, email: m3.email }), /* @__PURE__ */ _("div", { class: "shepherd-controls" }, /* @__PURE__ */ _(PriorityPill, { current: m3.priority, onChange: onPriorityChange }), /* @__PURE__ */ _(StatusPill, { current: m3.status, onChange: onStatusChange }), /* @__PURE__ */ _(PastoralStatePill, { current: m3.pastoralState, onChange: onPastoralStateChange }), /* @__PURE__ */ _(OrdinancePill, { current: m3.nextOrdinance, onChange: onOrdinanceChange }), /* @__PURE__ */ _(RecommendPill, { current: m3.recommend, onChange: onRecommendChange }), /* @__PURE__ */ _(
+  ), /* @__PURE__ */ _(ContactBar, { phone: m3.phone, email: m3.email }), /* @__PURE__ */ _("div", { class: "shepherd-controls" }, /* @__PURE__ */ _(PriorityPill, { current: m3.priority, onChange: onPriorityChange }), /* @__PURE__ */ _(StatusPill, { current: m3.status, onChange: onStatusChange }), /* @__PURE__ */ _(PastoralStatePill, { current: m3.pastoralState, onChange: onPastoralStateChange }), /* @__PURE__ */ _(OrdinancePill, { current: m3.nextOrdinance, gender: m3.gender, onChange: onOrdinanceChange }), /* @__PURE__ */ _(RecommendPill, { current: m3.recommend, onChange: onRecommendChange }), /* @__PURE__ */ _(
     LastContactBadge,
     {
       lastContact: m3.lastContact,
@@ -767,6 +770,7 @@ function ShepherdPanel({
     MemberInfo,
     {
       priesthood: m3.priesthood,
+      gender: m3.gender,
       ministeringBrothers: m3.ministeringBrothers,
       ministeringSisters: m3.ministeringSisters,
       patriarchalBlessing: m3.patriarchalBlessing,
