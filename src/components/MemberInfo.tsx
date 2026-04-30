@@ -3,6 +3,7 @@ import { PriesthoodOffice } from '../models/types';
 
 interface Props {
   priesthood: PriesthoodOffice;
+  gender: string;
   ministeringBrothers: string[];
   ministeringSisters: string[];
   patriarchalBlessing: boolean;
@@ -18,18 +19,21 @@ const PRIESTHOOD_LABELS: Record<string, string> = {
   'high-priest': 'High Priest',
 };
 
-export function MemberInfo({ priesthood, ministeringBrothers, ministeringSisters, patriarchalBlessing, tags }: Props) {
+export function MemberInfo({ priesthood, gender, ministeringBrothers, ministeringSisters, patriarchalBlessing, tags }: Props) {
   const hasMinistering = ministeringBrothers.length > 0 || ministeringSisters.length > 0;
+  const showPriesthood = gender === 'M';
 
   return (
     <div class="shepherd-section shepherd-info-section">
       <div class="shepherd-info-grid">
-        <div class="shepherd-info-row">
-          <span class="shepherd-info-label">Priesthood</span>
-          <span class={`shepherd-info-value ${priesthood === 'none' ? 'shepherd-info-dim' : ''}`}>
-            {PRIESTHOOD_LABELS[priesthood] || priesthood}
-          </span>
-        </div>
+        {showPriesthood && (
+          <div class="shepherd-info-row">
+            <span class="shepherd-info-label">Priesthood</span>
+            <span class={`shepherd-info-value ${priesthood === 'none' ? 'shepherd-info-dim' : ''}`}>
+              {PRIESTHOOD_LABELS[priesthood] || priesthood}
+            </span>
+          </div>
+        )}
         <div class="shepherd-info-row">
           <span class="shepherd-info-label">Pat. Blessing</span>
           <span class={`shepherd-info-value ${!patriarchalBlessing ? 'shepherd-info-dim' : ''}`}>

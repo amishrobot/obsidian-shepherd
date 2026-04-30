@@ -3,6 +3,7 @@ import { Ordinance, ORDINANCES } from '../models/types';
 
 interface Props {
   current: Ordinance;
+  gender: string;
   onChange: (o: Ordinance) => void;
 }
 
@@ -16,12 +17,18 @@ const LABELS: Record<string, string> = {
   'sealing': 'sealing',
 };
 
-export function OrdinancePill({ current, onChange }: Props) {
+const PRIESTHOOD_ORDINANCES: Ordinance[] = ['aaronic-priesthood', 'melchizedek-priesthood'];
+
+export function OrdinancePill({ current, gender, onChange }: Props) {
+  const options = gender === 'M'
+    ? ORDINANCES
+    : ORDINANCES.filter((o) => !PRIESTHOOD_ORDINANCES.includes(o));
+
   return (
     <div class="shepherd-pill-row">
       <span class="shepherd-pill-label">Next Ordinance</span>
       <div class="shepherd-pills shepherd-pills-wrap">
-        {ORDINANCES.map((o) => (
+        {options.map((o) => (
           <span
             key={o}
             class={`shepherd-pill ${o === current ? 'shepherd-pill-active' : ''}`}

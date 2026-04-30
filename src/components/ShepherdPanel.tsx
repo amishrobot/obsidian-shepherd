@@ -68,7 +68,7 @@ export function ShepherdPanel({
         <PriorityPill current={m.priority} onChange={onPriorityChange} />
         <StatusPill current={m.status} onChange={onStatusChange} />
         <PastoralStatePill current={m.pastoralState} onChange={onPastoralStateChange} />
-        <OrdinancePill current={m.nextOrdinance} onChange={onOrdinanceChange} />
+        <OrdinancePill current={m.nextOrdinance} gender={m.gender} onChange={onOrdinanceChange} />
         <RecommendPill current={m.recommend} onChange={onRecommendChange} />
         <LastContactBadge
           lastContact={m.lastContact}
@@ -81,6 +81,7 @@ export function ShepherdPanel({
       {/* Member Info */}
       <MemberInfo
         priesthood={m.priesthood}
+        gender={m.gender}
         ministeringBrothers={m.ministeringBrothers}
         ministeringSisters={m.ministeringSisters}
         patriarchalBlessing={m.patriarchalBlessing}
