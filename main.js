@@ -342,18 +342,8 @@ n = v.slice, l = { __e: function(n2, l3, u3, t3) {
 
 // src/models/types.ts
 var PRIORITIES = ["top-5", "high", "normal"];
-var STATUSES = [
-  "active",
-  "new",
-  "returning",
-  "occasional",
-  "fence",
-  "inactive",
-  "moving",
-  "attending-home-ward",
-  "convert-baptism",
-  "needs-outreach"
-];
+var STATUSES = ["active", "inactive", "moving"];
+var PASTORAL_STATES = ["", "working-through", "under-restrictions"];
 var ORDINANCES = [
   "unknown",
   "baptism",
@@ -383,14 +373,12 @@ var PRIORITY_COLORS = {
 var STATUS_COLORS = {
   "active": "#22c55e",
   "new": "#3b82f6",
-  "returning": "#8b5cf6",
-  "occasional": "#eab308",
-  "fence": "#f97316",
   "inactive": "#ef4444",
-  "moving": "#6b7280",
-  "attending-home-ward": "#6b7280",
-  "convert-baptism": "#06b6d4",
-  "needs-outreach": "#f97316"
+  "moving": "#6b7280"
+};
+var PASTORAL_STATE_COLORS = {
+  "working-through": "#eab308",
+  "under-restrictions": "#dc2626"
 };
 
 // src/components/ContactBar.tsx
@@ -436,8 +424,31 @@ function StatusPill({ current, onChange }) {
   ))));
 }
 
-// src/components/OrdinancePill.tsx
+// src/components/PastoralStatePill.tsx
 var LABELS = {
+  "": "none",
+  "working-through": "working through",
+  "under-restrictions": "restrictions"
+};
+function PastoralStatePill({ current, onChange }) {
+  return /* @__PURE__ */ _("div", { class: "shepherd-pill-row" }, /* @__PURE__ */ _("span", { class: "shepherd-pill-label" }, "Pastoral"), /* @__PURE__ */ _("div", { class: "shepherd-pills shepherd-pills-wrap" }, PASTORAL_STATES.map((s3) => {
+    const active = s3 === current;
+    const bg = s3 !== "" ? PASTORAL_STATE_COLORS[s3] : "#6b7280";
+    return /* @__PURE__ */ _(
+      "span",
+      {
+        key: s3 || "none",
+        class: `shepherd-pill ${active ? "shepherd-pill-active" : ""}`,
+        style: active ? { background: bg, color: "#fff" } : {},
+        onClick: () => onChange(s3)
+      },
+      LABELS[s3]
+    );
+  })));
+}
+
+// src/components/OrdinancePill.tsx
+var LABELS2 = {
   "unknown": "unknown",
   "baptism": "baptism",
   "confirmation": "confirmation",
@@ -455,7 +466,7 @@ function OrdinancePill({ current, onChange }) {
       style: o3 === current ? { background: "#58a6ff", color: "#fff" } : {},
       onClick: () => onChange(o3)
     },
-    LABELS[o3] || o3
+    LABELS2[o3] || o3
   ))));
 }
 
@@ -721,6 +732,7 @@ function ShepherdPanel({
   member: m3,
   onPriorityChange,
   onStatusChange,
+  onPastoralStateChange,
   onOrdinanceChange,
   onRecommendChange,
   onMarkContacted,
@@ -743,7 +755,7 @@ function ShepherdPanel({
     details.length > 0 && /* @__PURE__ */ _("div", { class: "shepherd-details" }, details.join(" \xB7 ")),
     m3.address && /* @__PURE__ */ _("div", { class: "shepherd-address" }, "\u{1F4CD} ", m3.address),
     m3.whereTheyAre && /* @__PURE__ */ _("div", { class: "shepherd-where" }, m3.whereTheyAre)
-  ), /* @__PURE__ */ _(ContactBar, { phone: m3.phone, email: m3.email }), /* @__PURE__ */ _("div", { class: "shepherd-controls" }, /* @__PURE__ */ _(PriorityPill, { current: m3.priority, onChange: onPriorityChange }), /* @__PURE__ */ _(StatusPill, { current: m3.status, onChange: onStatusChange }), /* @__PURE__ */ _(OrdinancePill, { current: m3.nextOrdinance, onChange: onOrdinanceChange }), /* @__PURE__ */ _(RecommendPill, { current: m3.recommend, onChange: onRecommendChange }), /* @__PURE__ */ _(
+  ), /* @__PURE__ */ _(ContactBar, { phone: m3.phone, email: m3.email }), /* @__PURE__ */ _("div", { class: "shepherd-controls" }, /* @__PURE__ */ _(PriorityPill, { current: m3.priority, onChange: onPriorityChange }), /* @__PURE__ */ _(StatusPill, { current: m3.status, onChange: onStatusChange }), /* @__PURE__ */ _(PastoralStatePill, { current: m3.pastoralState, onChange: onPastoralStateChange }), /* @__PURE__ */ _(OrdinancePill, { current: m3.nextOrdinance, onChange: onOrdinanceChange }), /* @__PURE__ */ _(RecommendPill, { current: m3.recommend, onChange: onRecommendChange }), /* @__PURE__ */ _(
     LastContactBadge,
     {
       lastContact: m3.lastContact,
@@ -804,6 +816,7 @@ var MemberService = class {
       gender: String(fm.gender || ""),
       priority: fm.priority || "normal",
       status: fm.status || "new",
+      pastoralState: fm["pastoral-state"] || "",
       nextOrdinance: fm["next-ordinance"] || "unknown",
       recommend: fm.recommend || "unknown",
       recommendExp: String(fm["recommend-exp"] || ""),
@@ -937,6 +950,11 @@ var WriteService = class {
   async setStatus(file, status) {
     await this.app.fileManager.processFrontMatter(file, (fm) => {
       fm.status = status;
+    });
+  }
+  async setPastoralState(file, state) {
+    await this.app.fileManager.processFrontMatter(file, (fm) => {
+      fm["pastoral-state"] = state;
     });
   }
   async setOrdinance(file, ordinance) {
@@ -1110,6 +1128,10 @@ var ShepherdView = class extends import_obsidian2.ItemView {
         },
         onStatusChange: async (s3) => {
           await this.writeService.setStatus(file, s3);
+          await refresh();
+        },
+        onPastoralStateChange: async (s3) => {
+          await this.writeService.setPastoralState(file, s3);
           await refresh();
         },
         onOrdinanceChange: async (o3) => {
