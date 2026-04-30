@@ -1,6 +1,6 @@
 import type { TFile } from 'obsidian';
 
-export type Priority = 'top-5' | 'urgent' | 'high' | 'normal' | 'low';
+export type Priority = 'top-5' | 'high' | 'normal';
 export type MemberStatus = 'active' | 'inactive' | 'fence' | 'occasional'
   | 'new' | 'returning' | 'moving' | 'attending-home-ward'
   | 'convert-baptism' | 'needs-outreach';
@@ -10,7 +10,7 @@ export type Ordinance = 'unknown' | 'baptism' | 'confirmation'
 export type Recommend = 'current' | 'expired' | 'none' | 'unknown';
 export type PriesthoodOffice = 'none' | 'deacon' | 'teacher' | 'priest' | 'elder' | 'high-priest';
 
-export const PRIORITIES: Priority[] = ['top-5', 'urgent', 'high', 'normal', 'low'];
+export const PRIORITIES: Priority[] = ['top-5', 'high', 'normal'];
 export const STATUSES: MemberStatus[] = [
   'active', 'new', 'returning', 'occasional', 'fence',
   'inactive', 'moving', 'attending-home-ward', 'convert-baptism', 'needs-outreach',
@@ -49,6 +49,8 @@ export interface MemberState {
   status: MemberStatus;
   nextOrdinance: Ordinance;
   recommend: Recommend;
+  recommendExp: string;
+  endowed: boolean;
   priesthood: PriesthoodOffice;
   ministeringBrothers: string[];
   ministeringSisters: string[];
@@ -80,10 +82,8 @@ export const DEFAULT_SETTINGS: ShepherdSettings = {
 
 export const PRIORITY_COLORS: Record<Priority, string> = {
   'top-5': '#ef4444',
-  'urgent': '#f97316',
   'high': '#eab308',
   'normal': '#6b7280',
-  'low': '#4b5563',
 };
 
 export const STATUS_COLORS: Record<string, string> = {

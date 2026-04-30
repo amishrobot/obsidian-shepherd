@@ -341,7 +341,7 @@ n = v.slice, l = { __e: function(n2, l3, u3, t3) {
 }, I.__r = 0, f = /(PointerCapture)$|Capture$/i, c = 0, s = O(false), a = O(true), h = 0;
 
 // src/models/types.ts
-var PRIORITIES = ["top-5", "urgent", "high", "normal", "low"];
+var PRIORITIES = ["top-5", "high", "normal"];
 var STATUSES = [
   "active",
   "new",
@@ -377,10 +377,8 @@ var DEFAULT_SETTINGS = {
 };
 var PRIORITY_COLORS = {
   "top-5": "#ef4444",
-  "urgent": "#f97316",
   "high": "#eab308",
-  "normal": "#6b7280",
-  "low": "#4b5563"
+  "normal": "#6b7280"
 };
 var STATUS_COLORS = {
   "active": "#22c55e",
@@ -808,6 +806,8 @@ var MemberService = class {
       status: fm.status || "new",
       nextOrdinance: fm["next-ordinance"] || "unknown",
       recommend: fm.recommend || "unknown",
+      recommendExp: String(fm["recommend-exp"] || ""),
+      endowed: fm.endowed === true || fm.endowed === "true",
       priesthood: fm.priesthood || "none",
       ministeringBrothers: Array.isArray(fm["ministering-brothers"]) ? fm["ministering-brothers"] : [],
       ministeringSisters: Array.isArray(fm["ministering-sisters"]) ? fm["ministering-sisters"] : [],
@@ -835,7 +835,7 @@ var MemberService = class {
   checkOverdue(priority, days) {
     if (days === null)
       return false;
-    const highPriority = priority === "top-5" || priority === "urgent" || priority === "high";
+    const highPriority = priority === "top-5" || priority === "high";
     return highPriority && days > this.settings.overdueThreshold;
   }
   parseTasks(body) {

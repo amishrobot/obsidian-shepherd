@@ -40,6 +40,8 @@ export class MemberService {
       status: (fm.status || 'new') as MemberStatus,
       nextOrdinance: (fm['next-ordinance'] || 'unknown') as Ordinance,
       recommend: (fm.recommend || 'unknown') as Recommend,
+      recommendExp: String(fm['recommend-exp'] || ''),
+      endowed: fm.endowed === true || fm.endowed === 'true',
       priesthood: (fm.priesthood || 'none') as PriesthoodOffice,
       ministeringBrothers: Array.isArray(fm['ministering-brothers']) ? fm['ministering-brothers'] : [],
       ministeringSisters: Array.isArray(fm['ministering-sisters']) ? fm['ministering-sisters'] : [],
@@ -66,7 +68,7 @@ export class MemberService {
 
   private checkOverdue(priority: Priority | undefined, days: number | null): boolean {
     if (days === null) return false;
-    const highPriority = priority === 'top-5' || priority === 'urgent' || priority === 'high';
+    const highPriority = priority === 'top-5' || priority === 'high';
     return highPriority && days > this.settings.overdueThreshold;
   }
 
