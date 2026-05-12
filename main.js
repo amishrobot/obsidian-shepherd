@@ -978,9 +978,43 @@ var WriteService = class {
   }
   async markContacted(file) {
     const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+    const content = await this.app.vault.read(file);
+    const lines = content.split("\n");
+    if (!this.hasInteractionHeadingFor(lines, today)) {
+      let insertIdx = -1;
+      for (let i3 = 0; i3 < lines.length; i3++) {
+        if (lines[i3].match(/^##\s+Interactions/)) {
+          insertIdx = i3 + 1;
+          break;
+        }
+      }
+      if (insertIdx >= 0) {
+        const entry = `
+### ${today} \u2014 Contact
+`;
+        lines.splice(insertIdx, 0, entry);
+        await this.app.vault.modify(file, lines.join("\n"));
+      }
+    }
     await this.app.fileManager.processFrontMatter(file, (fm) => {
       fm["last-contact"] = today;
     });
+  }
+  hasInteractionHeadingFor(lines, isoDate) {
+    let inSection = false;
+    for (const line of lines) {
+      if (line.match(/^##\s+Interactions/)) {
+        inSection = true;
+        continue;
+      }
+      if (inSection && line.match(/^##\s/) && !line.match(/^###/))
+        return false;
+      if (!inSection)
+        continue;
+      if (line.match(new RegExp(`^###\\s+${isoDate}\\b`)))
+        return true;
+    }
+    return false;
   }
   async toggleTask(file, taskLine) {
     const content = await this.app.vault.read(file);
@@ -1194,12 +1228,15 @@ var ShepherdPlugin = class extends import_obsidian3.Plugin {
       id: "mark-contacted",
       name: "Mark Member Contacted Today",
       checkCallback: (checking) => {
-        var _a;
         const file = this.app.workspace.getActiveFile();
         if (!file || !this.isMemberFile(file))
           return false;
         if (!checking) {
-          (_a = this.getView()) == null ? void 0 : _a.refresh(file);
+          const writeService = new WriteService(this.app);
+          writeService.markContacted(file).then(() => {
+            var _a;
+            return (_a = this.getView()) == null ? void 0 : _a.refresh(file);
+          });
         }
         return true;
       }
