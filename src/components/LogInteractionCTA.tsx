@@ -69,7 +69,7 @@ export function LogInteractionCTA({ lastContact, onMarkContacted, onLogInteracti
       ) : (
         <button class="shepherd-cta-btn" onClick={() => setExpanded(true)}>
           <span class="shepherd-cta-label">📝 Log Interaction</span>
-          <span class="shepherd-cta-kbd">⌘L</span>
+          <span class="shepherd-cta-kbd">⌘⇧L</span>
         </button>
       )}
     </div>

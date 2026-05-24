@@ -641,7 +641,7 @@ function LogInteractionCTA({ lastContact, onMarkContacted, onLogInteraction, exp
   ), /* @__PURE__ */ _("div", { class: "shepherd-cta-actions" }, /* @__PURE__ */ _("button", { class: "shepherd-cta-cancel", onClick: () => {
     setExpanded(false);
     setNote("");
-  } }, "Cancel"), /* @__PURE__ */ _("button", { class: "shepherd-cta-submit", onClick: submit }, note.trim() ? "Log Interaction" : "Mark Contacted"))) : /* @__PURE__ */ _("button", { class: "shepherd-cta-btn", onClick: () => setExpanded(true) }, /* @__PURE__ */ _("span", { class: "shepherd-cta-label" }, "\u{1F4DD} Log Interaction"), /* @__PURE__ */ _("span", { class: "shepherd-cta-kbd" }, "\u2318L")));
+  } }, "Cancel"), /* @__PURE__ */ _("button", { class: "shepherd-cta-submit", onClick: submit }, note.trim() ? "Log Interaction" : "Mark Contacted"))) : /* @__PURE__ */ _("button", { class: "shepherd-cta-btn", onClick: () => setExpanded(true) }, /* @__PURE__ */ _("span", { class: "shepherd-cta-label" }, "\u{1F4DD} Log Interaction"), /* @__PURE__ */ _("span", { class: "shepherd-cta-kbd" }, "\u2318\u21E7L")));
 }
 
 // src/models/types.ts
@@ -1269,7 +1269,7 @@ var ShepherdPlugin = class extends import_obsidian3.Plugin {
     this.addCommand({
       id: "log-interaction",
       name: "Log Interaction (open input)",
-      hotkeys: [{ modifiers: ["Mod"], key: "l" }],
+      hotkeys: [{ modifiers: ["Mod", "Shift"], key: "l" }],
       checkCallback: (checking) => {
         const file = this.app.workspace.getActiveFile();
         if (!file || !this.isMemberFile(file))

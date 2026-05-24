@@ -46,7 +46,7 @@ export default class ShepherdPlugin extends Plugin {
     this.addCommand({
       id: 'log-interaction',
       name: 'Log Interaction (open input)',
-      hotkeys: [{ modifiers: ['Mod'], key: 'l' }],
+      hotkeys: [{ modifiers: ['Mod', 'Shift'], key: 'l' }],
       checkCallback: (checking) => {
         const file = this.app.workspace.getActiveFile();
         if (!file || !this.isMemberFile(file)) return false;
