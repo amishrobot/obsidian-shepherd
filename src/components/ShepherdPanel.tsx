@@ -1,19 +1,14 @@
 import { h } from 'preact';
-import { MemberState, Priority, MemberStatus, PastoralState, Ordinance, Recommend, PRIORITY_COLORS } from '../models/types';
-import { ContactBar } from './ContactBar';
-import { PriorityPill } from './PriorityPill';
-import { StatusPill } from './StatusPill';
-import { PastoralStatePill } from './PastoralStatePill';
-import { OrdinancePill } from './OrdinancePill';
-import { RecommendPill } from './RecommendPill';
-import { LastContactBadge } from './LastContactBadge';
-import { MemberInfo } from './MemberInfo';
+import { MemberState, Priority, MemberStatus, PastoralState, Ordinance, Recommend } from '../models/types';
+import { IdentityBlock } from './IdentityBlock';
+import { ContactChips } from './ContactChips';
+import { LogInteractionCTA } from './LogInteractionCTA';
+import { StatusTable } from './StatusTable';
 import { TaskList } from './TaskList';
-import { QuickLog } from './QuickLog';
-import { InteractionList } from './InteractionList';
 
 interface Props {
   member: MemberState;
+  expandLogSignal: number;
   onPriorityChange: (p: Priority) => void;
   onStatusChange: (s: MemberStatus) => void;
   onPastoralStateChange: (s: PastoralState) => void;
@@ -25,81 +20,31 @@ interface Props {
   onLogInteraction: (note: string) => void;
 }
 
-export function ShepherdPanel({
-  member: m,
-  onPriorityChange,
-  onStatusChange,
-  onPastoralStateChange,
-  onOrdinanceChange,
-  onRecommendChange,
-  onMarkContacted,
-  onToggleTask,
-  onAddTask,
-  onLogInteraction,
-}: Props) {
-  const details: string[] = [];
-  if (m.age) details.push(`${m.age}${m.gender}`);
-  if (m.calling) details.push(m.calling);
-
+export function ShepherdPanel(p: Props) {
+  const m = p.member;
   return (
     <div class="shepherd-panel">
-      {/* Header */}
-      <div
-        class="shepherd-header"
-        style={{ borderLeft: `4px solid ${PRIORITY_COLORS[m.priority]}` }}
-      >
-        <div class="shepherd-name">{m.name}</div>
-        {details.length > 0 && (
-          <div class="shepherd-details">{details.join(' · ')}</div>
-        )}
-        {m.address && (
-          <div class="shepherd-address">📍 {m.address}</div>
-        )}
-        {m.whereTheyAre && (
-          <div class="shepherd-where">{m.whereTheyAre}</div>
-        )}
-      </div>
-
-      {/* Contact */}
-      <ContactBar phone={m.phone} email={m.email} />
-
-      {/* Controls */}
-      <div class="shepherd-controls">
-        <PriorityPill current={m.priority} onChange={onPriorityChange} />
-        <StatusPill current={m.status} onChange={onStatusChange} />
-        <PastoralStatePill current={m.pastoralState} onChange={onPastoralStateChange} />
-        <OrdinancePill current={m.nextOrdinance} gender={m.gender} onChange={onOrdinanceChange} />
-        <RecommendPill current={m.recommend} onChange={onRecommendChange} />
-        <LastContactBadge
-          lastContact={m.lastContact}
-          daysSince={m.daysSinceContact}
-          isOverdue={m.isOverdue}
-          onMarkContacted={onMarkContacted}
-        />
-      </div>
-
-      {/* Member Info */}
-      <MemberInfo
-        priesthood={m.priesthood}
-        gender={m.gender}
-        ministeringBrothers={m.ministeringBrothers}
-        ministeringSisters={m.ministeringSisters}
-        patriarchalBlessing={m.patriarchalBlessing}
-        tags={m.tags}
+      <IdentityBlock member={m} />
+      <ContactChips phone={m.phone} email={m.email} address={m.address} />
+      <LogInteractionCTA
+        lastContact={m.lastContact}
+        onMarkContacted={p.onMarkContacted}
+        onLogInteraction={p.onLogInteraction}
+        expandSignal={p.expandLogSignal}
       />
-
-      {/* Tasks */}
-      <TaskList
-        tasks={m.tasks}
-        onToggle={onToggleTask}
-        onAdd={onAddTask}
+      <StatusTable
+        priority={m.priority}
+        status={m.status}
+        pastoral={m.pastoralState}
+        nextOrdinance={m.nextOrdinance}
+        recommend={m.recommend}
+        onPriorityChange={p.onPriorityChange}
+        onStatusChange={p.onStatusChange}
+        onPastoralChange={p.onPastoralStateChange}
+        onOrdinanceChange={p.onOrdinanceChange}
+        onRecommendChange={p.onRecommendChange}
       />
-
-      {/* Quick Log */}
-      <QuickLog onLog={onLogInteraction} />
-
-      {/* Interactions */}
-      <InteractionList interactions={m.interactions} />
+      <TaskList tasks={m.tasks} onToggle={p.onToggleTask} onAdd={p.onAddTask} />
     </div>
   );
 }

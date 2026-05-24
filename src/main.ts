@@ -43,6 +43,25 @@ export default class ShepherdPlugin extends Plugin {
       },
     });
 
+    this.addCommand({
+      id: 'log-interaction',
+      name: 'Log Interaction (open input)',
+      hotkeys: [{ modifiers: ['Mod'], key: 'l' }],
+      checkCallback: (checking) => {
+        const file = this.app.workspace.getActiveFile();
+        if (!file || !this.isMemberFile(file)) return false;
+        if (!checking) {
+          const view = this.getView();
+          if (view) {
+            view.triggerLogExpand();
+          } else {
+            this.activateView().then(() => this.getView()?.triggerLogExpand());
+          }
+        }
+        return true;
+      },
+    });
+
     // React to active file changes
     this.registerEvent(
       this.app.workspace.on('file-open', (file) => {

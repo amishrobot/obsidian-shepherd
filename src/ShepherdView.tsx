@@ -12,6 +12,7 @@ export class ShepherdView extends ItemView {
   private writeService: WriteService;
   private currentFile: TFile | null = null;
   private settings: ShepherdSettings;
+  private expandLogSignal = 0;
 
   constructor(leaf: WorkspaceLeaf, settings: ShepherdSettings) {
     super(leaf);
@@ -93,6 +94,13 @@ export class ShepherdView extends ItemView {
     }
   }
 
+  triggerLogExpand() {
+    this.expandLogSignal++;
+    if (this.currentFile) {
+      this.showMember(this.currentFile);
+    }
+  }
+
   private renderPanel(container: HTMLElement, member: MemberState) {
     const file = member.file;
 
@@ -101,6 +109,7 @@ export class ShepherdView extends ItemView {
     render(
       h(ShepherdPanel, {
         member,
+        expandLogSignal: this.expandLogSignal,
         onPriorityChange: async (p: Priority) => {
           await this.writeService.setPriority(file, p);
           await refresh();

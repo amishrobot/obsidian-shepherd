@@ -105,9 +105,9 @@ function I() {
   }
 }
 function P(n2, l3, u3, t3, i3, r3, o3, e3, f3, c3, s3) {
-  var a3, h3, y2, d3, w3, g2, _2, m3 = t3 && t3.__k || v, b = l3.length;
+  var a3, h3, y3, d3, w3, g2, _2, m3 = t3 && t3.__k || v, b = l3.length;
   for (f3 = A(u3, l3, m3, f3, b), a3 = 0; a3 < b; a3++)
-    null != (y2 = u3.__k[a3]) && (h3 = -1 != y2.__i && m3[y2.__i] || p, y2.__i = a3, g2 = z(n2, y2, h3, i3, r3, o3, e3, f3, c3, s3), d3 = y2.__e, y2.ref && h3.ref != y2.ref && (h3.ref && D(h3.ref, null, y2), s3.push(y2.ref, y2.__c || d3, y2)), null == w3 && null != d3 && (w3 = d3), (_2 = !!(4 & y2.__u)) || h3.__k === y2.__k ? f3 = H(y2, f3, n2, _2) : "function" == typeof y2.type && void 0 !== g2 ? f3 = g2 : d3 && (f3 = d3.nextSibling), y2.__u &= -7);
+    null != (y3 = u3.__k[a3]) && (h3 = -1 != y3.__i && m3[y3.__i] || p, y3.__i = a3, g2 = z(n2, y3, h3, i3, r3, o3, e3, f3, c3, s3), d3 = y3.__e, y3.ref && h3.ref != y3.ref && (h3.ref && D(h3.ref, null, y3), s3.push(y3.ref, y3.__c || d3, y3)), null == w3 && null != d3 && (w3 = d3), (_2 = !!(4 & y3.__u)) || h3.__k === y3.__k ? f3 = H(y3, f3, n2, _2) : "function" == typeof y3.type && void 0 !== g2 ? f3 = g2 : d3 && (f3 = d3.nextSibling), y3.__u &= -7);
   return u3.__e = w3, f3;
 }
 function A(n2, l3, u3, t3, i3) {
@@ -187,33 +187,33 @@ function O(n2) {
   };
 }
 function z(n2, u3, t3, i3, r3, o3, e3, f3, c3, s3) {
-  var a3, h3, p3, y2, _2, m3, b, S2, C2, M2, $2, I2, A2, H2, L, T2 = u3.type;
+  var a3, h3, p3, y3, _2, m3, b, S2, C3, M2, $2, I2, A3, H2, L, T3 = u3.type;
   if (void 0 !== u3.constructor)
     return null;
   128 & t3.__u && (c3 = !!(32 & t3.__u), o3 = [f3 = u3.__e = t3.__e]), (a3 = l.__b) && a3(u3);
   n:
-    if ("function" == typeof T2)
+    if ("function" == typeof T3)
       try {
-        if (S2 = u3.props, C2 = T2.prototype && T2.prototype.render, M2 = (a3 = T2.contextType) && i3[a3.__c], $2 = a3 ? M2 ? M2.props.value : a3.__ : i3, t3.__c ? b = (h3 = u3.__c = t3.__c).__ = h3.__E : (C2 ? u3.__c = h3 = new T2(S2, $2) : (u3.__c = h3 = new x(S2, $2), h3.constructor = T2, h3.render = G), M2 && M2.sub(h3), h3.state || (h3.state = {}), h3.__n = i3, p3 = h3.__d = true, h3.__h = [], h3._sb = []), C2 && null == h3.__s && (h3.__s = h3.state), C2 && null != T2.getDerivedStateFromProps && (h3.__s == h3.state && (h3.__s = w({}, h3.__s)), w(h3.__s, T2.getDerivedStateFromProps(S2, h3.__s))), y2 = h3.props, _2 = h3.state, h3.__v = u3, p3)
-          C2 && null == T2.getDerivedStateFromProps && null != h3.componentWillMount && h3.componentWillMount(), C2 && null != h3.componentDidMount && h3.__h.push(h3.componentDidMount);
+        if (S2 = u3.props, C3 = T3.prototype && T3.prototype.render, M2 = (a3 = T3.contextType) && i3[a3.__c], $2 = a3 ? M2 ? M2.props.value : a3.__ : i3, t3.__c ? b = (h3 = u3.__c = t3.__c).__ = h3.__E : (C3 ? u3.__c = h3 = new T3(S2, $2) : (u3.__c = h3 = new x(S2, $2), h3.constructor = T3, h3.render = G), M2 && M2.sub(h3), h3.state || (h3.state = {}), h3.__n = i3, p3 = h3.__d = true, h3.__h = [], h3._sb = []), C3 && null == h3.__s && (h3.__s = h3.state), C3 && null != T3.getDerivedStateFromProps && (h3.__s == h3.state && (h3.__s = w({}, h3.__s)), w(h3.__s, T3.getDerivedStateFromProps(S2, h3.__s))), y3 = h3.props, _2 = h3.state, h3.__v = u3, p3)
+          C3 && null == T3.getDerivedStateFromProps && null != h3.componentWillMount && h3.componentWillMount(), C3 && null != h3.componentDidMount && h3.__h.push(h3.componentDidMount);
         else {
-          if (C2 && null == T2.getDerivedStateFromProps && S2 !== y2 && null != h3.componentWillReceiveProps && h3.componentWillReceiveProps(S2, $2), u3.__v == t3.__v || !h3.__e && null != h3.shouldComponentUpdate && false === h3.shouldComponentUpdate(S2, h3.__s, $2)) {
+          if (C3 && null == T3.getDerivedStateFromProps && S2 !== y3 && null != h3.componentWillReceiveProps && h3.componentWillReceiveProps(S2, $2), u3.__v == t3.__v || !h3.__e && null != h3.shouldComponentUpdate && false === h3.shouldComponentUpdate(S2, h3.__s, $2)) {
             u3.__v != t3.__v && (h3.props = S2, h3.state = h3.__s, h3.__d = false), u3.__e = t3.__e, u3.__k = t3.__k, u3.__k.some(function(n3) {
               n3 && (n3.__ = u3);
             }), v.push.apply(h3.__h, h3._sb), h3._sb = [], h3.__h.length && e3.push(h3);
             break n;
           }
-          null != h3.componentWillUpdate && h3.componentWillUpdate(S2, h3.__s, $2), C2 && null != h3.componentDidUpdate && h3.__h.push(function() {
-            h3.componentDidUpdate(y2, _2, m3);
+          null != h3.componentWillUpdate && h3.componentWillUpdate(S2, h3.__s, $2), C3 && null != h3.componentDidUpdate && h3.__h.push(function() {
+            h3.componentDidUpdate(y3, _2, m3);
           });
         }
-        if (h3.context = $2, h3.props = S2, h3.__P = n2, h3.__e = false, I2 = l.__r, A2 = 0, C2)
+        if (h3.context = $2, h3.props = S2, h3.__P = n2, h3.__e = false, I2 = l.__r, A3 = 0, C3)
           h3.state = h3.__s, h3.__d = false, I2 && I2(u3), a3 = h3.render(h3.props, h3.state, h3.context), v.push.apply(h3.__h, h3._sb), h3._sb = [];
         else
           do {
             h3.__d = false, I2 && I2(u3), a3 = h3.render(h3.props, h3.state, h3.context), h3.state = h3.__s;
-          } while (h3.__d && ++A2 < 25);
-        h3.state = h3.__s, null != h3.getChildContext && (i3 = w(w({}, i3), h3.getChildContext())), C2 && !p3 && null != h3.getSnapshotBeforeUpdate && (m3 = h3.getSnapshotBeforeUpdate(y2, _2)), H2 = null != a3 && a3.type === k && null == a3.key ? q(a3.props.children) : a3, f3 = P(n2, d(H2) ? H2 : [H2], u3, t3, i3, r3, o3, e3, f3, c3, s3), h3.base = u3.__e, u3.__u &= -161, h3.__h.length && e3.push(h3), b && (h3.__E = h3.__ = null);
+          } while (h3.__d && ++A3 < 25);
+        h3.state = h3.__s, null != h3.getChildContext && (i3 = w(w({}, i3), h3.getChildContext())), C3 && !p3 && null != h3.getSnapshotBeforeUpdate && (m3 = h3.getSnapshotBeforeUpdate(y3, _2)), H2 = null != a3 && a3.type === k && null == a3.key ? q(a3.props.children) : a3, f3 = P(n2, d(H2) ? H2 : [H2], u3, t3, i3, r3, o3, e3, f3, c3, s3), h3.base = u3.__e, u3.__u &= -161, h3.__h.length && e3.push(h3), b && (h3.__E = h3.__ = null);
       } catch (n3) {
         if (u3.__v = null, c3 || null != o3)
           if (n3.then) {
@@ -253,7 +253,7 @@ function q(n2) {
   return "object" != typeof n2 || null == n2 || n2.__b > 0 ? n2 : d(n2) ? n2.map(q) : w({}, n2);
 }
 function B(u3, t3, i3, r3, o3, e3, f3, c3, s3) {
-  var a3, h3, v3, y2, w3, _2, m3, b = i3.props || p, k3 = t3.props, x2 = t3.type;
+  var a3, h3, v3, y3, w3, _2, m3, b = i3.props || p, k3 = t3.props, x2 = t3.type;
   if ("svg" == x2 ? o3 = "http://www.w3.org/2000/svg" : "math" == x2 ? o3 = "http://www.w3.org/1998/Math/MathML" : o3 || (o3 = "http://www.w3.org/1999/xhtml"), null != e3) {
     for (a3 = 0; a3 < e3.length; a3++)
       if ((w3 = e3[a3]) && "setAttribute" in w3 == !!x2 && (x2 ? w3.localName == x2 : 3 == w3.nodeType)) {
@@ -275,10 +275,10 @@ function B(u3, t3, i3, r3, o3, e3, f3, c3, s3) {
     for (a3 in b)
       w3 = b[a3], "dangerouslySetInnerHTML" == a3 ? v3 = w3 : "children" == a3 || a3 in k3 || "value" == a3 && "defaultValue" in k3 || "checked" == a3 && "defaultChecked" in k3 || F(u3, a3, null, w3, o3);
     for (a3 in k3)
-      w3 = k3[a3], "children" == a3 ? y2 = w3 : "dangerouslySetInnerHTML" == a3 ? h3 = w3 : "value" == a3 ? _2 = w3 : "checked" == a3 ? m3 = w3 : c3 && "function" != typeof w3 || b[a3] === w3 || F(u3, a3, w3, b[a3], o3);
+      w3 = k3[a3], "children" == a3 ? y3 = w3 : "dangerouslySetInnerHTML" == a3 ? h3 = w3 : "value" == a3 ? _2 = w3 : "checked" == a3 ? m3 = w3 : c3 && "function" != typeof w3 || b[a3] === w3 || F(u3, a3, w3, b[a3], o3);
     if (h3)
       c3 || v3 && (h3.__html == v3.__html || h3.__html == u3.innerHTML) || (u3.innerHTML = h3.__html), t3.__k = [];
-    else if (v3 && (u3.innerHTML = ""), P("template" == t3.type ? u3.content : u3, d(y2) ? y2 : [y2], t3, i3, r3, "foreignObject" == x2 ? "http://www.w3.org/1999/xhtml" : o3, e3, f3, e3 ? e3[0] : i3.__k && S(i3, 0), c3, s3), null != e3)
+    else if (v3 && (u3.innerHTML = ""), P("template" == t3.type ? u3.content : u3, d(y3) ? y3 : [y3], t3, i3, r3, "foreignObject" == x2 ? "http://www.w3.org/1999/xhtml" : o3, e3, f3, e3 ? e3[0] : i3.__k && S(i3, 0), c3, s3), null != e3)
       for (a3 = e3.length; a3--; )
         g(e3[a3]);
     c3 || (a3 = "value", "progress" == x2 && null == _2 ? u3.removeAttribute("value") : null != _2 && (_2 !== u3[a3] || "progress" == x2 && !_2 || "option" == x2 && _2 != b[a3]) && F(u3, a3, _2, b[a3], o3), a3 = "checked", null != m3 && m3 != u3[a3] && F(u3, a3, m3, b[a3], o3));
@@ -340,187 +340,112 @@ n = v.slice, l = { __e: function(n2, l3, u3, t3) {
   return n2.__v.__b - l3.__v.__b;
 }, I.__r = 0, f = /(PointerCapture)$|Capture$/i, c = 0, s = O(false), a = O(true), h = 0;
 
-// src/models/types.ts
-var PRIORITIES = ["top-10", "high", "normal"];
-var STATUSES = ["new", "active", "inactive"];
-var PASTORAL_STATES = ["", "working-with", "under-restrictions", "non-responsive", "resolved"];
-var ORDINANCES = [
-  "unknown",
-  "baptism",
-  "confirmation",
-  "aaronic-priesthood",
-  "melchizedek-priesthood",
-  "endowment",
-  "sealing"
-];
-var RECOMMENDS = [
-  "current",
-  "expired",
-  "none",
-  "unknown"
-];
-var DEFAULT_SETTINGS = {
-  memberDir: "Personal/Church/Members",
-  dashboardPath: "Personal/Church/_dashboard.md",
-  overdueThreshold: 14,
-  showContactBar: true
-};
-var PRIORITY_COLORS = {
-  "top-10": "#ef4444",
-  "high": "#eab308",
-  "normal": "#6b7280"
-};
-var STATUS_COLORS = {
-  "new": "#3b82f6",
-  "active": "#22c55e",
-  "inactive": "#ef4444"
-};
-var PASTORAL_STATE_COLORS = {
-  "working-with": "#eab308",
-  "under-restrictions": "#dc2626",
-  "non-responsive": "#6b7280",
-  "resolved": "#22c55e"
-};
-
-// src/components/ContactBar.tsx
-var import_obsidian = require("obsidian");
-function copyToClipboard(text, label) {
-  navigator.clipboard.writeText(text).then(() => {
-    new import_obsidian.Notice(`Copied ${label}: ${text}`);
-  });
-}
-function ContactBar({ phone, email }) {
-  if (!phone && !email)
-    return null;
-  const isIos = import_obsidian.Platform.isIosApp;
-  const isMobile = import_obsidian.Platform.isMobile;
-  return /* @__PURE__ */ _("div", { class: "shepherd-contact-bar" }, phone && isIos && /* @__PURE__ */ _("span", { class: "shepherd-contact-btn", onClick: () => window.open(`tel:${phone}`) }, "\u{1F4DE} Call"), phone && isIos && /* @__PURE__ */ _("span", { class: "shepherd-contact-btn", onClick: () => window.open(`sms:${phone}`) }, "\u{1F4AC} Text"), phone && !isIos && /* @__PURE__ */ _("span", { class: "shepherd-contact-btn", onClick: () => copyToClipboard(phone, "phone") }, "\u{1F4DE} ", phone), email && /* @__PURE__ */ _("span", { class: "shepherd-contact-btn", onClick: () => window.open(`mailto:${email}`) }, "\u2709\uFE0F ", isMobile ? "Email" : email));
-}
-
-// src/components/PriorityPill.tsx
-function PriorityPill({ current, onChange }) {
-  return /* @__PURE__ */ _("div", { class: "shepherd-pill-row" }, /* @__PURE__ */ _("span", { class: "shepherd-pill-label" }, "Priority"), /* @__PURE__ */ _("div", { class: "shepherd-pills" }, PRIORITIES.map((p3) => /* @__PURE__ */ _(
-    "span",
-    {
-      key: p3,
-      class: `shepherd-pill ${p3 === current ? "shepherd-pill-active" : ""}`,
-      style: p3 === current ? { background: PRIORITY_COLORS[p3], color: "#fff" } : {},
-      onClick: () => onChange(p3)
-    },
-    p3
-  ))));
-}
-
-// src/components/StatusPill.tsx
-function StatusPill({ current, onChange }) {
-  return /* @__PURE__ */ _("div", { class: "shepherd-pill-row" }, /* @__PURE__ */ _("span", { class: "shepherd-pill-label" }, "Status"), /* @__PURE__ */ _("div", { class: "shepherd-pills shepherd-pills-wrap" }, STATUSES.map((s3) => /* @__PURE__ */ _(
-    "span",
-    {
-      key: s3,
-      class: `shepherd-pill ${s3 === current ? "shepherd-pill-active" : ""}`,
-      style: s3 === current ? { background: STATUS_COLORS[s3] || "#6b7280", color: "#fff" } : {},
-      onClick: () => onChange(s3)
-    },
-    s3
-  ))));
-}
-
-// src/components/PastoralStatePill.tsx
-var LABELS = {
-  "": "none",
-  "working-with": "working with",
-  "under-restrictions": "restrictions"
-};
-function PastoralStatePill({ current, onChange }) {
-  return /* @__PURE__ */ _("div", { class: "shepherd-pill-row" }, /* @__PURE__ */ _("span", { class: "shepherd-pill-label" }, "Pastoral"), /* @__PURE__ */ _("div", { class: "shepherd-pills shepherd-pills-wrap" }, PASTORAL_STATES.map((s3) => {
-    const active = s3 === current;
-    const bg = s3 !== "" ? PASTORAL_STATE_COLORS[s3] : "#6b7280";
-    return /* @__PURE__ */ _(
-      "span",
-      {
-        key: s3 || "none",
-        class: `shepherd-pill ${active ? "shepherd-pill-active" : ""}`,
-        style: active ? { background: bg, color: "#fff" } : {},
-        onClick: () => onChange(s3)
-      },
-      LABELS[s3]
-    );
-  })));
-}
-
-// src/components/OrdinancePill.tsx
-var LABELS2 = {
-  "unknown": "unknown",
-  "baptism": "baptism",
-  "confirmation": "confirmation",
-  "aaronic-priesthood": "aaronic",
-  "melchizedek-priesthood": "melchizedek",
-  "endowment": "endowment",
-  "sealing": "sealing"
-};
-var PRIESTHOOD_ORDINANCES = ["aaronic-priesthood", "melchizedek-priesthood"];
-function OrdinancePill({ current, gender, onChange }) {
-  const options = gender === "M" ? ORDINANCES : ORDINANCES.filter((o3) => !PRIESTHOOD_ORDINANCES.includes(o3));
-  return /* @__PURE__ */ _("div", { class: "shepherd-pill-row" }, /* @__PURE__ */ _("span", { class: "shepherd-pill-label" }, "Next Ordinance"), /* @__PURE__ */ _("div", { class: "shepherd-pills shepherd-pills-wrap" }, options.map((o3) => /* @__PURE__ */ _(
-    "span",
-    {
-      key: o3,
-      class: `shepherd-pill ${o3 === current ? "shepherd-pill-active" : ""}`,
-      style: o3 === current ? { background: "#58a6ff", color: "#fff" } : {},
-      onClick: () => onChange(o3)
-    },
-    LABELS2[o3] || o3
-  ))));
-}
-
-// src/components/RecommendPill.tsx
-var COLORS = {
-  "current": "#22c55e",
-  "expired": "#ef4444",
-  "none": "#6b7280",
-  "unknown": "#6b7280"
-};
-function RecommendPill({ current, onChange }) {
-  return /* @__PURE__ */ _("div", { class: "shepherd-pill-row" }, /* @__PURE__ */ _("span", { class: "shepherd-pill-label" }, "Recommend"), /* @__PURE__ */ _("div", { class: "shepherd-pills" }, RECOMMENDS.map((r3) => /* @__PURE__ */ _(
-    "span",
-    {
-      key: r3,
-      class: `shepherd-pill ${r3 === current ? "shepherd-pill-active" : ""}`,
-      style: r3 === current ? { background: COLORS[r3], color: "#fff" } : {},
-      onClick: () => onChange(r3)
-    },
-    r3
-  ))));
-}
-
-// src/components/LastContactBadge.tsx
-function LastContactBadge({ lastContact, daysSince, isOverdue, onMarkContacted }) {
-  let display;
-  if (daysSince === null) {
-    display = "No contact recorded";
-  } else if (daysSince === 0) {
-    display = "Today";
-  } else if (daysSince === 1) {
-    display = "Yesterday";
-  } else {
-    display = `${daysSince} days ago`;
+// src/services/helpers.ts
+function monogramFromName(name) {
+  const trimmed = name.trim();
+  if (!trimmed)
+    return "";
+  const parts = trimmed.split(/\s+/);
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase();
   }
-  return /* @__PURE__ */ _("div", { class: "shepherd-last-contact" }, /* @__PURE__ */ _("div", { class: "shepherd-last-contact-row" }, /* @__PURE__ */ _("span", { class: "shepherd-pill-label" }, "Last Contact"), /* @__PURE__ */ _("span", { class: `shepherd-last-contact-value ${isOverdue ? "shepherd-overdue" : ""}` }, display)), /* @__PURE__ */ _("span", { class: "shepherd-contact-today-btn", onClick: onMarkContacted }, "\u{1F4DD} Mark contacted today"));
+  const first = parts[0][0];
+  const last = parts[parts.length - 1][0];
+  return (first + last).toUpperCase();
+}
+function parseEyebrowSegments(input) {
+  const segments = [];
+  if (input.age != null)
+    segments.push(String(input.age));
+  if (input.priesthood && input.priesthood !== "none") {
+    segments.push(input.priesthood.toUpperCase());
+  }
+  const orgMatch = input.calling.match(/\(([^)]+)\)\s*$/);
+  if (orgMatch)
+    segments.push(orgMatch[1].toUpperCase());
+  return segments;
+}
+function parseCallingSubtitle(calling) {
+  if (!calling.trim())
+    return null;
+  const stripped = calling.replace(/\s*\([^)]+\)\s*$/, "").trim();
+  return stripped || null;
+}
+function parseCity(address) {
+  var _a, _b;
+  if (!address.trim())
+    return null;
+  const lastSegment = (_b = (_a = address.split(",").pop()) == null ? void 0 : _a.trim()) != null ? _b : "";
+  const match = lastSegment.match(/^(.+?)\s+([A-Z]{2})\s+\d{5}/i);
+  if (!match)
+    return null;
+  const cityRaw = match[1].trim();
+  const state = match[2].toUpperCase();
+  const city = cityRaw.toLowerCase().split(/\s+/).map((w3) => w3.charAt(0).toUpperCase() + w3.slice(1)).join(" ");
+  return `${city}, ${state}`;
+}
+function parsePhoneDisplay(raw) {
+  if (!raw)
+    return "";
+  const digits = raw.replace(/\D/g, "");
+  let useDigits = digits;
+  if (digits.length === 11 && digits.startsWith("1")) {
+    useDigits = digits.slice(1);
+  }
+  if (useDigits.length === 10) {
+    return `${useDigits.slice(0, 3)}-${useDigits.slice(3, 6)}-${useDigits.slice(6)}`;
+  }
+  return raw;
+}
+function formatLastContact(dateStr, nowMs = Date.now()) {
+  if (!dateStr)
+    return "never";
+  const d3 = new Date(dateStr);
+  if (isNaN(d3.getTime()))
+    return "never";
+  const days = Math.floor((nowMs - d3.getTime()) / (1e3 * 60 * 60 * 24));
+  if (days <= 0)
+    return "today";
+  if (days <= 30)
+    return `${days}d ago`;
+  const weeks = Math.floor(days / 7);
+  if (weeks <= 12)
+    return `${weeks}w ago`;
+  const months = Math.floor(days / 30);
+  return `${months}mo ago`;
+}
+function buildMapsUrl(address, isAppleDevice) {
+  if (!address)
+    return "";
+  const encoded = encodeURIComponent(address);
+  if (isAppleDevice) {
+    return `maps://?q=${encoded}`;
+  }
+  return `https://www.google.com/maps/search/?api=1&query=${encoded}`;
 }
 
-// src/components/MemberInfo.tsx
-var PRIESTHOOD_LABELS = {
-  "none": "None",
-  "deacon": "Deacon",
-  "teacher": "Teacher",
-  "priest": "Priest",
-  "elder": "Elder",
-  "high-priest": "High Priest"
-};
-function MemberInfo({ priesthood, gender, ministeringBrothers, ministeringSisters, patriarchalBlessing, tags }) {
-  const hasMinistering = ministeringBrothers.length > 0 || ministeringSisters.length > 0;
-  const showPriesthood = gender === "M";
-  return /* @__PURE__ */ _("div", { class: "shepherd-section shepherd-info-section" }, /* @__PURE__ */ _("div", { class: "shepherd-info-grid" }, showPriesthood && /* @__PURE__ */ _("div", { class: "shepherd-info-row" }, /* @__PURE__ */ _("span", { class: "shepherd-info-label" }, "Priesthood"), /* @__PURE__ */ _("span", { class: `shepherd-info-value ${priesthood === "none" ? "shepherd-info-dim" : ""}` }, PRIESTHOOD_LABELS[priesthood] || priesthood)), /* @__PURE__ */ _("div", { class: "shepherd-info-row" }, /* @__PURE__ */ _("span", { class: "shepherd-info-label" }, "Pat. Blessing"), /* @__PURE__ */ _("span", { class: `shepherd-info-value ${!patriarchalBlessing ? "shepherd-info-dim" : ""}` }, patriarchalBlessing ? "Yes" : "No")), hasMinistering && /* @__PURE__ */ _("div", { class: "shepherd-info-row" }, /* @__PURE__ */ _("span", { class: "shepherd-info-label" }, "Ministering"), /* @__PURE__ */ _("span", { class: "shepherd-info-value" }, [...ministeringBrothers, ...ministeringSisters].join(", ")))), tags.length > 0 && /* @__PURE__ */ _("div", { class: "shepherd-tags" }, tags.map((tag, i3) => /* @__PURE__ */ _("span", { key: i3, class: "shepherd-tag" }, tag))));
+// src/components/IdentityBlock.tsx
+function IdentityBlock({ member }) {
+  const monogram = monogramFromName(member.name);
+  const eyebrowSegments = parseEyebrowSegments({
+    age: member.age,
+    priesthood: member.priesthood,
+    calling: member.calling
+  });
+  const subtitle = parseCallingSubtitle(member.calling);
+  return /* @__PURE__ */ _("div", { class: "shepherd-identity" }, /* @__PURE__ */ _("div", { class: "shepherd-monogram", "data-gender": member.gender || "U" }, monogram), /* @__PURE__ */ _("div", { class: "shepherd-identity-text" }, eyebrowSegments.length > 0 && /* @__PURE__ */ _("div", { class: "shepherd-eyebrow" }, eyebrowSegments.join(" \xB7 ")), /* @__PURE__ */ _("div", { class: "shepherd-name" }, member.name), subtitle && /* @__PURE__ */ _("div", { class: "shepherd-subtitle" }, subtitle)));
+}
+
+// src/components/ContactChips.tsx
+var import_obsidian = require("obsidian");
+function ContactChips({ phone, email, address }) {
+  const phoneDigits = phone.replace(/\D/g, "");
+  const phoneDisplay = parsePhoneDisplay(phone);
+  const city = parseCity(address);
+  const isApple = import_obsidian.Platform.isMacOS || import_obsidian.Platform.isIosApp;
+  const mapsUrl = buildMapsUrl(address, isApple);
+  const emailLocal = email.split("@")[0] || email;
+  return /* @__PURE__ */ _("div", { class: "shepherd-chips" }, phone && /* @__PURE__ */ _("a", { class: "shepherd-chip", href: `tel:${phoneDigits}` }, "\u{1F4DE} ", phoneDisplay), email && /* @__PURE__ */ _("a", { class: "shepherd-chip", href: `mailto:${email}` }, "\u2709 ", emailLocal), city && /* @__PURE__ */ _("a", { class: "shepherd-chip", href: mapsUrl, target: "_blank" }, "\u{1F4CD} ", city));
 }
 
 // node_modules/preact/hooks/dist/hooks.module.js
@@ -580,6 +505,19 @@ function h2(n2, u3, i3) {
     }, r2.shouldComponentUpdate = f3;
   }
   return o3.__N || o3.__;
+}
+function y2(n2, u3) {
+  var i3 = p2(t2++, 3);
+  !c2.__s && C2(i3.__H, u3) && (i3.__ = n2, i3.u = u3, r2.__H.__h.push(i3));
+}
+function A2(n2) {
+  return o2 = 5, T2(function() {
+    return { current: n2 };
+  }, []);
+}
+function T2(n2, r3) {
+  var u3 = p2(t2++, 7);
+  return C2(u3.__H, r3) && (u3.__ = n2(), u3.__H = r3, u3.__h = n2), u3.__;
 }
 function j2() {
   for (var n2; n2 = f2.shift(); ) {
@@ -646,8 +584,151 @@ function B2(n2) {
   var t3 = r2;
   n2.__c = n2.__(), r2 = t3;
 }
+function C2(n2, t3) {
+  return !n2 || n2.length !== t3.length || t3.some(function(t4, r3) {
+    return t4 !== n2[r3];
+  });
+}
 function D2(n2, t3) {
   return "function" == typeof t3 ? t3(n2) : t3;
+}
+
+// src/components/LogInteractionCTA.tsx
+function LogInteractionCTA({ lastContact, onMarkContacted, onLogInteraction, expandSignal }) {
+  const [expanded, setExpanded] = d2(false);
+  const [note, setNote] = d2("");
+  const textareaRef = A2(null);
+  const formatted = formatLastContact(lastContact || null);
+  y2(() => {
+    if (expandSignal > 0) {
+      setExpanded(true);
+      setTimeout(() => {
+        var _a;
+        return (_a = textareaRef.current) == null ? void 0 : _a.focus();
+      }, 0);
+    }
+  }, [expandSignal]);
+  const submit = () => {
+    const trimmed = note.trim();
+    if (trimmed) {
+      onLogInteraction(trimmed);
+    } else {
+      onMarkContacted();
+    }
+    setNote("");
+    setExpanded(false);
+  };
+  const handleKeyDown = (e3) => {
+    if (e3.key === "Enter" && !e3.shiftKey) {
+      e3.preventDefault();
+      submit();
+    } else if (e3.key === "Escape") {
+      setExpanded(false);
+      setNote("");
+    }
+  };
+  return /* @__PURE__ */ _("div", { class: "shepherd-cta-wrap" }, /* @__PURE__ */ _("div", { class: `shepherd-last-contact${formatted === "never" ? " is-never" : ""}` }, "Last contact \xB7 ", formatted), expanded ? /* @__PURE__ */ _("div", { class: "shepherd-cta-expanded" }, /* @__PURE__ */ _(
+    "textarea",
+    {
+      ref: textareaRef,
+      class: "shepherd-cta-textarea",
+      placeholder: "Add a note (or press Enter alone to just mark contacted)",
+      value: note,
+      onInput: (e3) => setNote(e3.target.value),
+      onKeyDown: handleKeyDown,
+      rows: 3
+    }
+  ), /* @__PURE__ */ _("div", { class: "shepherd-cta-actions" }, /* @__PURE__ */ _("button", { class: "shepherd-cta-cancel", onClick: () => {
+    setExpanded(false);
+    setNote("");
+  } }, "Cancel"), /* @__PURE__ */ _("button", { class: "shepherd-cta-submit", onClick: submit }, note.trim() ? "Log Interaction" : "Mark Contacted"))) : /* @__PURE__ */ _("button", { class: "shepherd-cta-btn", onClick: () => setExpanded(true) }, /* @__PURE__ */ _("span", { class: "shepherd-cta-label" }, "\u{1F4DD} Log Interaction"), /* @__PURE__ */ _("span", { class: "shepherd-cta-kbd" }, "\u2318L")));
+}
+
+// src/models/types.ts
+var PRIORITIES = ["top-10", "high", "normal"];
+var STATUSES = ["new", "active", "inactive"];
+var PASTORAL_STATES = ["", "working-with", "under-restrictions", "non-responsive", "resolved"];
+var ORDINANCES = [
+  "unknown",
+  "baptism",
+  "confirmation",
+  "aaronic-priesthood",
+  "melchizedek-priesthood",
+  "endowment",
+  "sealing"
+];
+var DEFAULT_SETTINGS = {
+  memberDir: "Personal/Church/Members",
+  dashboardPath: "Personal/Church/_dashboard.md",
+  overdueThreshold: 14,
+  showContactBar: true
+};
+var RECOMMEND_ACTIONABLE = ["current", "expired"];
+
+// src/components/StatusTable.tsx
+function Segmented({ options, current, onChange, variant }) {
+  return /* @__PURE__ */ _("div", { class: `shepherd-seg${variant ? " shepherd-seg-" + variant : ""}` }, options.map((opt) => /* @__PURE__ */ _(
+    "button",
+    {
+      class: `shepherd-seg-btn${current === opt ? " is-on" : ""}`,
+      onClick: () => onChange(opt)
+    },
+    opt
+  )));
+}
+function Dropdown({ options, current, onChange, labels }) {
+  const handleChange = (e3) => {
+    onChange(e3.target.value);
+  };
+  return /* @__PURE__ */ _("select", { class: "shepherd-dropdown", value: current, onChange: handleChange }, options.map((opt) => {
+    var _a;
+    return /* @__PURE__ */ _("option", { value: opt }, (_a = labels == null ? void 0 : labels[opt]) != null ? _a : opt);
+  }));
+}
+var ORDINANCE_LABELS = {
+  "unknown": "Unknown",
+  "baptism": "Baptism",
+  "confirmation": "Confirmation",
+  "aaronic-priesthood": "Aaronic Priesthood",
+  "melchizedek-priesthood": "Melchizedek Priesthood",
+  "endowment": "Endowment",
+  "sealing": "Sealing"
+};
+var PASTORAL_LABELS = {
+  "": "none",
+  "working-with": "working with",
+  "under-restrictions": "under restrictions",
+  "non-responsive": "non-responsive",
+  "resolved": "resolved"
+};
+function StatusTable(p3) {
+  const pastoralVariant = p3.pastoral === "working-with" ? "warn" : p3.pastoral === "under-restrictions" ? "danger" : void 0;
+  const recommendVariant = p3.recommend === "expired" ? "danger" : void 0;
+  return /* @__PURE__ */ _("div", { class: "shepherd-status" }, /* @__PURE__ */ _("div", { class: "shepherd-section-label" }, "Status"), /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Priority"), /* @__PURE__ */ _(Segmented, { options: PRIORITIES, current: p3.priority, onChange: p3.onPriorityChange })), /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Presence"), /* @__PURE__ */ _(Segmented, { options: STATUSES, current: p3.status, onChange: p3.onStatusChange })), /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Pastoral"), /* @__PURE__ */ _("div", { class: `shepherd-dd-wrap${pastoralVariant ? " shepherd-dd-" + pastoralVariant : ""}` }, /* @__PURE__ */ _(
+    Dropdown,
+    {
+      options: PASTORAL_STATES,
+      current: p3.pastoral,
+      onChange: p3.onPastoralChange,
+      labels: PASTORAL_LABELS
+    }
+  ))), /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Next ord."), /* @__PURE__ */ _(
+    Dropdown,
+    {
+      options: ORDINANCES,
+      current: p3.nextOrdinance,
+      onChange: p3.onOrdinanceChange,
+      labels: ORDINANCE_LABELS
+    }
+  )), /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Recommend"), /* @__PURE__ */ _(
+    Segmented,
+    {
+      options: RECOMMEND_ACTIONABLE,
+      current: p3.recommend,
+      onChange: p3.onRecommendChange,
+      variant: recommendVariant
+    }
+  )));
 }
 
 // src/components/TaskList.tsx
@@ -694,97 +775,32 @@ function TaskList({ tasks, onToggle, onAdd }) {
   ), /* @__PURE__ */ _("span", { class: "shepherd-pill shepherd-pill-active", onClick: handleAdd }, "Add")) : /* @__PURE__ */ _("span", { class: "shepherd-add-btn", onClick: () => setAdding(true) }, "+ Add step"));
 }
 
-// src/components/QuickLog.tsx
-function QuickLog({ onLog }) {
-  const [text, setText] = d2("");
-  const [expanded, setExpanded] = d2(false);
-  const handleSave = () => {
-    const note = text.trim();
-    if (note) {
-      onLog(note);
-      setText("");
-      setExpanded(false);
-    }
-  };
-  if (!expanded) {
-    return /* @__PURE__ */ _("div", { class: "shepherd-section" }, /* @__PURE__ */ _("span", { class: "shepherd-add-btn", onClick: () => setExpanded(true) }, "+ Log interaction"));
-  }
-  return /* @__PURE__ */ _("div", { class: "shepherd-section" }, /* @__PURE__ */ _("div", { class: "shepherd-section-header" }, "Quick Log"), /* @__PURE__ */ _(
-    "textarea",
-    {
-      class: "shepherd-log-input",
-      placeholder: "Brief note about this interaction...",
-      value: text,
-      onInput: (e3) => setText(e3.target.value),
-      rows: 3
-    }
-  ), /* @__PURE__ */ _("div", { class: "shepherd-log-actions" }, /* @__PURE__ */ _("span", { class: "shepherd-pill shepherd-pill-active", style: { background: "#22c55e" }, onClick: handleSave }, "Save"), /* @__PURE__ */ _("span", { class: "shepherd-pill", onClick: () => {
-    setExpanded(false);
-    setText("");
-  } }, "Cancel")));
-}
-
-// src/components/InteractionList.tsx
-function InteractionList({ interactions }) {
-  if (interactions.length === 0)
-    return null;
-  return /* @__PURE__ */ _("div", { class: "shepherd-section" }, /* @__PURE__ */ _("div", { class: "shepherd-section-header" }, "Recent Interactions"), interactions.slice(0, 5).map((ix, i3) => /* @__PURE__ */ _("div", { key: i3, class: "shepherd-interaction" }, /* @__PURE__ */ _("span", { class: "shepherd-interaction-date" }, ix.date || "Undated"), /* @__PURE__ */ _("span", { class: "shepherd-interaction-preview" }, (ix.preview || ix.title).substring(0, 200)))), interactions.length > 5 && /* @__PURE__ */ _("div", { class: "shepherd-empty-text" }, interactions.length - 5, " more in file"));
-}
-
 // src/components/ShepherdPanel.tsx
-function ShepherdPanel({
-  member: m3,
-  onPriorityChange,
-  onStatusChange,
-  onPastoralStateChange,
-  onOrdinanceChange,
-  onRecommendChange,
-  onMarkContacted,
-  onToggleTask,
-  onAddTask,
-  onLogInteraction
-}) {
-  const details = [];
-  if (m3.age)
-    details.push(`${m3.age}${m3.gender}`);
-  if (m3.calling)
-    details.push(m3.calling);
-  return /* @__PURE__ */ _("div", { class: "shepherd-panel" }, /* @__PURE__ */ _(
-    "div",
-    {
-      class: "shepherd-header",
-      style: { borderLeft: `4px solid ${PRIORITY_COLORS[m3.priority]}` }
-    },
-    /* @__PURE__ */ _("div", { class: "shepherd-name" }, m3.name),
-    details.length > 0 && /* @__PURE__ */ _("div", { class: "shepherd-details" }, details.join(" \xB7 ")),
-    m3.address && /* @__PURE__ */ _("div", { class: "shepherd-address" }, "\u{1F4CD} ", m3.address),
-    m3.whereTheyAre && /* @__PURE__ */ _("div", { class: "shepherd-where" }, m3.whereTheyAre)
-  ), /* @__PURE__ */ _(ContactBar, { phone: m3.phone, email: m3.email }), /* @__PURE__ */ _("div", { class: "shepherd-controls" }, /* @__PURE__ */ _(PriorityPill, { current: m3.priority, onChange: onPriorityChange }), /* @__PURE__ */ _(StatusPill, { current: m3.status, onChange: onStatusChange }), /* @__PURE__ */ _(PastoralStatePill, { current: m3.pastoralState, onChange: onPastoralStateChange }), /* @__PURE__ */ _(OrdinancePill, { current: m3.nextOrdinance, gender: m3.gender, onChange: onOrdinanceChange }), /* @__PURE__ */ _(RecommendPill, { current: m3.recommend, onChange: onRecommendChange }), /* @__PURE__ */ _(
-    LastContactBadge,
+function ShepherdPanel(p3) {
+  const m3 = p3.member;
+  return /* @__PURE__ */ _("div", { class: "shepherd-panel" }, /* @__PURE__ */ _(IdentityBlock, { member: m3 }), /* @__PURE__ */ _(ContactChips, { phone: m3.phone, email: m3.email, address: m3.address }), /* @__PURE__ */ _(
+    LogInteractionCTA,
     {
       lastContact: m3.lastContact,
-      daysSince: m3.daysSinceContact,
-      isOverdue: m3.isOverdue,
-      onMarkContacted
-    }
-  )), /* @__PURE__ */ _(
-    MemberInfo,
-    {
-      priesthood: m3.priesthood,
-      gender: m3.gender,
-      ministeringBrothers: m3.ministeringBrothers,
-      ministeringSisters: m3.ministeringSisters,
-      patriarchalBlessing: m3.patriarchalBlessing,
-      tags: m3.tags
+      onMarkContacted: p3.onMarkContacted,
+      onLogInteraction: p3.onLogInteraction,
+      expandSignal: p3.expandLogSignal
     }
   ), /* @__PURE__ */ _(
-    TaskList,
+    StatusTable,
     {
-      tasks: m3.tasks,
-      onToggle: onToggleTask,
-      onAdd: onAddTask
+      priority: m3.priority,
+      status: m3.status,
+      pastoral: m3.pastoralState,
+      nextOrdinance: m3.nextOrdinance,
+      recommend: m3.recommend,
+      onPriorityChange: p3.onPriorityChange,
+      onStatusChange: p3.onStatusChange,
+      onPastoralChange: p3.onPastoralStateChange,
+      onOrdinanceChange: p3.onOrdinanceChange,
+      onRecommendChange: p3.onRecommendChange
     }
-  ), /* @__PURE__ */ _(QuickLog, { onLog: onLogInteraction }), /* @__PURE__ */ _(InteractionList, { interactions: m3.interactions }));
+  ), /* @__PURE__ */ _(TaskList, { tasks: m3.tasks, onToggle: p3.onToggleTask, onAdd: p3.onAddTask }));
 }
 
 // src/services/MemberService.ts
@@ -1087,6 +1103,7 @@ var ShepherdView = class extends import_obsidian2.ItemView {
   constructor(leaf, settings) {
     super(leaf);
     this.currentFile = null;
+    this.expandLogSignal = 0;
     this.settings = settings;
     this.memberService = new MemberService(this.app, settings);
     this.writeService = new WriteService(this.app);
@@ -1155,12 +1172,19 @@ var ShepherdView = class extends import_obsidian2.ItemView {
       this.showEmpty();
     }
   }
+  triggerLogExpand() {
+    this.expandLogSignal++;
+    if (this.currentFile) {
+      this.showMember(this.currentFile);
+    }
+  }
   renderPanel(container, member) {
     const file = member.file;
     const refresh = () => this.showMember(file);
     J(
       _(ShepherdPanel, {
         member,
+        expandLogSignal: this.expandLogSignal,
         onPriorityChange: async (p3) => {
           await this.writeService.setPriority(file, p3);
           await refresh();
@@ -1238,6 +1262,28 @@ var ShepherdPlugin = class extends import_obsidian3.Plugin {
             var _a;
             return (_a = this.getView()) == null ? void 0 : _a.refresh(file);
           });
+        }
+        return true;
+      }
+    });
+    this.addCommand({
+      id: "log-interaction",
+      name: "Log Interaction (open input)",
+      hotkeys: [{ modifiers: ["Mod"], key: "l" }],
+      checkCallback: (checking) => {
+        const file = this.app.workspace.getActiveFile();
+        if (!file || !this.isMemberFile(file))
+          return false;
+        if (!checking) {
+          const view = this.getView();
+          if (view) {
+            view.triggerLogExpand();
+          } else {
+            this.activateView().then(() => {
+              var _a;
+              return (_a = this.getView()) == null ? void 0 : _a.triggerLogExpand();
+            });
+          }
         }
         return true;
       }
