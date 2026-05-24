@@ -42,9 +42,39 @@ export class WriteService {
 
   async markContacted(file: TFile): Promise<void> {
     const today = new Date().toISOString().slice(0, 10);
+    const content = await this.app.vault.read(file);
+    const lines = content.split('\n');
+
+    // Only add a body entry if there isn't already one for today
+    if (!this.hasInteractionHeadingFor(lines, today)) {
+      let insertIdx = -1;
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i].match(/^##\s+Interactions/)) {
+          insertIdx = i + 1;
+          break;
+        }
+      }
+      if (insertIdx >= 0) {
+        const entry = `\n### ${today} — Contact\n`;
+        lines.splice(insertIdx, 0, entry);
+        await this.app.vault.modify(file, lines.join('\n'));
+      }
+    }
+
     await this.app.fileManager.processFrontMatter(file, (fm) => {
       fm['last-contact'] = today;
     });
+  }
+
+  private hasInteractionHeadingFor(lines: string[], isoDate: string): boolean {
+    let inSection = false;
+    for (const line of lines) {
+      if (line.match(/^##\s+Interactions/)) { inSection = true; continue; }
+      if (inSection && line.match(/^##\s/) && !line.match(/^###/)) return false;
+      if (!inSection) continue;
+      if (line.match(new RegExp(`^###\\s+${isoDate}\\b`))) return true;
+    }
+    return false;
   }
 
   async toggleTask(file: TFile, taskLine: number): Promise<void> {

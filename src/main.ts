@@ -1,5 +1,6 @@
 import { Plugin, WorkspaceLeaf, TFile } from 'obsidian';
 import { ShepherdView, VIEW_TYPE_SHEPHERD } from './ShepherdView';
+import { WriteService } from './services/WriteService';
 // On workspace restore, custom-view leaves exist as deferred placeholders
 // before the plugin's view type is registered. instanceof guards against
 // TypeError when methods like refresh() are called on those placeholders.
@@ -35,7 +36,8 @@ export default class ShepherdPlugin extends Plugin {
         const file = this.app.workspace.getActiveFile();
         if (!file || !this.isMemberFile(file)) return false;
         if (!checking) {
-          this.getView()?.refresh(file);
+          const writeService = new WriteService(this.app);
+          writeService.markContacted(file).then(() => this.getView()?.refresh(file));
         }
         return true;
       },

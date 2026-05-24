@@ -341,7 +341,7 @@ n = v.slice, l = { __e: function(n2, l3, u3, t3) {
 }, I.__r = 0, f = /(PointerCapture)$|Capture$/i, c = 0, s = O(false), a = O(true), h = 0;
 
 // src/models/types.ts
-var PRIORITIES = ["top-5", "high", "normal"];
+var PRIORITIES = ["top-10", "high", "normal"];
 var STATUSES = ["active", "inactive", "moving"];
 var PASTORAL_STATES = ["", "working-with", "under-restrictions"];
 var ORDINANCES = [
@@ -366,7 +366,7 @@ var DEFAULT_SETTINGS = {
   showContactBar: true
 };
 var PRIORITY_COLORS = {
-  "top-5": "#ef4444",
+  "top-10": "#ef4444",
   "high": "#eab308",
   "normal": "#6b7280"
 };
@@ -852,7 +852,7 @@ var MemberService = class {
   checkOverdue(priority, days) {
     if (days === null)
       return false;
-    const highPriority = priority === "top-5" || priority === "high";
+    const highPriority = priority === "top-10" || priority === "high";
     return highPriority && days > this.settings.overdueThreshold;
   }
   parseTasks(body) {

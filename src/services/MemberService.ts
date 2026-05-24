@@ -69,7 +69,7 @@ export class MemberService {
 
   private checkOverdue(priority: Priority | undefined, days: number | null): boolean {
     if (days === null) return false;
-    const highPriority = priority === 'top-5' || priority === 'high';
+    const highPriority = priority === 'top-10' || priority === 'high';
     return highPriority && days > this.settings.overdueThreshold;
   }
 

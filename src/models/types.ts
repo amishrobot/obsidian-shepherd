@@ -1,6 +1,6 @@
 import type { TFile } from 'obsidian';
 
-export type Priority = 'top-5' | 'high' | 'normal';
+export type Priority = 'top-10' | 'high' | 'normal';
 export type MemberStatus = 'active' | 'new' | 'inactive' | 'moving';
 export type PastoralState = '' | 'working-with' | 'under-restrictions';
 export type Ordinance = 'unknown' | 'baptism' | 'confirmation'
@@ -9,7 +9,7 @@ export type Ordinance = 'unknown' | 'baptism' | 'confirmation'
 export type Recommend = 'current' | 'expired' | 'none' | 'unknown';
 export type PriesthoodOffice = 'none' | 'deacon' | 'teacher' | 'priest' | 'elder' | 'high-priest';
 
-export const PRIORITIES: Priority[] = ['top-5', 'high', 'normal'];
+export const PRIORITIES: Priority[] = ['top-10', 'high', 'normal'];
 // 'new' is auto-assigned on import and not user-selectable in the picker.
 export const STATUSES: MemberStatus[] = ['active', 'inactive', 'moving'];
 export const PASTORAL_STATES: PastoralState[] = ['', 'working-with', 'under-restrictions'];
@@ -80,7 +80,7 @@ export const DEFAULT_SETTINGS: ShepherdSettings = {
 };
 
 export const PRIORITY_COLORS: Record<Priority, string> = {
-  'top-5': '#ef4444',
+  'top-10': '#ef4444',
   'high': '#eab308',
   'normal': '#6b7280',
 };
