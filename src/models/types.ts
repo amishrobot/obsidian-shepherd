@@ -1,8 +1,8 @@
 import type { TFile } from 'obsidian';
 
 export type Priority = 'top-10' | 'high' | 'normal';
-export type MemberStatus = 'active' | 'new' | 'inactive' | 'moving';
-export type PastoralState = '' | 'working-with' | 'under-restrictions';
+export type MemberStatus = 'new' | 'active' | 'inactive';
+export type PastoralState = '' | 'working-with' | 'under-restrictions' | 'non-responsive' | 'resolved';
 export type Ordinance = 'unknown' | 'baptism' | 'confirmation'
   | 'aaronic-priesthood' | 'melchizedek-priesthood'
   | 'endowment' | 'sealing';
@@ -10,9 +10,8 @@ export type Recommend = 'current' | 'expired' | 'none' | 'unknown';
 export type PriesthoodOffice = 'none' | 'deacon' | 'teacher' | 'priest' | 'elder' | 'high-priest';
 
 export const PRIORITIES: Priority[] = ['top-10', 'high', 'normal'];
-// 'new' is auto-assigned on import and not user-selectable in the picker.
-export const STATUSES: MemberStatus[] = ['active', 'inactive', 'moving'];
-export const PASTORAL_STATES: PastoralState[] = ['', 'working-with', 'under-restrictions'];
+export const STATUSES: MemberStatus[] = ['new', 'active', 'inactive'];
+export const PASTORAL_STATES: PastoralState[] = ['', 'working-with', 'under-restrictions', 'non-responsive', 'resolved'];
 export const ORDINANCES: (Ordinance & string)[] = [
   'unknown', 'baptism', 'confirmation', 'aaronic-priesthood',
   'melchizedek-priesthood', 'endowment', 'sealing',
@@ -86,13 +85,16 @@ export const PRIORITY_COLORS: Record<Priority, string> = {
 };
 
 export const STATUS_COLORS: Record<MemberStatus, string> = {
-  'active': '#22c55e',
   'new': '#3b82f6',
+  'active': '#22c55e',
   'inactive': '#ef4444',
-  'moving': '#6b7280',
 };
 
 export const PASTORAL_STATE_COLORS: Record<Exclude<PastoralState, ''>, string> = {
   'working-with': '#eab308',
   'under-restrictions': '#dc2626',
+  'non-responsive': '#6b7280',
+  'resolved': '#22c55e',
 };
+
+export const RECOMMEND_ACTIONABLE: Recommend[] = ['current', 'expired'];

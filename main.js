@@ -342,8 +342,8 @@ n = v.slice, l = { __e: function(n2, l3, u3, t3) {
 
 // src/models/types.ts
 var PRIORITIES = ["top-10", "high", "normal"];
-var STATUSES = ["active", "inactive", "moving"];
-var PASTORAL_STATES = ["", "working-with", "under-restrictions"];
+var STATUSES = ["new", "active", "inactive"];
+var PASTORAL_STATES = ["", "working-with", "under-restrictions", "non-responsive", "resolved"];
 var ORDINANCES = [
   "unknown",
   "baptism",
@@ -371,14 +371,15 @@ var PRIORITY_COLORS = {
   "normal": "#6b7280"
 };
 var STATUS_COLORS = {
-  "active": "#22c55e",
   "new": "#3b82f6",
-  "inactive": "#ef4444",
-  "moving": "#6b7280"
+  "active": "#22c55e",
+  "inactive": "#ef4444"
 };
 var PASTORAL_STATE_COLORS = {
   "working-with": "#eab308",
-  "under-restrictions": "#dc2626"
+  "under-restrictions": "#dc2626",
+  "non-responsive": "#6b7280",
+  "resolved": "#22c55e"
 };
 
 // src/components/ContactBar.tsx
