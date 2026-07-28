@@ -72,8 +72,8 @@ export interface ShepherdSettings {
 }
 
 export const DEFAULT_SETTINGS: ShepherdSettings = {
-  memberDir: 'Personal/Church/Members',
-  dashboardPath: 'Personal/Church/_dashboard.md',
+  memberDir: 'Church/Members',
+  dashboardPath: 'Church/_dashboard.md',
   overdueThreshold: 14,
   showContactBar: true,
 };

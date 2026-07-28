@@ -22,7 +22,7 @@ __export(main_exports, {
   default: () => ShepherdPlugin
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian3 = require("obsidian");
+var import_obsidian4 = require("obsidian");
 
 // src/ShepherdView.tsx
 var import_obsidian2 = require("obsidian");
@@ -658,8 +658,8 @@ var ORDINANCES = [
   "sealing"
 ];
 var DEFAULT_SETTINGS = {
-  memberDir: "Personal/Church/Members",
-  dashboardPath: "Personal/Church/_dashboard.md",
+  memberDir: "Church/Members",
+  dashboardPath: "Church/_dashboard.md",
   overdueThreshold: 14,
   showContactBar: true
 };
@@ -1227,8 +1227,51 @@ var ShepherdView = class extends import_obsidian2.ItemView {
   }
 };
 
+// src/SettingsTab.ts
+var import_obsidian3 = require("obsidian");
+var ShepherdSettingTab = class extends import_obsidian3.PluginSettingTab {
+  constructor(app, plugin) {
+    super(app, plugin);
+    this.plugin = plugin;
+  }
+  display() {
+    const { containerEl } = this;
+    containerEl.empty();
+    new import_obsidian3.Setting(containerEl).setName("Member folder").setDesc("Vault-relative folder holding member files. Files outside it get the empty panel.").addText(
+      (text) => text.setPlaceholder("Church/Members").setValue(this.plugin.settings.memberDir).onChange(async (value) => {
+        this.plugin.settings.memberDir = value.replace(/\/+$/, "").trim();
+        await this.plugin.saveSettings();
+        this.plugin.refreshView();
+      })
+    );
+    new import_obsidian3.Setting(containerEl).setName("Dashboard path").setDesc('Note opened by the "Open Dashboard" link in the empty state.').addText(
+      (text) => text.setPlaceholder("Church/_dashboard.md").setValue(this.plugin.settings.dashboardPath).onChange(async (value) => {
+        this.plugin.settings.dashboardPath = value.trim();
+        await this.plugin.saveSettings();
+      })
+    );
+    new import_obsidian3.Setting(containerEl).setName("Overdue threshold (days)").setDesc("Days without contact before a top-10 or high-priority member is flagged overdue.").addText(
+      (text) => text.setPlaceholder("14").setValue(String(this.plugin.settings.overdueThreshold)).onChange(async (value) => {
+        const n2 = Number(value);
+        if (!Number.isFinite(n2) || n2 <= 0)
+          return;
+        this.plugin.settings.overdueThreshold = Math.floor(n2);
+        await this.plugin.saveSettings();
+        this.plugin.refreshView();
+      })
+    );
+    new import_obsidian3.Setting(containerEl).setName("Show contact bar").setDesc("Display call / text / email chips on the member panel.").addToggle(
+      (toggle) => toggle.setValue(this.plugin.settings.showContactBar).onChange(async (value) => {
+        this.plugin.settings.showContactBar = value;
+        await this.plugin.saveSettings();
+        this.plugin.refreshView();
+      })
+    );
+  }
+};
+
 // src/main.ts
-var ShepherdPlugin = class extends import_obsidian3.Plugin {
+var ShepherdPlugin = class extends import_obsidian4.Plugin {
   constructor() {
     super(...arguments);
     this.settings = DEFAULT_SETTINGS;
@@ -1241,6 +1284,7 @@ var ShepherdPlugin = class extends import_obsidian3.Plugin {
       VIEW_TYPE_SHEPHERD,
       (leaf) => new ShepherdView(leaf, this.settings)
     );
+    this.addSettingTab(new ShepherdSettingTab(this.app, this));
     this.addRibbonIcon("heart", "Shepherd", () => {
       this.activateView();
     });
@@ -1290,7 +1334,7 @@ var ShepherdPlugin = class extends import_obsidian3.Plugin {
     });
     this.registerEvent(
       this.app.workspace.on("file-open", (file) => {
-        if (file instanceof import_obsidian3.TFile) {
+        if (file instanceof import_obsidian4.TFile) {
           this.scheduleRefresh(file);
         }
       })
@@ -1303,7 +1347,7 @@ var ShepherdPlugin = class extends import_obsidian3.Plugin {
     );
     this.registerEvent(
       this.app.vault.on("modify", (file) => {
-        if (!(file instanceof import_obsidian3.TFile) || !this.isMemberFile(file))
+        if (!(file instanceof import_obsidian4.TFile) || !this.isMemberFile(file))
           return;
         const view = this.getView();
         if (!view)
@@ -1319,6 +1363,10 @@ var ShepherdPlugin = class extends import_obsidian3.Plugin {
   }
   isMemberFile(file) {
     return file.path.startsWith(this.settings.memberDir + "/") && file.extension === "md";
+  }
+  // Re-render the open panel after a settings change.
+  refreshView() {
+    this.scheduleRefresh(this.app.workspace.getActiveFile());
   }
   getView() {
     const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_SHEPHERD);

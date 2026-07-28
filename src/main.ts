@@ -5,6 +5,7 @@ import { WriteService } from './services/WriteService';
 // before the plugin's view type is registered. instanceof guards against
 // TypeError when methods like refresh() are called on those placeholders.
 import { ShepherdSettings, DEFAULT_SETTINGS } from './models/types';
+import { ShepherdSettingTab } from './SettingsTab';
 
 export default class ShepherdPlugin extends Plugin {
   settings: ShepherdSettings = DEFAULT_SETTINGS;
@@ -18,6 +19,8 @@ export default class ShepherdPlugin extends Plugin {
       VIEW_TYPE_SHEPHERD,
       (leaf: WorkspaceLeaf) => new ShepherdView(leaf, this.settings)
     );
+
+    this.addSettingTab(new ShepherdSettingTab(this.app, this));
 
     this.addRibbonIcon('heart', 'Shepherd', () => {
       this.activateView();
@@ -97,6 +100,11 @@ export default class ShepherdPlugin extends Plugin {
 
   private isMemberFile(file: TFile): boolean {
     return file.path.startsWith(this.settings.memberDir + '/') && file.extension === 'md';
+  }
+
+  // Re-render the open panel after a settings change.
+  refreshView() {
+    this.scheduleRefresh(this.app.workspace.getActiveFile());
   }
 
   private getView(): ShepherdView | null {
