@@ -647,7 +647,7 @@ function LogInteractionCTA({ lastContact, onMarkContacted, onLogInteraction, exp
 // src/models/types.ts
 var PRIORITIES = ["top-10", "high", "normal"];
 var STATUSES = ["new", "active", "inactive"];
-var PASTORAL_STATES = ["", "working-with", "under-restrictions", "non-responsive", "resolved"];
+var PASTORAL_STATES = ["", "working-with", "under-restrictions", "non-responsive", "resolved", "getting-married"];
 var ORDINANCES = [
   "unknown",
   "baptism",
@@ -699,7 +699,8 @@ var PASTORAL_LABELS = {
   "working-with": "working with",
   "under-restrictions": "under restrictions",
   "non-responsive": "non-responsive",
-  "resolved": "resolved"
+  "resolved": "resolved",
+  "getting-married": "getting married"
 };
 function StatusTable(p3) {
   const pastoralVariant = p3.pastoral === "working-with" ? "warn" : p3.pastoral === "under-restrictions" ? "danger" : void 0;
