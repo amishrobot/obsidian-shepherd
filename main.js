@@ -22,10 +22,10 @@ __export(main_exports, {
   default: () => ShepherdPlugin
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian4 = require("obsidian");
+var import_obsidian6 = require("obsidian");
 
 // src/ShepherdView.tsx
-var import_obsidian2 = require("obsidian");
+var import_obsidian4 = require("obsidian");
 
 // node_modules/preact/dist/preact.module.js
 var n;
@@ -340,114 +340,6 @@ n = v.slice, l = { __e: function(n2, l3, u3, t3) {
   return n2.__v.__b - l3.__v.__b;
 }, I.__r = 0, f = /(PointerCapture)$|Capture$/i, c = 0, s = O(false), a = O(true), h = 0;
 
-// src/services/helpers.ts
-function monogramFromName(name) {
-  const trimmed = name.trim();
-  if (!trimmed)
-    return "";
-  const parts = trimmed.split(/\s+/);
-  if (parts.length === 1) {
-    return parts[0].slice(0, 2).toUpperCase();
-  }
-  const first = parts[0][0];
-  const last = parts[parts.length - 1][0];
-  return (first + last).toUpperCase();
-}
-function parseEyebrowSegments(input) {
-  const segments = [];
-  if (input.age != null)
-    segments.push(String(input.age));
-  if (input.priesthood && input.priesthood !== "none") {
-    segments.push(input.priesthood.toUpperCase());
-  }
-  const orgMatch = input.calling.match(/\(([^)]+)\)\s*$/);
-  if (orgMatch)
-    segments.push(orgMatch[1].toUpperCase());
-  return segments;
-}
-function parseCallingSubtitle(calling) {
-  if (!calling.trim())
-    return null;
-  const stripped = calling.replace(/\s*\([^)]+\)\s*$/, "").trim();
-  return stripped || null;
-}
-function parseCity(address) {
-  var _a, _b;
-  if (!address.trim())
-    return null;
-  const lastSegment = (_b = (_a = address.split(",").pop()) == null ? void 0 : _a.trim()) != null ? _b : "";
-  const match = lastSegment.match(/^(.+?)\s+([A-Z]{2})\s+\d{5}/i);
-  if (!match)
-    return null;
-  const cityRaw = match[1].trim();
-  const state = match[2].toUpperCase();
-  const city = cityRaw.toLowerCase().split(/\s+/).map((w3) => w3.charAt(0).toUpperCase() + w3.slice(1)).join(" ");
-  return `${city}, ${state}`;
-}
-function parsePhoneDisplay(raw) {
-  if (!raw)
-    return "";
-  const digits = raw.replace(/\D/g, "");
-  let useDigits = digits;
-  if (digits.length === 11 && digits.startsWith("1")) {
-    useDigits = digits.slice(1);
-  }
-  if (useDigits.length === 10) {
-    return `${useDigits.slice(0, 3)}-${useDigits.slice(3, 6)}-${useDigits.slice(6)}`;
-  }
-  return raw;
-}
-function formatLastContact(dateStr, nowMs = Date.now()) {
-  if (!dateStr)
-    return "never";
-  const d3 = new Date(dateStr);
-  if (isNaN(d3.getTime()))
-    return "never";
-  const days = Math.floor((nowMs - d3.getTime()) / (1e3 * 60 * 60 * 24));
-  if (days <= 0)
-    return "today";
-  if (days <= 30)
-    return `${days}d ago`;
-  const weeks = Math.floor(days / 7);
-  if (weeks <= 12)
-    return `${weeks}w ago`;
-  const months = Math.floor(days / 30);
-  return `${months}mo ago`;
-}
-function buildMapsUrl(address, isAppleDevice) {
-  if (!address)
-    return "";
-  const encoded = encodeURIComponent(address);
-  if (isAppleDevice) {
-    return `maps://?q=${encoded}`;
-  }
-  return `https://www.google.com/maps/search/?api=1&query=${encoded}`;
-}
-
-// src/components/IdentityBlock.tsx
-function IdentityBlock({ member }) {
-  const monogram = monogramFromName(member.name);
-  const eyebrowSegments = parseEyebrowSegments({
-    age: member.age,
-    priesthood: member.priesthood,
-    calling: member.calling
-  });
-  const subtitle = parseCallingSubtitle(member.calling);
-  return /* @__PURE__ */ _("div", { class: "shepherd-identity" }, /* @__PURE__ */ _("div", { class: "shepherd-monogram", "data-gender": member.gender || "U" }, monogram), /* @__PURE__ */ _("div", { class: "shepherd-identity-text" }, eyebrowSegments.length > 0 && /* @__PURE__ */ _("div", { class: "shepherd-eyebrow" }, eyebrowSegments.join(" \xB7 ")), /* @__PURE__ */ _("div", { class: "shepherd-name" }, member.name), subtitle && /* @__PURE__ */ _("div", { class: "shepherd-subtitle" }, subtitle)));
-}
-
-// src/components/ContactChips.tsx
-var import_obsidian = require("obsidian");
-function ContactChips({ phone, email, address }) {
-  const phoneDigits = phone.replace(/\D/g, "");
-  const phoneDisplay = parsePhoneDisplay(phone);
-  const city = parseCity(address);
-  const isApple = import_obsidian.Platform.isMacOS || import_obsidian.Platform.isIosApp;
-  const mapsUrl = buildMapsUrl(address, isApple);
-  const emailLocal = email.split("@")[0] || email;
-  return /* @__PURE__ */ _("div", { class: "shepherd-chips" }, phone && /* @__PURE__ */ _("a", { class: "shepherd-chip", href: `tel:${phoneDigits}` }, "\u{1F4DE} ", phoneDisplay), email && /* @__PURE__ */ _("a", { class: "shepherd-chip", href: `mailto:${email}` }, "\u2709 ", emailLocal), city && /* @__PURE__ */ _("a", { class: "shepherd-chip", href: mapsUrl, target: "_blank" }, "\u{1F4CD} ", city));
-}
-
 // node_modules/preact/hooks/dist/hooks.module.js
 var t2;
 var r2;
@@ -593,6 +485,198 @@ function D2(n2, t3) {
   return "function" == typeof t3 ? t3(n2) : t3;
 }
 
+// src/components/IdentityBlock.tsx
+var import_obsidian = require("obsidian");
+
+// src/services/helpers.ts
+function monogramFromName(name) {
+  const trimmed = name.trim();
+  if (!trimmed)
+    return "";
+  const parts = trimmed.split(/\s+/);
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+  const first = parts[0][0];
+  const last = parts[parts.length - 1][0];
+  return (first + last).toUpperCase();
+}
+function parseEyebrowSegments(input) {
+  const segments = [];
+  if (input.age != null)
+    segments.push(String(input.age));
+  if (input.priesthood && input.priesthood !== "none") {
+    segments.push(input.priesthood.toUpperCase());
+  }
+  const orgMatch = input.calling.match(/\(([^)]+)\)\s*$/);
+  if (orgMatch)
+    segments.push(orgMatch[1].toUpperCase());
+  return segments;
+}
+function parseCallingSubtitle(calling) {
+  if (!calling.trim())
+    return null;
+  const stripped = calling.replace(/\s*\([^)]+\)\s*$/, "").trim();
+  return stripped || null;
+}
+function parseCity(address) {
+  var _a, _b;
+  if (!address.trim())
+    return null;
+  const lastSegment = (_b = (_a = address.split(",").pop()) == null ? void 0 : _a.trim()) != null ? _b : "";
+  const match = lastSegment.match(/^(.+?)\s+([A-Z]{2})\s+\d{5}/i);
+  if (!match)
+    return null;
+  const cityRaw = match[1].trim();
+  const state = match[2].toUpperCase();
+  const city = cityRaw.toLowerCase().split(/\s+/).map((w3) => w3.charAt(0).toUpperCase() + w3.slice(1)).join(" ");
+  return `${city}, ${state}`;
+}
+function parsePhoneDisplay(raw) {
+  if (!raw)
+    return "";
+  const digits = raw.replace(/\D/g, "");
+  let useDigits = digits;
+  if (digits.length === 11 && digits.startsWith("1")) {
+    useDigits = digits.slice(1);
+  }
+  if (useDigits.length === 10) {
+    return `${useDigits.slice(0, 3)}-${useDigits.slice(3, 6)}-${useDigits.slice(6)}`;
+  }
+  return raw;
+}
+function formatLastContact(dateStr, nowMs = Date.now()) {
+  if (!dateStr)
+    return "never";
+  const d3 = new Date(dateStr);
+  if (isNaN(d3.getTime()))
+    return "never";
+  const days = Math.floor((nowMs - d3.getTime()) / (1e3 * 60 * 60 * 24));
+  if (days <= 0)
+    return "today";
+  if (days <= 30)
+    return `${days}d ago`;
+  const weeks = Math.floor(days / 7);
+  if (weeks <= 12)
+    return `${weeks}w ago`;
+  const months = Math.floor(days / 30);
+  return `${months}mo ago`;
+}
+function buildMapsUrl(address, isAppleDevice) {
+  if (!address)
+    return "";
+  const encoded = encodeURIComponent(address);
+  if (isAppleDevice) {
+    return `maps://?q=${encoded}`;
+  }
+  return `https://www.google.com/maps/search/?api=1&query=${encoded}`;
+}
+function parseMinistering(raw) {
+  const ministeredBy = [];
+  const ministersTo = [];
+  if (!raw.trim())
+    return { ministeredBy, ministersTo };
+  const segments = raw.split("|").map((s3) => s3.trim()).filter(Boolean);
+  for (const segment of segments) {
+    const match = segment.match(/^(Ministered by|Ministers to)\s*:\s*(.*)$/i);
+    if (!match)
+      continue;
+    const target = match[1].toLowerCase() === "ministered by" ? ministeredBy : ministersTo;
+    const names = match[2].split(",").map((n2) => n2.trim()).filter(Boolean);
+    for (const name of names) {
+      if (!target.includes(name))
+        target.push(name);
+    }
+  }
+  return { ministeredBy, ministersTo };
+}
+function normalizeAddress(address) {
+  if (!address.trim())
+    return "";
+  return address.toLowerCase().replace(/[.,#]/g, " ").replace(/(\d{5})-\d{4}\b/, "$1").replace(/\s+/g, " ").trim();
+}
+function formatMovedInSince(movedIn, nowMs = Date.now()) {
+  if (!movedIn.trim())
+    return null;
+  const d3 = new Date(movedIn);
+  if (isNaN(d3.getTime()))
+    return null;
+  const now = new Date(nowMs);
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const label = `${monthNames[d3.getMonth()]} ${d3.getFullYear()}`;
+  let totalMonths = (now.getFullYear() - d3.getFullYear()) * 12 + (now.getMonth() - d3.getMonth());
+  if (now.getDate() < d3.getDate())
+    totalMonths -= 1;
+  if (totalMonths < 0)
+    totalMonths = 0;
+  const years = Math.floor(totalMonths / 12);
+  const months = totalMonths % 12;
+  const parts = [];
+  if (years > 0)
+    parts.push(`${years} yr`);
+  if (months > 0 || years === 0)
+    parts.push(`${months} mo`);
+  return `in ward since ${label} \xB7 ${parts.join(" ")}`;
+}
+
+// src/components/IdentityBlock.tsx
+function IdentityBlock({ app, member }) {
+  const monogram = monogramFromName(member.name);
+  const eyebrowSegments = parseEyebrowSegments({
+    age: member.age,
+    priesthood: member.priesthood,
+    calling: member.calling
+  });
+  const subtitle = parseCallingSubtitle(member.calling);
+  const tenure = formatMovedInSince(member.movedIn);
+  const photoFile = member.photo ? app.vault.getAbstractFileByPath(member.photo) : null;
+  const photoUrl = photoFile instanceof import_obsidian.TFile ? app.vault.getResourcePath(photoFile) : null;
+  const [photoFailed, setPhotoFailed] = d2(false);
+  y2(() => setPhotoFailed(false), [photoUrl]);
+  const showPhoto = photoUrl && !photoFailed;
+  return /* @__PURE__ */ _("div", { class: "shepherd-identity" }, /* @__PURE__ */ _("div", { class: "shepherd-monogram", "data-gender": member.gender || "U" }, showPhoto ? /* @__PURE__ */ _(
+    "img",
+    {
+      class: "shepherd-avatar-img",
+      src: photoUrl,
+      alt: member.name,
+      onError: () => setPhotoFailed(true)
+    }
+  ) : monogram), /* @__PURE__ */ _("div", { class: "shepherd-identity-text" }, eyebrowSegments.length > 0 && /* @__PURE__ */ _("div", { class: "shepherd-eyebrow" }, eyebrowSegments.join(" \xB7 ")), /* @__PURE__ */ _("div", { class: "shepherd-name" }, member.name), subtitle && /* @__PURE__ */ _("div", { class: "shepherd-subtitle" }, subtitle), tenure && /* @__PURE__ */ _("div", { class: "shepherd-tenure" }, tenure)));
+}
+
+// src/components/ContactChips.tsx
+var import_obsidian2 = require("obsidian");
+function ContactChips({ phone, email, address }) {
+  const phoneDigits = phone.replace(/\D/g, "");
+  const phoneDisplay = parsePhoneDisplay(phone);
+  const city = parseCity(address);
+  const isApple = import_obsidian2.Platform.isMacOS || import_obsidian2.Platform.isIosApp;
+  const mapsUrl = buildMapsUrl(address, isApple);
+  const emailLocal = email.split("@")[0] || email;
+  return /* @__PURE__ */ _("div", { class: "shepherd-chips" }, phone && /* @__PURE__ */ _("a", { class: "shepherd-chip", href: `tel:${phoneDigits}` }, "\u{1F4DE} ", phoneDisplay), email && /* @__PURE__ */ _("a", { class: "shepherd-chip", href: `mailto:${email}` }, "\u2709 ", emailLocal), city && /* @__PURE__ */ _("a", { class: "shepherd-chip", href: mapsUrl, target: "_blank" }, "\u{1F4CD} ", city));
+}
+
+// src/components/RelationshipChips.tsx
+function ChipRow({ label, people, onOpenPerson }) {
+  if (people.length === 0)
+    return null;
+  return /* @__PURE__ */ _("div", { class: "shepherd-rel-row" }, /* @__PURE__ */ _("div", { class: "shepherd-rel-label" }, label), /* @__PURE__ */ _("div", { class: "shepherd-rel-chips" }, people.map((person) => person.file ? /* @__PURE__ */ _(
+    "span",
+    {
+      class: "shepherd-chip shepherd-chip-person",
+      onClick: () => onOpenPerson(person.file)
+    },
+    person.name
+  ) : /* @__PURE__ */ _("span", { class: "shepherd-chip shepherd-chip-inert" }, person.name))));
+}
+function RelationshipChips({ housemates, ministeredBy, ministersTo, onOpenPerson }) {
+  if (housemates.length === 0 && ministeredBy.length === 0 && ministersTo.length === 0) {
+    return null;
+  }
+  return /* @__PURE__ */ _("div", { class: "shepherd-relationships" }, /* @__PURE__ */ _(ChipRow, { label: "Housemates", people: housemates, onOpenPerson }), /* @__PURE__ */ _(ChipRow, { label: "Ministered by", people: ministeredBy, onOpenPerson }), /* @__PURE__ */ _(ChipRow, { label: "Ministers to", people: ministersTo, onOpenPerson }));
+}
+
 // src/components/LogInteractionCTA.tsx
 function LogInteractionCTA({ lastContact, onMarkContacted, onLogInteraction, expandSignal }) {
   const [expanded, setExpanded] = d2(false);
@@ -721,7 +805,7 @@ function StatusTable(p3) {
       onChange: p3.onOrdinanceChange,
       labels: ORDINANCE_LABELS
     }
-  )), /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Recommend"), /* @__PURE__ */ _(
+  )), /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Recommend"), /* @__PURE__ */ _("div", { class: "shepherd-recommend-wrap" }, /* @__PURE__ */ _(
     Segmented,
     {
       options: RECOMMEND_ACTIONABLE,
@@ -729,7 +813,7 @@ function StatusTable(p3) {
       onChange: p3.onRecommendChange,
       variant: recommendVariant
     }
-  )));
+  ), p3.recommendExp && /* @__PURE__ */ _("span", { class: `shepherd-recommend-exp${p3.recommend === "expired" ? " is-danger" : ""}` }, "exp ", p3.recommendExp))));
 }
 
 // src/components/TaskList.tsx
@@ -779,7 +863,15 @@ function TaskList({ tasks, onToggle, onAdd }) {
 // src/components/ShepherdPanel.tsx
 function ShepherdPanel(p3) {
   const m3 = p3.member;
-  return /* @__PURE__ */ _("div", { class: "shepherd-panel" }, /* @__PURE__ */ _(IdentityBlock, { member: m3 }), /* @__PURE__ */ _(ContactChips, { phone: m3.phone, email: m3.email, address: m3.address }), /* @__PURE__ */ _(
+  return /* @__PURE__ */ _("div", { class: "shepherd-panel" }, /* @__PURE__ */ _(IdentityBlock, { app: p3.app, member: m3 }), /* @__PURE__ */ _(ContactChips, { phone: m3.phone, email: m3.email, address: m3.address }), /* @__PURE__ */ _(
+    RelationshipChips,
+    {
+      housemates: p3.housemates,
+      ministeredBy: p3.ministeredBy,
+      ministersTo: p3.ministersTo,
+      onOpenPerson: p3.onOpenPerson
+    }
+  ), m3.whereTheyAre && /* @__PURE__ */ _("div", { class: "shepherd-where" }, m3.whereTheyAre), /* @__PURE__ */ _(
     LogInteractionCTA,
     {
       lastContact: m3.lastContact,
@@ -795,6 +887,7 @@ function ShepherdPanel(p3) {
       pastoral: m3.pastoralState,
       nextOrdinance: m3.nextOrdinance,
       recommend: m3.recommend,
+      recommendExp: m3.recommendExp,
       onPriorityChange: p3.onPriorityChange,
       onStatusChange: p3.onStatusChange,
       onPastoralChange: p3.onPastoralStateChange,
@@ -805,10 +898,17 @@ function ShepherdPanel(p3) {
 }
 
 // src/services/MemberService.ts
+var import_obsidian3 = require("obsidian");
 var MemberService = class {
   constructor(app, settings) {
     this.app = app;
     this.settings = settings;
+    this.index = null;
+    this.indexInvalidationRef = this.app.metadataCache.on("changed", (file) => {
+      if (file instanceof import_obsidian3.TFile && this.isMemberFile(file)) {
+        this.index = null;
+      }
+    });
   }
   isMemberFile(file) {
     if (!file)
@@ -826,6 +926,7 @@ var MemberService = class {
     const whereTheyAre = this.parseSection(body, "Where They Are");
     const lastContact = String(fm["last-contact"] || "");
     const daysSinceContact = this.daysSince(lastContact);
+    const ministering = parseMinistering(String(fm.ministering || ""));
     return {
       file,
       name: String(fm.name || file.basename),
@@ -846,10 +947,13 @@ var MemberService = class {
       priesthood: fm.priesthood || "none",
       ministeringBrothers: Array.isArray(fm["ministering-brothers"]) ? fm["ministering-brothers"] : [],
       ministeringSisters: Array.isArray(fm["ministering-sisters"]) ? fm["ministering-sisters"] : [],
+      ministeredBy: ministering.ministeredBy,
+      ministersTo: ministering.ministersTo,
       patriarchalBlessing: fm["patriarchal-blessing"] === true,
       calling: String(fm.calling || ""),
       lastContact,
       convertDate: String(fm["convert-date"] || ""),
+      movedIn: String(fm["moved-in"] || ""),
       tags: Array.isArray(fm.tags) ? fm.tags : [],
       daysSinceContact,
       isOverdue: this.checkOverdue(fm.priority, daysSinceContact),
@@ -946,6 +1050,42 @@ var MemberService = class {
     if (!section)
       return "";
     return section.trim().substring(0, 300);
+  }
+  /** All other member files sharing a normalized address, excluding moved-out members. */
+  getHousemates(member) {
+    const targetAddress = normalizeAddress(member.address);
+    if (!targetAddress)
+      return [];
+    return this.getIndex().filter((entry) => entry.file.path !== member.file.path).filter((entry) => entry.status !== "moved-out").filter((entry) => normalizeAddress(entry.address) === targetAddress).map((entry) => ({ name: entry.name, file: entry.file }));
+  }
+  /** Looks up a member file by display name (frontmatter `name`, falling back to filename). */
+  resolveMemberByName(name) {
+    const target = name.trim().toLowerCase();
+    if (!target)
+      return null;
+    const index = this.getIndex();
+    const byName = index.find((entry) => entry.name.trim().toLowerCase() === target);
+    if (byName)
+      return byName.file;
+    const byFile = index.find((entry) => entry.file.basename.trim().toLowerCase() === target);
+    return byFile ? byFile.file : null;
+  }
+  getIndex() {
+    if (!this.index)
+      this.index = this.buildIndex();
+    return this.index;
+  }
+  buildIndex() {
+    return this.app.vault.getFiles().filter((f3) => this.isMemberFile(f3)).map((file) => {
+      const cache = this.app.metadataCache.getFileCache(file);
+      const fm = (cache == null ? void 0 : cache.frontmatter) || {};
+      return {
+        file,
+        name: String(fm.name || file.basename),
+        address: String(fm.address || ""),
+        status: String(fm.status || "")
+      };
+    });
   }
   findSection(body, name) {
     const regex = new RegExp(`^##\\s+${name}\\s*$`, "m");
@@ -1100,13 +1240,14 @@ ${note}
 
 // src/ShepherdView.tsx
 var VIEW_TYPE_SHEPHERD = "shepherd-view";
-var ShepherdView = class extends import_obsidian2.ItemView {
+var ShepherdView = class extends import_obsidian4.ItemView {
   constructor(leaf, settings) {
     super(leaf);
     this.currentFile = null;
     this.expandLogSignal = 0;
     this.settings = settings;
     this.memberService = new MemberService(this.app, settings);
+    this.registerEvent(this.memberService.indexInvalidationRef);
     this.writeService = new WriteService(this.app);
   }
   getViewType() {
@@ -1156,7 +1297,7 @@ var ShepherdView = class extends import_obsidian2.ItemView {
           class: "shepherd-empty-link",
           onClick: () => {
             const f3 = this.app.vault.getAbstractFileByPath(dashPath);
-            if (f3 instanceof import_obsidian2.TFile) {
+            if (f3 instanceof import_obsidian4.TFile) {
               this.app.workspace.openLinkText(dashPath, "", false);
             }
           }
@@ -1182,9 +1323,22 @@ var ShepherdView = class extends import_obsidian2.ItemView {
   renderPanel(container, member) {
     const file = member.file;
     const refresh = () => this.showMember(file);
+    const housemates = this.memberService.getHousemates(member);
+    const ministeredBy = member.ministeredBy.map((name) => ({
+      name,
+      file: this.memberService.resolveMemberByName(name)
+    }));
+    const ministersTo = member.ministersTo.map((name) => ({
+      name,
+      file: this.memberService.resolveMemberByName(name)
+    }));
     J(
       _(ShepherdPanel, {
+        app: this.app,
         member,
+        housemates,
+        ministeredBy,
+        ministersTo,
         expandLogSignal: this.expandLogSignal,
         onPriorityChange: async (p3) => {
           await this.writeService.setPriority(file, p3);
@@ -1221,6 +1375,9 @@ var ShepherdView = class extends import_obsidian2.ItemView {
         onLogInteraction: async (note) => {
           await this.writeService.logInteraction(file, note);
           await refresh();
+        },
+        onOpenPerson: (target) => {
+          this.app.workspace.getLeaf(false).openFile(target);
         }
       }),
       container
@@ -1229,8 +1386,8 @@ var ShepherdView = class extends import_obsidian2.ItemView {
 };
 
 // src/SettingsTab.ts
-var import_obsidian3 = require("obsidian");
-var ShepherdSettingTab = class extends import_obsidian3.PluginSettingTab {
+var import_obsidian5 = require("obsidian");
+var ShepherdSettingTab = class extends import_obsidian5.PluginSettingTab {
   constructor(app, plugin) {
     super(app, plugin);
     this.plugin = plugin;
@@ -1238,20 +1395,20 @@ var ShepherdSettingTab = class extends import_obsidian3.PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    new import_obsidian3.Setting(containerEl).setName("Member folder").setDesc("Vault-relative folder holding member files. Files outside it get the empty panel.").addText(
+    new import_obsidian5.Setting(containerEl).setName("Member folder").setDesc("Vault-relative folder holding member files. Files outside it get the empty panel.").addText(
       (text) => text.setPlaceholder("Church/Members").setValue(this.plugin.settings.memberDir).onChange(async (value) => {
         this.plugin.settings.memberDir = value.replace(/\/+$/, "").trim();
         await this.plugin.saveSettings();
         this.plugin.refreshView();
       })
     );
-    new import_obsidian3.Setting(containerEl).setName("Dashboard path").setDesc('Note opened by the "Open Dashboard" link in the empty state.').addText(
+    new import_obsidian5.Setting(containerEl).setName("Dashboard path").setDesc('Note opened by the "Open Dashboard" link in the empty state.').addText(
       (text) => text.setPlaceholder("Church/_dashboard.md").setValue(this.plugin.settings.dashboardPath).onChange(async (value) => {
         this.plugin.settings.dashboardPath = value.trim();
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian3.Setting(containerEl).setName("Overdue threshold (days)").setDesc("Days without contact before a top-10 or high-priority member is flagged overdue.").addText(
+    new import_obsidian5.Setting(containerEl).setName("Overdue threshold (days)").setDesc("Days without contact before a top-10 or high-priority member is flagged overdue.").addText(
       (text) => text.setPlaceholder("14").setValue(String(this.plugin.settings.overdueThreshold)).onChange(async (value) => {
         const n2 = Number(value);
         if (!Number.isFinite(n2) || n2 <= 0)
@@ -1261,7 +1418,7 @@ var ShepherdSettingTab = class extends import_obsidian3.PluginSettingTab {
         this.plugin.refreshView();
       })
     );
-    new import_obsidian3.Setting(containerEl).setName("Show contact bar").setDesc("Display call / text / email chips on the member panel.").addToggle(
+    new import_obsidian5.Setting(containerEl).setName("Show contact bar").setDesc("Display call / text / email chips on the member panel.").addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.showContactBar).onChange(async (value) => {
         this.plugin.settings.showContactBar = value;
         await this.plugin.saveSettings();
@@ -1272,7 +1429,7 @@ var ShepherdSettingTab = class extends import_obsidian3.PluginSettingTab {
 };
 
 // src/main.ts
-var ShepherdPlugin = class extends import_obsidian4.Plugin {
+var ShepherdPlugin = class extends import_obsidian6.Plugin {
   constructor() {
     super(...arguments);
     this.settings = DEFAULT_SETTINGS;
@@ -1335,7 +1492,7 @@ var ShepherdPlugin = class extends import_obsidian4.Plugin {
     });
     this.registerEvent(
       this.app.workspace.on("file-open", (file) => {
-        if (file instanceof import_obsidian4.TFile) {
+        if (file instanceof import_obsidian6.TFile) {
           this.scheduleRefresh(file);
         }
       })
@@ -1348,7 +1505,7 @@ var ShepherdPlugin = class extends import_obsidian4.Plugin {
     );
     this.registerEvent(
       this.app.vault.on("modify", (file) => {
-        if (!(file instanceof import_obsidian4.TFile) || !this.isMemberFile(file))
+        if (!(file instanceof import_obsidian6.TFile) || !this.isMemberFile(file))
           return;
         const view = this.getView();
         if (!view)
