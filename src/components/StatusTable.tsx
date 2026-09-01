@@ -64,6 +64,7 @@ const PASTORAL_LABELS: Record<string, string> = {
   'under-restrictions': 'under restrictions',
   'non-responsive': 'non-responsive',
   'resolved': 'resolved',
+  'getting-married': 'getting married',
 };
 
 export function StatusTable(p: Props) {
