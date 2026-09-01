@@ -7,6 +7,9 @@ import {
   parsePhoneDisplay,
   formatLastContact,
   buildMapsUrl,
+  parseMinistering,
+  normalizeAddress,
+  formatMovedInSince,
 } from './helpers';
 
 describe('monogramFromName', () => {
@@ -160,5 +163,65 @@ describe('buildMapsUrl', () => {
   });
   it('returns empty string for empty address', () => {
     expect(buildMapsUrl('', true)).toBe('');
+  });
+});
+
+describe('parseMinistering', () => {
+  it('parses both labels with multiple names', () => {
+    expect(parseMinistering('Ministered by: Alice Smith, Bob Jones | Ministers to: Carol White, Dan Black'))
+      .toEqual({ ministeredBy: ['Alice Smith', 'Bob Jones'], ministersTo: ['Carol White', 'Dan Black'] });
+  });
+  it('handles only one label present', () => {
+    expect(parseMinistering('Ministered by: Alice Smith'))
+      .toEqual({ ministeredBy: ['Alice Smith'], ministersTo: [] });
+  });
+  it('merges and de-dupes a repeated label, preserving order', () => {
+    expect(parseMinistering('Ministered by: Alice Smith | Ministered by: Bob Jones, Alice Smith'))
+      .toEqual({ ministeredBy: ['Alice Smith', 'Bob Jones'], ministersTo: [] });
+  });
+  it('is case-insensitive on labels', () => {
+    expect(parseMinistering('ministers to: Carol White'))
+      .toEqual({ ministeredBy: [], ministersTo: ['Carol White'] });
+  });
+  it('returns empty arrays for empty input', () => {
+    expect(parseMinistering('')).toEqual({ ministeredBy: [], ministersTo: [] });
+  });
+});
+
+describe('normalizeAddress', () => {
+  it('lowercases and collapses whitespace', () => {
+    expect(normalizeAddress('178 E 540 N, Vineyard UT 84059'))
+      .toBe('178 e 540 n vineyard ut 84059');
+  });
+  it('strips zip+4 suffix down to base zip', () => {
+    expect(normalizeAddress('178 E 540 N, Vineyard UT 84059-6067'))
+      .toBe(normalizeAddress('178 E 540 N, Vineyard UT 84059'));
+  });
+  it('treats punctuation-only differences as equal', () => {
+    expect(normalizeAddress('178 E. 540 N., Vineyard UT 84059'))
+      .toBe(normalizeAddress('178 E 540 N Vineyard UT 84059'));
+  });
+  it('returns empty string for empty input', () => {
+    expect(normalizeAddress('')).toBe('');
+  });
+});
+
+describe('formatMovedInSince', () => {
+  const NOW = new Date('2026-08-31T12:00:00').getTime();
+
+  it('formats a date several years back', () => {
+    expect(formatMovedInSince('2021-03-15', NOW)).toBe('in ward since Mar 2021 · 5 yr 5 mo');
+  });
+  it('formats a date under a year back as months only', () => {
+    expect(formatMovedInSince('2026-05-15', NOW)).toBe('in ward since May 2026 · 3 mo');
+  });
+  it('formats the current month as 0 mo', () => {
+    expect(formatMovedInSince('2026-08-15', NOW)).toBe('in ward since Aug 2026 · 0 mo');
+  });
+  it('returns null for empty input', () => {
+    expect(formatMovedInSince('', NOW)).toBeNull();
+  });
+  it('returns null for unparseable input', () => {
+    expect(formatMovedInSince('garbage', NOW)).toBeNull();
   });
 });

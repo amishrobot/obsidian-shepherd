@@ -52,16 +52,24 @@ export interface MemberState {
   priesthood: PriesthoodOffice;
   ministeringBrothers: string[];
   ministeringSisters: string[];
+  ministeredBy: string[];
+  ministersTo: string[];
   patriarchalBlessing: boolean;
   calling: string;
   lastContact: string;
   convertDate: string;
+  movedIn: string;
   tags: string[];
   daysSinceContact: number | null;
   isOverdue: boolean;
   tasks: Task[];
   interactions: Interaction[];
   whereTheyAre: string;
+}
+
+export interface RelationshipPerson {
+  name: string;
+  file: TFile | null;
 }
 
 export interface ShepherdSettings {

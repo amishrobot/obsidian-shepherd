@@ -1,8 +1,31 @@
-import { App, TFile, parseYaml } from 'obsidian';
-import { MemberState, Priority, MemberStatus, PastoralState, Ordinance, Recommend, PriesthoodOffice, Task, Interaction, ShepherdSettings } from '../models/types';
+import { App, EventRef, TFile, parseYaml } from 'obsidian';
+import { MemberState, Priority, MemberStatus, PastoralState, Ordinance, Recommend, PriesthoodOffice, Task, Interaction, ShepherdSettings, RelationshipPerson } from '../models/types';
+import { parseMinistering, normalizeAddress } from './helpers';
+
+interface MemberIndexEntry {
+  file: TFile;
+  name: string;
+  address: string;
+  status: string;
+}
 
 export class MemberService {
-  constructor(private app: App, private settings: ShepherdSettings) {}
+  private index: MemberIndexEntry[] | null = null;
+
+  // The owning view must pass this to registerEvent() so the listener dies
+  // with the view — MemberService is per-view, and an unregistered listener
+  // leaks on every view close.
+  readonly indexInvalidationRef: EventRef;
+
+  constructor(private app: App, private settings: ShepherdSettings) {
+    // Simple invalidation: any change to a member file's metadata drops the
+    // cached index so the next housemate/name lookup rebuilds it.
+    this.indexInvalidationRef = this.app.metadataCache.on('changed', (file) => {
+      if (file instanceof TFile && this.isMemberFile(file)) {
+        this.index = null;
+      }
+    });
+  }
 
   isMemberFile(file: TFile | null): boolean {
     if (!file) return false;
@@ -25,6 +48,7 @@ export class MemberService {
 
     const lastContact = String(fm['last-contact'] || '');
     const daysSinceContact = this.daysSince(lastContact);
+    const ministering = parseMinistering(String(fm.ministering || ''));
 
     return {
       file,
@@ -46,10 +70,13 @@ export class MemberService {
       priesthood: (fm.priesthood || 'none') as PriesthoodOffice,
       ministeringBrothers: Array.isArray(fm['ministering-brothers']) ? fm['ministering-brothers'] : [],
       ministeringSisters: Array.isArray(fm['ministering-sisters']) ? fm['ministering-sisters'] : [],
+      ministeredBy: ministering.ministeredBy,
+      ministersTo: ministering.ministersTo,
       patriarchalBlessing: fm['patriarchal-blessing'] === true,
       calling: String(fm.calling || ''),
       lastContact,
       convertDate: String(fm['convert-date'] || ''),
+      movedIn: String(fm['moved-in'] || ''),
       tags: Array.isArray(fm.tags) ? fm.tags : [],
       daysSinceContact,
       isOverdue: this.checkOverdue(fm.priority as Priority, daysSinceContact),
@@ -145,6 +172,51 @@ export class MemberService {
     const section = this.findSection(body, sectionName);
     if (!section) return '';
     return section.trim().substring(0, 300);
+  }
+
+  /** All other member files sharing a normalized address, excluding moved-out members. */
+  getHousemates(member: MemberState): RelationshipPerson[] {
+    const targetAddress = normalizeAddress(member.address);
+    if (!targetAddress) return [];
+
+    return this.getIndex()
+      .filter((entry) => entry.file.path !== member.file.path)
+      .filter((entry) => entry.status !== 'moved-out')
+      .filter((entry) => normalizeAddress(entry.address) === targetAddress)
+      .map((entry) => ({ name: entry.name, file: entry.file }));
+  }
+
+  /** Looks up a member file by display name (frontmatter `name`, falling back to filename). */
+  resolveMemberByName(name: string): TFile | null {
+    const target = name.trim().toLowerCase();
+    if (!target) return null;
+
+    const index = this.getIndex();
+    const byName = index.find((entry) => entry.name.trim().toLowerCase() === target);
+    if (byName) return byName.file;
+
+    const byFile = index.find((entry) => entry.file.basename.trim().toLowerCase() === target);
+    return byFile ? byFile.file : null;
+  }
+
+  private getIndex(): MemberIndexEntry[] {
+    if (!this.index) this.index = this.buildIndex();
+    return this.index;
+  }
+
+  private buildIndex(): MemberIndexEntry[] {
+    return this.app.vault.getFiles()
+      .filter((f) => this.isMemberFile(f))
+      .map((file) => {
+        const cache = this.app.metadataCache.getFileCache(file);
+        const fm = cache?.frontmatter || {};
+        return {
+          file,
+          name: String(fm.name || file.basename),
+          address: String(fm.address || ''),
+          status: String(fm.status || ''),
+        };
+      });
   }
 
   private findSection(body: string, name: string): string | null {

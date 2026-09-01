@@ -10,6 +10,7 @@ interface Props {
   pastoral: PastoralState | string;
   nextOrdinance: Ordinance;
   recommend: Recommend;
+  recommendExp: string;
   onPriorityChange: (p: Priority) => void;
   onStatusChange: (s: MemberStatus) => void;
   onPastoralChange: (s: PastoralState) => void;
@@ -108,12 +109,19 @@ export function StatusTable(p: Props) {
       </div>
       <div class="shepherd-row">
         <div class="shepherd-row-label">Recommend</div>
-        <Segmented
-          options={RECOMMEND_ACTIONABLE}
-          current={p.recommend}
-          onChange={p.onRecommendChange}
-          variant={recommendVariant}
-        />
+        <div class="shepherd-recommend-wrap">
+          <Segmented
+            options={RECOMMEND_ACTIONABLE}
+            current={p.recommend}
+            onChange={p.onRecommendChange}
+            variant={recommendVariant}
+          />
+          {p.recommendExp && (
+            <span class={`shepherd-recommend-exp${p.recommend === 'expired' ? ' is-danger' : ''}`}>
+              exp {p.recommendExp}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );

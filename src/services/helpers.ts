@@ -82,3 +82,68 @@ export function buildMapsUrl(address: string, isAppleDevice: boolean): string {
   }
   return `https://www.google.com/maps/search/?api=1&query=${encoded}`;
 }
+
+/**
+ * Parses the vault's `ministering` frontmatter string, e.g.
+ * "Ministered by: Alice Smith, Bob Jones | Ministers to: Carol White, Dan Black".
+ * A label may repeat across segments; results are merged and de-duplicated,
+ * preserving first-seen order.
+ */
+export function parseMinistering(raw: string): { ministeredBy: string[]; ministersTo: string[] } {
+  const ministeredBy: string[] = [];
+  const ministersTo: string[] = [];
+  if (!raw.trim()) return { ministeredBy, ministersTo };
+
+  const segments = raw.split('|').map((s) => s.trim()).filter(Boolean);
+  for (const segment of segments) {
+    const match = segment.match(/^(Ministered by|Ministers to)\s*:\s*(.*)$/i);
+    if (!match) continue;
+    const target = match[1].toLowerCase() === 'ministered by' ? ministeredBy : ministersTo;
+    const names = match[2].split(',').map((n) => n.trim()).filter(Boolean);
+    for (const name of names) {
+      if (!target.includes(name)) target.push(name);
+    }
+  }
+  return { ministeredBy, ministersTo };
+}
+
+/**
+ * Normalizes an address for housemate comparison: lowercase, punctuation
+ * stripped, whitespace collapsed, and a trailing zip+4 suffix reduced to
+ * the base 5-digit zip.
+ */
+export function normalizeAddress(address: string): string {
+  if (!address.trim()) return '';
+  return address
+    .toLowerCase()
+    .replace(/[.,#]/g, ' ')
+    .replace(/(\d{5})-\d{4}\b/, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Formats a `moved-in` date into "in ward since <Mon YYYY> · <N yr M mo>".
+ * Returns null when the date is missing or unparseable.
+ */
+export function formatMovedInSince(movedIn: string, nowMs: number = Date.now()): string | null {
+  if (!movedIn.trim()) return null;
+  const d = new Date(movedIn);
+  if (isNaN(d.getTime())) return null;
+  const now = new Date(nowMs);
+
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const label = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+
+  let totalMonths = (now.getFullYear() - d.getFullYear()) * 12 + (now.getMonth() - d.getMonth());
+  if (now.getDate() < d.getDate()) totalMonths -= 1;
+  if (totalMonths < 0) totalMonths = 0;
+
+  const years = Math.floor(totalMonths / 12);
+  const months = totalMonths % 12;
+  const parts: string[] = [];
+  if (years > 0) parts.push(`${years} yr`);
+  if (months > 0 || years === 0) parts.push(`${months} mo`);
+
+  return `in ward since ${label} · ${parts.join(' ')}`;
+}

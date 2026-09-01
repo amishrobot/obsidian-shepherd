@@ -30,11 +30,19 @@
   font-size: 16px;
   flex-shrink: 0;
   letter-spacing: 0.02em;
+  overflow: hidden;
 }
 
 .shepherd-monogram[data-gender="F"] {
   background: linear-gradient(135deg, #3d1f2f, #6b2f4a);
   color: #f0a8c4;
+}
+
+.shepherd-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .shepherd-identity-text {
@@ -64,6 +72,12 @@
   margin-top: 3px;
 }
 
+.shepherd-tenure {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 2px;
+}
+
 /* Contact chips */
 .shepherd-chips {
   display: flex;
@@ -88,6 +102,55 @@
 .shepherd-chip:hover {
   border-color: var(--interactive-accent);
   color: var(--text-normal);
+}
+
+/* Relationship chips (housemates, ministering) */
+.shepherd-relationships {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.shepherd-rel-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.shepherd-rel-label {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  min-width: 80px;
+}
+
+.shepherd-rel-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.shepherd-chip-person {
+  cursor: pointer;
+}
+
+.shepherd-chip-inert {
+  background: transparent;
+  color: var(--text-faint);
+  cursor: default;
+}
+
+/* Where They Are */
+.shepherd-where {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.5;
+  margin-bottom: 14px;
 }
 
 /* Last contact + CTA */
@@ -263,6 +326,22 @@
 
 .shepherd-dd-danger .shepherd-dropdown {
   border-color: #ef4444;
+}
+
+.shepherd-recommend-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shepherd-recommend-exp {
+  font-size: 10px;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+.shepherd-recommend-exp.is-danger {
+  color: #ef4444;
 }
 
 /* Tasks (unchanged from prior styles, lightly polished) */

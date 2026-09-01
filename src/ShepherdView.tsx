@@ -18,6 +18,7 @@ export class ShepherdView extends ItemView {
     super(leaf);
     this.settings = settings;
     this.memberService = new MemberService(this.app, settings);
+    this.registerEvent(this.memberService.indexInvalidationRef);
     this.writeService = new WriteService(this.app);
   }
 
@@ -106,9 +107,21 @@ export class ShepherdView extends ItemView {
 
     const refresh = () => this.showMember(file);
 
+    const housemates = this.memberService.getHousemates(member);
+    const ministeredBy = member.ministeredBy.map((name) => ({
+      name, file: this.memberService.resolveMemberByName(name),
+    }));
+    const ministersTo = member.ministersTo.map((name) => ({
+      name, file: this.memberService.resolveMemberByName(name),
+    }));
+
     render(
       h(ShepherdPanel, {
+        app: this.app,
         member,
+        housemates,
+        ministeredBy,
+        ministersTo,
         expandLogSignal: this.expandLogSignal,
         onPriorityChange: async (p: Priority) => {
           await this.writeService.setPriority(file, p);
@@ -145,6 +158,9 @@ export class ShepherdView extends ItemView {
         onLogInteraction: async (note: string) => {
           await this.writeService.logInteraction(file, note);
           await refresh();
+        },
+        onOpenPerson: (target: TFile) => {
+          this.app.workspace.getLeaf(false).openFile(target);
         },
       }),
       container
