@@ -4,7 +4,7 @@ Ward member management plugin for Obsidian (Preact, not React).
 
 ## Build & Deploy
 - `npm run build` — builds to `main.js`
-- Copy to vault: `cp main.js ~/JoshOS/.obsidian/plugins/shepherd/main.js`
+- Copy to vault: `cp main.js styles.css ~/JoshOS_Vault/.obsidian/plugins/shepherd/`
 - Reload in Obsidian: Settings → Community Plugins → Shepherd → reload
 
 ## Architecture

@@ -1,19 +1,65 @@
-/* Shepherd — Member Management Panel (V1) */
+/* Shepherd — Member Management Panel
+ *
+ * Type follows JoshOS design system 4a (Mobile): docs/design/joshos-mobile.html
+ * in the JoshOS repo. Two rules drive everything below.
+ *
+ *   Sizes track the reader, not the chrome. Every size derives from
+ *   --font-text-size (Obsidian's Appearance > Font size). Raise the base font
+ *   and the panel grows with the note it sits beside, instead of staying at a
+ *   fixed 13px while the prose around it gets bigger.
+ *
+ *   Floors are absolute. max() holds each token above its minimum: on mobile,
+ *   body 17px, meta 15px, labels 11px, eyebrows 12px. A small reader font
+ *   scales the panel down to the floor and stops.
+ */
 
 .shepherd-panel {
+  /* The reader's chosen size. Fallback matters: Obsidian defines this, a test
+     harness or a stripped theme may not. */
+  --sh-reader: var(--font-text-size, 16px);
+
+  --sh-body:    max(14px, calc(var(--sh-reader) * 0.80));
+  --sh-prose:   max(14px, calc(var(--sh-reader) * 0.82));
+  --sh-meta:    max(12px, calc(var(--sh-reader) * 0.72));
+  --sh-label:   max(10px, calc(var(--sh-reader) * 0.60));
+  --sh-eyebrow: max(10px, calc(var(--sh-reader) * 0.62));
+  --sh-name:    max(20px, calc(var(--sh-reader) * 1.18));
+
+  --sh-tap: 34px;         /* action controls */
+  --sh-tap-inline: 30px;  /* chips, inline glyphs */
+  --sh-label-track: 88px; /* M3: fixed label column, values wrap beside it */
+  --sh-gap: 14px;
+
   padding: 18px;
   color: var(--text-normal);
   font-family: var(--font-interface);
-  font-size: 13px;
+  font-size: var(--sh-body);
   line-height: 1.5;
+}
+
+/* M1/M2: mobile raises the whole ramp. Nothing structural below 16px, mono
+   labels go up to 11px, and every target clears 48px. */
+body.is-mobile .shepherd-panel {
+  --sh-body:    max(17px, calc(var(--sh-reader) * 0.95));
+  --sh-prose:   max(17px, calc(var(--sh-reader) * 0.98));
+  --sh-meta:    max(15px, calc(var(--sh-reader) * 0.85));
+  --sh-label:   max(11px, calc(var(--sh-reader) * 0.64));
+  --sh-eyebrow: max(12px, calc(var(--sh-reader) * 0.68));
+  --sh-name:    max(26px, calc(var(--sh-reader) * 1.45));
+
+  --sh-tap: 48px;
+  --sh-tap-inline: 44px;
+  --sh-gap: 18px;
+
+  padding: 18px 16px 32px;
 }
 
 /* Identity */
 .shepherd-identity {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
-  margin-bottom: 14px;
+  margin-bottom: var(--sh-gap);
 }
 
 .shepherd-monogram {
@@ -31,6 +77,12 @@
   flex-shrink: 0;
   letter-spacing: 0.02em;
   overflow: hidden;
+}
+
+body.is-mobile .shepherd-monogram {
+  width: 56px;
+  height: 56px;
+  font-size: 19px;
 }
 
 .shepherd-monogram[data-gender="F"] {
@@ -51,52 +103,60 @@
 }
 
 .shepherd-eyebrow {
-  font-size: 10px;
-  letter-spacing: 0.12em;
+  font-size: var(--sh-eyebrow);
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-accent);
-  margin-bottom: 2px;
+  margin-bottom: 3px;
+  overflow-wrap: anywhere;
 }
 
+/* M-wrap: a long name grows the block, it never clips or ellipses. */
 .shepherd-name {
   font-family: var(--font-text);
-  font-size: 20px;
+  font-size: var(--sh-name);
   font-weight: 600;
   line-height: 1.15;
   color: var(--text-normal);
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .shepherd-subtitle {
-  font-size: 12px;
+  font-size: var(--sh-prose);
+  line-height: 1.4;
   color: var(--text-muted);
-  margin-top: 3px;
+  margin-top: 4px;
+  overflow-wrap: anywhere;
 }
 
 .shepherd-tenure {
-  font-size: 11px;
+  font-size: var(--sh-meta);
   color: var(--text-faint);
-  margin-top: 2px;
+  margin-top: 3px;
 }
 
 /* Contact chips */
 .shepherd-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 14px;
+  gap: 8px;
+  margin-bottom: var(--sh-gap);
 }
 
 .shepherd-chip {
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  padding: 5px 9px;
+  padding: 6px 10px;
   border-radius: 6px;
-  font-size: 11px;
+  font-size: var(--sh-meta);
   color: var(--text-normal);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
+  min-height: var(--sh-tap-inline);
+  overflow-wrap: anywhere;
 }
 
 .shepherd-chip:hover {
@@ -104,34 +164,54 @@
   color: var(--text-normal);
 }
 
+.shepherd-chip:focus-visible,
+.shepherd-seg-btn:focus-visible,
+.shepherd-cta-btn:focus-visible,
+.shepherd-dropdown:focus-visible,
+.shepherd-add-btn:focus-visible,
+.shepherd-pill:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
 /* Relationship chips (housemates, ministering) */
 .shepherd-relationships {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 14px;
+  gap: 10px;
+  margin-bottom: var(--sh-gap);
 }
 
+/* M3: label track on desktop, stacked on mobile — never a squeezed two-up. */
 .shepherd-rel-row {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: var(--sh-label-track) 1fr;
+  gap: 10px;
+  align-items: start;
+}
+
+body.is-mobile .shepherd-rel-row {
+  grid-template-columns: 1fr;
+  gap: 6px;
 }
 
 .shepherd-rel-label {
-  font-size: 10px;
+  font-size: var(--sh-label);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-muted);
-  flex-shrink: 0;
-  min-width: 80px;
+  line-height: 1.5;
+  padding-top: 5px;
+}
+
+body.is-mobile .shepherd-rel-label {
+  padding-top: 0;
 }
 
 .shepherd-rel-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 
 .shepherd-chip-person {
@@ -144,13 +224,22 @@
   cursor: default;
 }
 
+/* M4: overflow trims content, not type — the "+N" chip that reveals the rest. */
+.shepherd-chip-more {
+  background: transparent;
+  border-style: dashed;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+
 /* Where They Are */
 .shepherd-where {
-  font-size: 12px;
+  font-size: var(--sh-prose);
   color: var(--text-muted);
   font-style: italic;
   line-height: 1.5;
-  margin-bottom: 14px;
+  margin-bottom: var(--sh-gap);
 }
 
 /* Last contact + CTA */
@@ -159,9 +248,9 @@
 }
 
 .shepherd-last-contact {
-  font-size: 11px;
+  font-size: var(--sh-meta);
   color: var(--text-muted);
-  margin-bottom: 6px;
+  margin-bottom: 7px;
   letter-spacing: 0.02em;
 }
 
@@ -172,12 +261,13 @@
 
 .shepherd-cta-btn {
   width: 100%;
+  min-height: var(--sh-tap);
   background: var(--interactive-accent);
   border: none;
   color: var(--text-on-accent);
-  padding: 11px;
+  padding: 10px 12px;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: var(--sh-body);
   font-weight: 500;
   display: flex;
   align-items: center;
@@ -192,12 +282,17 @@
 
 .shepherd-cta-kbd {
   font-family: var(--font-monospace);
-  font-size: 10px;
+  font-size: var(--sh-label);
   opacity: 0.7;
   margin-left: auto;
-  padding: 1px 5px;
+  padding: 2px 6px;
   background: rgba(255, 255, 255, 0.15);
   border-radius: 3px;
+}
+
+/* The shortcut hint is desktop furniture — there is no keyboard to hint at. */
+body.is-mobile .shepherd-cta-kbd {
+  display: none;
 }
 
 .shepherd-cta-expanded {
@@ -207,6 +302,8 @@
   padding: 10px;
 }
 
+/* 16px floor is not cosmetic here: iOS Safari zooms the viewport on focus for
+   anything smaller, and Obsidian mobile is a webview. */
 .shepherd-cta-textarea {
   width: 100%;
   box-sizing: border-box;
@@ -215,24 +312,26 @@
   color: var(--text-normal);
   border: 1px solid var(--background-modifier-border);
   border-radius: 6px;
-  padding: 8px;
+  padding: 9px;
   font-family: inherit;
-  font-size: 13px;
+  font-size: max(16px, var(--sh-body));
+  line-height: 1.45;
 }
 
 .shepherd-cta-actions {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
 .shepherd-cta-cancel,
 .shepherd-cta-submit {
   border: 1px solid var(--background-modifier-border);
   border-radius: 6px;
-  padding: 6px 12px;
-  font-size: 12px;
+  padding: 8px 14px;
+  min-height: var(--sh-tap);
+  font-size: var(--sh-meta);
   cursor: pointer;
   background: var(--background-primary);
   color: var(--text-normal);
@@ -249,27 +348,41 @@
   margin-bottom: 18px;
 }
 
-.shepherd-section-label {
-  font-size: 10px;
+.shepherd-section-label,
+.shepherd-section-header {
+  font-size: var(--sh-label);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-muted);
   margin-bottom: 10px;
 }
 
+.shepherd-section-header {
+  margin-top: 4px;
+}
+
+/* M3 again: the desktop pairing is label + control on one line. On a phone the
+   control takes the full width and the label sits above it. */
 .shepherd-row {
   display: grid;
-  grid-template-columns: 70px 1fr;
+  grid-template-columns: var(--sh-label-track) 1fr;
   gap: 10px;
   align-items: center;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+body.is-mobile .shepherd-row {
+  grid-template-columns: 1fr;
+  gap: 6px;
+  margin-bottom: 16px;
 }
 
 .shepherd-row-label {
-  font-size: 10px;
+  font-size: var(--sh-label);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-muted);
+  line-height: 1.4;
 }
 
 .shepherd-seg {
@@ -285,8 +398,10 @@
   background: transparent;
   border: none;
   color: var(--text-muted);
-  padding: 5px 4px;
-  font-size: 11px;
+  padding: 6px 4px;
+  min-height: var(--sh-tap);
+  font-size: var(--sh-meta);
+  line-height: 1.2;
   cursor: pointer;
   border-right: 1px solid var(--background-modifier-border);
 }
@@ -316,8 +431,9 @@
   border: 1px solid var(--background-modifier-border);
   border-radius: 6px;
   color: var(--text-normal);
-  padding: 5px 8px;
-  font-size: 11px;
+  padding: 7px 9px;
+  min-height: var(--sh-tap);
+  font-size: max(16px, var(--sh-meta));
 }
 
 .shepherd-dd-warn .shepherd-dropdown {
@@ -328,14 +444,21 @@
   border-color: #ef4444;
 }
 
+/* The expiry sits beside the control on desktop and drops below it on a phone,
+   rather than shrinking the segmented control to make room. */
 .shepherd-recommend-wrap {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
+}
+
+.shepherd-recommend-wrap .shepherd-seg {
+  flex: 1 1 180px;
 }
 
 .shepherd-recommend-exp {
-  font-size: 10px;
+  font-size: var(--sh-meta);
   color: var(--text-faint);
   white-space: nowrap;
 }
@@ -344,15 +467,16 @@
   color: #ef4444;
 }
 
-/* Tasks (unchanged from prior styles, lightly polished) */
+/* Tasks */
 .shepherd-task {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 6px 4px;
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 7px 4px;
   cursor: pointer;
   border-radius: 4px;
-  min-height: 36px;
+  min-height: var(--sh-tap);
 }
 
 .shepherd-task:active {
@@ -368,67 +492,68 @@
 }
 
 .shepherd-task-check {
-  font-size: 16px;
+  font-size: calc(var(--sh-body) * 1.15);
+  line-height: 1.3;
   flex-shrink: 0;
-  width: 20px;
 }
 
 .shepherd-task-text {
-  font-size: 13px;
+  font-size: var(--sh-body);
+  line-height: 1.4;
   color: var(--text-normal);
+  overflow-wrap: anywhere;
 }
 
 .shepherd-add-btn {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   padding: 6px 12px;
+  min-height: var(--sh-tap);
   color: var(--interactive-accent);
   cursor: pointer;
-  font-size: 13px;
-  min-height: 36px;
+  font-size: var(--sh-body);
 }
 
 .shepherd-task-add-row {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   align-items: center;
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
 .shepherd-task-input {
   flex: 1;
-  padding: 6px 10px;
+  min-width: 0;
+  padding: 7px 10px;
   border-radius: 6px;
   border: 1px solid var(--background-modifier-border);
   background: var(--background-primary);
   color: var(--text-normal);
-  font-size: 13px;
-  min-height: 36px;
+  font-size: max(16px, var(--sh-body));
+  min-height: var(--sh-tap);
 }
 
-/* Mobile bigger hit targets */
-body.is-mobile .shepherd-task {
-  min-height: 44px;
-  padding: 8px 4px;
+/* The Add confirm beside the new-step input. Previously unstyled — it rendered
+   as bare body text with no target of its own. */
+.shepherd-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  min-height: var(--sh-tap);
+  border-radius: 6px;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  font-size: var(--sh-meta);
+  cursor: pointer;
+  white-space: nowrap;
 }
 
-body.is-mobile .shepherd-add-btn {
-  min-height: 44px;
-  padding: 10px 12px;
-  font-size: 14px;
-}
-
-body.is-mobile .shepherd-task-input {
-  min-height: 44px;
-}
-
-body.is-mobile .shepherd-seg-btn {
-  padding: 8px 4px;
-  font-size: 12px;
-}
-
-body.is-mobile .shepherd-chip {
-  padding: 7px 11px;
-  font-size: 12px;
+.shepherd-pill-active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: transparent;
 }
 
 /* Empty state */
@@ -447,7 +572,7 @@ body.is-mobile .shepherd-chip {
 
 .shepherd-empty-text {
   text-align: center;
-  font-size: 12px;
+  font-size: var(--sh-meta);
   color: var(--text-faint);
   font-style: italic;
 }
@@ -455,8 +580,8 @@ body.is-mobile .shepherd-chip {
 .shepherd-empty-link {
   color: var(--interactive-accent);
   cursor: pointer;
-  font-size: 14px;
-  min-height: 44px;
+  font-size: var(--sh-body);
+  min-height: var(--sh-tap);
   display: flex;
   align-items: center;
 }
