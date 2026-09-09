@@ -22,10 +22,10 @@ __export(main_exports, {
   default: () => ShepherdPlugin
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian6 = require("obsidian");
+var import_obsidian7 = require("obsidian");
 
 // src/ShepherdView.tsx
-var import_obsidian4 = require("obsidian");
+var import_obsidian5 = require("obsidian");
 
 // node_modules/preact/dist/preact.module.js
 var n;
@@ -658,17 +658,31 @@ function ContactChips({ phone, email, address }) {
 }
 
 // src/components/RelationshipChips.tsx
+var import_obsidian3 = require("obsidian");
+var COLLAPSE_AT = import_obsidian3.Platform.isMobile ? 2 : 4;
 function ChipRow({ label, people, onOpenPerson }) {
+  const [expanded, setExpanded] = d2(false);
   if (people.length === 0)
     return null;
-  return /* @__PURE__ */ _("div", { class: "shepherd-rel-row" }, /* @__PURE__ */ _("div", { class: "shepherd-rel-label" }, label), /* @__PURE__ */ _("div", { class: "shepherd-rel-chips" }, people.map((person) => person.file ? /* @__PURE__ */ _(
+  const collapsed = !expanded && people.length > COLLAPSE_AT;
+  const shown = collapsed ? people.slice(0, COLLAPSE_AT) : people;
+  const hidden = people.length - shown.length;
+  return /* @__PURE__ */ _("div", { class: "shepherd-rel-row" }, /* @__PURE__ */ _("div", { class: "shepherd-rel-label" }, label), /* @__PURE__ */ _("div", { class: "shepherd-rel-chips" }, shown.map((person) => person.file ? /* @__PURE__ */ _(
     "span",
     {
       class: "shepherd-chip shepherd-chip-person",
       onClick: () => onOpenPerson(person.file)
     },
     person.name
-  ) : /* @__PURE__ */ _("span", { class: "shepherd-chip shepherd-chip-inert" }, person.name))));
+  ) : /* @__PURE__ */ _("span", { class: "shepherd-chip shepherd-chip-inert" }, person.name)), collapsed && /* @__PURE__ */ _(
+    "span",
+    {
+      class: "shepherd-chip shepherd-chip-more",
+      onClick: () => setExpanded(true)
+    },
+    "+",
+    hidden
+  )));
 }
 function RelationshipChips({ housemates, ministeredBy, ministersTo, onOpenPerson }) {
   if (housemates.length === 0 && ministeredBy.length === 0 && ministersTo.length === 0) {
@@ -898,14 +912,14 @@ function ShepherdPanel(p3) {
 }
 
 // src/services/MemberService.ts
-var import_obsidian3 = require("obsidian");
+var import_obsidian4 = require("obsidian");
 var MemberService = class {
   constructor(app, settings) {
     this.app = app;
     this.settings = settings;
     this.index = null;
     this.indexInvalidationRef = this.app.metadataCache.on("changed", (file) => {
-      if (file instanceof import_obsidian3.TFile && this.isMemberFile(file)) {
+      if (file instanceof import_obsidian4.TFile && this.isMemberFile(file)) {
         this.index = null;
       }
     });
@@ -1240,7 +1254,7 @@ ${note}
 
 // src/ShepherdView.tsx
 var VIEW_TYPE_SHEPHERD = "shepherd-view";
-var ShepherdView = class extends import_obsidian4.ItemView {
+var ShepherdView = class extends import_obsidian5.ItemView {
   constructor(leaf, settings) {
     super(leaf);
     this.currentFile = null;
@@ -1297,7 +1311,7 @@ var ShepherdView = class extends import_obsidian4.ItemView {
           class: "shepherd-empty-link",
           onClick: () => {
             const f3 = this.app.vault.getAbstractFileByPath(dashPath);
-            if (f3 instanceof import_obsidian4.TFile) {
+            if (f3 instanceof import_obsidian5.TFile) {
               this.app.workspace.openLinkText(dashPath, "", false);
             }
           }
@@ -1386,8 +1400,8 @@ var ShepherdView = class extends import_obsidian4.ItemView {
 };
 
 // src/SettingsTab.ts
-var import_obsidian5 = require("obsidian");
-var ShepherdSettingTab = class extends import_obsidian5.PluginSettingTab {
+var import_obsidian6 = require("obsidian");
+var ShepherdSettingTab = class extends import_obsidian6.PluginSettingTab {
   constructor(app, plugin) {
     super(app, plugin);
     this.plugin = plugin;
@@ -1395,20 +1409,20 @@ var ShepherdSettingTab = class extends import_obsidian5.PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    new import_obsidian5.Setting(containerEl).setName("Member folder").setDesc("Vault-relative folder holding member files. Files outside it get the empty panel.").addText(
+    new import_obsidian6.Setting(containerEl).setName("Member folder").setDesc("Vault-relative folder holding member files. Files outside it get the empty panel.").addText(
       (text) => text.setPlaceholder("Church/Members").setValue(this.plugin.settings.memberDir).onChange(async (value) => {
         this.plugin.settings.memberDir = value.replace(/\/+$/, "").trim();
         await this.plugin.saveSettings();
         this.plugin.refreshView();
       })
     );
-    new import_obsidian5.Setting(containerEl).setName("Dashboard path").setDesc('Note opened by the "Open Dashboard" link in the empty state.').addText(
+    new import_obsidian6.Setting(containerEl).setName("Dashboard path").setDesc('Note opened by the "Open Dashboard" link in the empty state.').addText(
       (text) => text.setPlaceholder("Church/_dashboard.md").setValue(this.plugin.settings.dashboardPath).onChange(async (value) => {
         this.plugin.settings.dashboardPath = value.trim();
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian5.Setting(containerEl).setName("Overdue threshold (days)").setDesc("Days without contact before a top-10 or high-priority member is flagged overdue.").addText(
+    new import_obsidian6.Setting(containerEl).setName("Overdue threshold (days)").setDesc("Days without contact before a top-10 or high-priority member is flagged overdue.").addText(
       (text) => text.setPlaceholder("14").setValue(String(this.plugin.settings.overdueThreshold)).onChange(async (value) => {
         const n2 = Number(value);
         if (!Number.isFinite(n2) || n2 <= 0)
@@ -1418,7 +1432,7 @@ var ShepherdSettingTab = class extends import_obsidian5.PluginSettingTab {
         this.plugin.refreshView();
       })
     );
-    new import_obsidian5.Setting(containerEl).setName("Show contact bar").setDesc("Display call / text / email chips on the member panel.").addToggle(
+    new import_obsidian6.Setting(containerEl).setName("Show contact bar").setDesc("Display call / text / email chips on the member panel.").addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.showContactBar).onChange(async (value) => {
         this.plugin.settings.showContactBar = value;
         await this.plugin.saveSettings();
@@ -1429,7 +1443,7 @@ var ShepherdSettingTab = class extends import_obsidian5.PluginSettingTab {
 };
 
 // src/main.ts
-var ShepherdPlugin = class extends import_obsidian6.Plugin {
+var ShepherdPlugin = class extends import_obsidian7.Plugin {
   constructor() {
     super(...arguments);
     this.settings = DEFAULT_SETTINGS;
@@ -1492,7 +1506,7 @@ var ShepherdPlugin = class extends import_obsidian6.Plugin {
     });
     this.registerEvent(
       this.app.workspace.on("file-open", (file) => {
-        if (file instanceof import_obsidian6.TFile) {
+        if (file instanceof import_obsidian7.TFile) {
           this.scheduleRefresh(file);
         }
       })
@@ -1505,7 +1519,7 @@ var ShepherdPlugin = class extends import_obsidian6.Plugin {
     );
     this.registerEvent(
       this.app.vault.on("modify", (file) => {
-        if (!(file instanceof import_obsidian6.TFile) || !this.isMemberFile(file))
+        if (!(file instanceof import_obsidian7.TFile) || !this.isMemberFile(file))
           return;
         const view = this.getView();
         if (!view)

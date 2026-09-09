@@ -1,6 +1,6 @@
 {
   "name": "obsidian-shepherd",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "Contextual action panel for ward member files",
   "main": "main.js",
   "scripts": {
