@@ -589,3 +589,45 @@ body.is-mobile .shepherd-row {
 .shepherd-empty-link:active {
   opacity: 0.7;
 }
+
+/* ── Photo lightbox ───────────────────────────────────────────────
+   The avatar is 48px in a narrow sidebar; faces are the point of a photo
+   directory, so clicking one shows it at a size you can actually read. */
+.shepherd-avatar-img {
+  cursor: zoom-in;
+}
+
+.shepherd-avatar-img:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
+.shepherd-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: var(--layer-modal, 100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(2px);
+  cursor: zoom-out;
+}
+
+.shepherd-lightbox-img {
+  max-width: min(92vw, 520px);
+  max-height: 86vh;
+  border-radius: 8px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  animation: shepherd-lightbox-in 120ms ease-out;
+}
+
+@keyframes shepherd-lightbox-in {
+  from { transform: scale(0.96); opacity: 0; }
+  to   { transform: none;        opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shepherd-lightbox-img { animation: none; }
+}

@@ -632,7 +632,19 @@ function IdentityBlock({ app, member }) {
   const photoFile = member.photo ? app.vault.getAbstractFileByPath(member.photo) : null;
   const photoUrl = photoFile instanceof import_obsidian.TFile ? app.vault.getResourcePath(photoFile) : null;
   const [photoFailed, setPhotoFailed] = d2(false);
+  const [zoomed, setZoomed] = d2(false);
   y2(() => setPhotoFailed(false), [photoUrl]);
+  y2(() => {
+    if (!zoomed)
+      return;
+    const onKey = (e3) => {
+      if (e3.key === "Escape")
+        setZoomed(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [zoomed]);
+  y2(() => setZoomed(false), [member.name]);
   const showPhoto = photoUrl && !photoFailed;
   return /* @__PURE__ */ _("div", { class: "shepherd-identity" }, /* @__PURE__ */ _("div", { class: "shepherd-monogram", "data-gender": member.gender || "U" }, showPhoto ? /* @__PURE__ */ _(
     "img",
@@ -640,9 +652,28 @@ function IdentityBlock({ app, member }) {
       class: "shepherd-avatar-img",
       src: photoUrl,
       alt: member.name,
-      onError: () => setPhotoFailed(true)
+      role: "button",
+      tabIndex: 0,
+      title: "Click to enlarge",
+      onError: () => setPhotoFailed(true),
+      onClick: () => setZoomed(true),
+      onKeyDown: (e3) => {
+        if (e3.key === "Enter" || e3.key === " ") {
+          e3.preventDefault();
+          setZoomed(true);
+        }
+      }
     }
-  ) : monogram), /* @__PURE__ */ _("div", { class: "shepherd-identity-text" }, eyebrowSegments.length > 0 && /* @__PURE__ */ _("div", { class: "shepherd-eyebrow" }, eyebrowSegments.join(" \xB7 ")), /* @__PURE__ */ _("div", { class: "shepherd-name" }, member.name), subtitle && /* @__PURE__ */ _("div", { class: "shepherd-subtitle" }, subtitle), tenure && /* @__PURE__ */ _("div", { class: "shepherd-tenure" }, tenure)));
+  ) : monogram), zoomed && showPhoto && /* @__PURE__ */ _(
+    "div",
+    {
+      class: "shepherd-lightbox",
+      role: "dialog",
+      "aria-label": `${member.name} \u2014 photo`,
+      onClick: () => setZoomed(false)
+    },
+    /* @__PURE__ */ _("img", { class: "shepherd-lightbox-img", src: photoUrl, alt: member.name })
+  ), /* @__PURE__ */ _("div", { class: "shepherd-identity-text" }, eyebrowSegments.length > 0 && /* @__PURE__ */ _("div", { class: "shepherd-eyebrow" }, eyebrowSegments.join(" \xB7 ")), /* @__PURE__ */ _("div", { class: "shepherd-name" }, member.name), subtitle && /* @__PURE__ */ _("div", { class: "shepherd-subtitle" }, subtitle), tenure && /* @__PURE__ */ _("div", { class: "shepherd-tenure" }, tenure)));
 }
 
 // src/components/ContactChips.tsx
