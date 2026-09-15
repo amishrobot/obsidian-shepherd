@@ -940,7 +940,7 @@ var MemberService = class {
     const whereTheyAre = this.parseSection(body, "Where They Are");
     const lastContact = String(fm["last-contact"] || "");
     const daysSinceContact = this.daysSince(lastContact);
-    const ministering = parseMinistering(String(fm.ministering || ""));
+    const ministering = parseMinistering(String(fm["ministering-assignment"] || ""));
     return {
       file,
       name: String(fm.name || file.basename),
