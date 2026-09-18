@@ -788,7 +788,7 @@ var ORDINANCES = [
 ];
 var DEFAULT_SETTINGS = {
   memberDir: "Church/Members",
-  dashboardPath: "Church/_dashboard.md",
+  dashboardPath: "Church/_system/views/_dashboard.md",
   overdueThreshold: 14,
   showContactBar: true
 };
@@ -1448,7 +1448,7 @@ var ShepherdSettingTab = class extends import_obsidian6.PluginSettingTab {
       })
     );
     new import_obsidian6.Setting(containerEl).setName("Dashboard path").setDesc('Note opened by the "Open Dashboard" link in the empty state.').addText(
-      (text) => text.setPlaceholder("Church/_dashboard.md").setValue(this.plugin.settings.dashboardPath).onChange(async (value) => {
+      (text) => text.setPlaceholder("Church/_system/views/_dashboard.md").setValue(this.plugin.settings.dashboardPath).onChange(async (value) => {
         this.plugin.settings.dashboardPath = value.trim();
         await this.plugin.saveSettings();
       })

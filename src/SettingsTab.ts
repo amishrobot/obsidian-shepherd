@@ -29,7 +29,7 @@ export class ShepherdSettingTab extends PluginSettingTab {
       .setDesc('Note opened by the "Open Dashboard" link in the empty state.')
       .addText((text) =>
         text
-          .setPlaceholder('Church/_dashboard.md')
+          .setPlaceholder('Church/_system/views/_dashboard.md')
           .setValue(this.plugin.settings.dashboardPath)
           .onChange(async (value) => {
             this.plugin.settings.dashboardPath = value.trim();
