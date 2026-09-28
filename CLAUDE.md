@@ -1,5 +1,7 @@
 # Obsidian Shepherd
 
+Linear: initiative **JoshOS**. Session handoffs are status updates on that Linear home: read the latest one before starting, and post one before stopping with work in flight (`$JOSHOS_CODE/scripts/handoff`).
+
 Ward member management plugin for Obsidian (Preact, not React).
 
 ## Build & Deploy
