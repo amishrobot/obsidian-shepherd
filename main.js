@@ -774,7 +774,7 @@ function LogInteractionCTA({ lastContact, onMarkContacted, onLogInteraction, exp
 }
 
 // src/models/types.ts
-var PRIORITIES = ["top-10", "high", "normal"];
+var PRIORITIES = ["top-10", "high", "normal", "new-move-in"];
 var STATUSES = ["new", "active", "inactive"];
 var PASTORAL_STATES = ["", "working-with", "under-restrictions", "non-responsive", "resolved", "getting-married"];
 var ORDINANCES = [
