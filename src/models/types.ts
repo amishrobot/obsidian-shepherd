@@ -1,6 +1,6 @@
 import type { TFile } from 'obsidian';
 
-export type Priority = 'top-10' | 'high' | 'normal';
+export type Priority = 'top-10' | 'high' | 'normal' | 'new-move-in';
 export type MemberStatus = 'new' | 'active' | 'inactive';
 export type PastoralState = '' | 'working-with' | 'under-restrictions' | 'non-responsive' | 'resolved' | 'getting-married';
 export type Ordinance = 'unknown' | 'baptism' | 'confirmation'
@@ -9,7 +9,7 @@ export type Ordinance = 'unknown' | 'baptism' | 'confirmation'
 export type Recommend = 'current' | 'expired' | 'none' | 'unknown';
 export type PriesthoodOffice = 'none' | 'deacon' | 'teacher' | 'priest' | 'elder' | 'high-priest';
 
-export const PRIORITIES: Priority[] = ['top-10', 'high', 'normal'];
+export const PRIORITIES: Priority[] = ['top-10', 'high', 'normal', 'new-move-in'];
 export const STATUSES: MemberStatus[] = ['new', 'active', 'inactive'];
 export const PASTORAL_STATES: PastoralState[] = ['', 'working-with', 'under-restrictions', 'non-responsive', 'resolved', 'getting-married'];
 export const ORDINANCES: (Ordinance & string)[] = [
@@ -90,6 +90,7 @@ export const PRIORITY_COLORS: Record<Priority, string> = {
   'top-10': '#ef4444',
   'high': '#eab308',
   'normal': '#6b7280',
+  'new-move-in': '#3b82f6',
 };
 
 export const STATUS_COLORS: Record<MemberStatus, string> = {
