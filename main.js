@@ -776,7 +776,7 @@ function LogInteractionCTA({ lastContact, onMarkContacted, onLogInteraction, exp
 // src/models/types.ts
 var PRIORITIES = ["top-10", "high", "normal", "new-move-in"];
 var STATUSES = ["new", "active", "inactive"];
-var PASTORAL_STATES = ["", "working-with", "under-restrictions", "non-responsive", "resolved", "getting-married"];
+var PASTORAL_STATES = ["", "working-with", "under-restrictions", "non-responsive", "resolved", "getting-married", "preparing-for-baptism"];
 var ORDINANCES = [
   "unknown",
   "baptism",
@@ -792,7 +792,7 @@ var DEFAULT_SETTINGS = {
   overdueThreshold: 14,
   showContactBar: true
 };
-var RECOMMEND_ACTIONABLE = ["current", "expired"];
+var RECOMMEND_ACTIONABLE = ["current", "expiring", "expired"];
 
 // src/components/StatusTable.tsx
 function Segmented({ options, current, onChange, variant }) {
@@ -829,11 +829,12 @@ var PASTORAL_LABELS = {
   "under-restrictions": "under restrictions",
   "non-responsive": "non-responsive",
   "resolved": "resolved",
-  "getting-married": "getting married"
+  "getting-married": "getting married",
+  "preparing-for-baptism": "preparing for baptism"
 };
 function StatusTable(p3) {
   const pastoralVariant = p3.pastoral === "working-with" ? "warn" : p3.pastoral === "under-restrictions" ? "danger" : void 0;
-  const recommendVariant = p3.recommend === "expired" ? "danger" : void 0;
+  const recommendVariant = p3.recommend === "expired" ? "danger" : p3.recommend === "expiring" ? "warn" : void 0;
   return /* @__PURE__ */ _("div", { class: "shepherd-status" }, /* @__PURE__ */ _("div", { class: "shepherd-section-label" }, "Status"), /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Priority"), /* @__PURE__ */ _(Segmented, { options: PRIORITIES, current: p3.priority, onChange: p3.onPriorityChange })), /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Presence"), /* @__PURE__ */ _(Segmented, { options: STATUSES, current: p3.status, onChange: p3.onStatusChange })), /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Pastoral"), /* @__PURE__ */ _("div", { class: `shepherd-dd-wrap${pastoralVariant ? " shepherd-dd-" + pastoralVariant : ""}` }, /* @__PURE__ */ _(
     Dropdown,
     {
