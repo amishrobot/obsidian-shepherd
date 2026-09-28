@@ -66,6 +66,7 @@ const PASTORAL_LABELS: Record<string, string> = {
   'non-responsive': 'non-responsive',
   'resolved': 'resolved',
   'getting-married': 'getting married',
+  'preparing-for-baptism': 'preparing for baptism',
 };
 
 export function StatusTable(p: Props) {
@@ -73,8 +74,10 @@ export function StatusTable(p: Props) {
     p.pastoral === 'working-with' ? 'warn' :
     p.pastoral === 'under-restrictions' ? 'danger' :
     undefined;
-  const recommendVariant: 'danger' | undefined =
-    p.recommend === 'expired' ? 'danger' : undefined;
+  const recommendVariant: 'warn' | 'danger' | undefined =
+    p.recommend === 'expired' ? 'danger' :
+    p.recommend === 'expiring' ? 'warn' :
+    undefined;
 
   return (
     <div class="shepherd-status">

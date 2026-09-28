@@ -2,22 +2,22 @@ import type { TFile } from 'obsidian';
 
 export type Priority = 'top-10' | 'high' | 'normal' | 'new-move-in';
 export type MemberStatus = 'new' | 'active' | 'inactive';
-export type PastoralState = '' | 'working-with' | 'under-restrictions' | 'non-responsive' | 'resolved' | 'getting-married';
+export type PastoralState = '' | 'working-with' | 'under-restrictions' | 'non-responsive' | 'resolved' | 'getting-married' | 'preparing-for-baptism';
 export type Ordinance = 'unknown' | 'baptism' | 'confirmation'
   | 'aaronic-priesthood' | 'melchizedek-priesthood'
   | 'endowment' | 'sealing';
-export type Recommend = 'current' | 'expired' | 'none' | 'unknown';
+export type Recommend = 'current' | 'expiring' | 'expired' | 'none' | 'unknown';
 export type PriesthoodOffice = 'none' | 'deacon' | 'teacher' | 'priest' | 'elder' | 'high-priest';
 
 export const PRIORITIES: Priority[] = ['top-10', 'high', 'normal', 'new-move-in'];
 export const STATUSES: MemberStatus[] = ['new', 'active', 'inactive'];
-export const PASTORAL_STATES: PastoralState[] = ['', 'working-with', 'under-restrictions', 'non-responsive', 'resolved', 'getting-married'];
+export const PASTORAL_STATES: PastoralState[] = ['', 'working-with', 'under-restrictions', 'non-responsive', 'resolved', 'getting-married', 'preparing-for-baptism'];
 export const ORDINANCES: (Ordinance & string)[] = [
   'unknown', 'baptism', 'confirmation', 'aaronic-priesthood',
   'melchizedek-priesthood', 'endowment', 'sealing',
 ];
 export const RECOMMENDS: (Recommend & string)[] = [
-  'current', 'expired', 'none', 'unknown',
+  'current', 'expiring', 'expired', 'none', 'unknown',
 ];
 
 export interface Task {
@@ -105,6 +105,7 @@ export const PASTORAL_STATE_COLORS: Record<Exclude<PastoralState, ''>, string> =
   'non-responsive': '#6b7280',
   'resolved': '#22c55e',
   'getting-married': '#ec4899',
+  'preparing-for-baptism': '#3b82f6',
 };
 
-export const RECOMMEND_ACTIONABLE: Recommend[] = ['current', 'expired'];
+export const RECOMMEND_ACTIONABLE: Recommend[] = ['current', 'expiring', 'expired'];
