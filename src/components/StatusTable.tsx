@@ -65,6 +65,7 @@ const PASTORAL_LABELS: Record<string, string> = {
   'under-restrictions': 'under restrictions',
   'non-responsive': 'non-responsive',
   'resolved': 'resolved',
+  'dating-seriously': 'dating seriously',
   'getting-married': 'getting married',
   'preparing-for-baptism': 'preparing for baptism',
 };

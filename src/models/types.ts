@@ -2,7 +2,7 @@ import type { TFile } from 'obsidian';
 
 export type Priority = 'top-10' | 'high' | 'normal' | 'new-move-in';
 export type MemberStatus = 'new' | 'active' | 'inactive';
-export type PastoralState = '' | 'working-with' | 'under-restrictions' | 'non-responsive' | 'resolved' | 'getting-married' | 'preparing-for-baptism';
+export type PastoralState = '' | 'working-with' | 'under-restrictions' | 'non-responsive' | 'resolved' | 'dating-seriously' | 'getting-married' | 'preparing-for-baptism';
 export type Ordinance = 'unknown' | 'baptism' | 'confirmation'
   | 'aaronic-priesthood' | 'melchizedek-priesthood'
   | 'endowment' | 'sealing';
@@ -11,7 +11,7 @@ export type PriesthoodOffice = 'none' | 'deacon' | 'teacher' | 'priest' | 'elder
 
 export const PRIORITIES: Priority[] = ['top-10', 'high', 'normal', 'new-move-in'];
 export const STATUSES: MemberStatus[] = ['new', 'active', 'inactive'];
-export const PASTORAL_STATES: PastoralState[] = ['', 'working-with', 'under-restrictions', 'non-responsive', 'resolved', 'getting-married', 'preparing-for-baptism'];
+export const PASTORAL_STATES: PastoralState[] = ['', 'working-with', 'under-restrictions', 'non-responsive', 'resolved', 'dating-seriously', 'getting-married', 'preparing-for-baptism'];
 export const ORDINANCES: (Ordinance & string)[] = [
   'unknown', 'baptism', 'confirmation', 'aaronic-priesthood',
   'melchizedek-priesthood', 'endowment', 'sealing',
@@ -104,6 +104,7 @@ export const PASTORAL_STATE_COLORS: Record<Exclude<PastoralState, ''>, string> =
   'under-restrictions': '#dc2626',
   'non-responsive': '#6b7280',
   'resolved': '#22c55e',
+  'dating-seriously': '#f472b6',
   'getting-married': '#ec4899',
   'preparing-for-baptism': '#3b82f6',
 };
