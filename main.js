@@ -776,7 +776,7 @@ function LogInteractionCTA({ lastContact, onMarkContacted, onLogInteraction, exp
 // src/models/types.ts
 var PRIORITIES = ["top-10", "high", "normal", "new-move-in"];
 var STATUSES = ["new", "active", "inactive"];
-var PASTORAL_STATES = ["", "working-with", "under-restrictions", "non-responsive", "resolved", "getting-married", "preparing-for-baptism"];
+var PASTORAL_STATES = ["", "working-with", "under-restrictions", "non-responsive", "resolved", "dating-seriously", "getting-married", "preparing-for-baptism"];
 var ORDINANCES = [
   "unknown",
   "baptism",
@@ -829,6 +829,7 @@ var PASTORAL_LABELS = {
   "under-restrictions": "under restrictions",
   "non-responsive": "non-responsive",
   "resolved": "resolved",
+  "dating-seriously": "dating seriously",
   "getting-married": "getting married",
   "preparing-for-baptism": "preparing for baptism"
 };
