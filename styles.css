@@ -633,6 +633,43 @@ body.is-mobile .shepherd-row {
 }
 
 /* ── Status band above member notes (MemberBand.tsx) ───────────────────── */
+.shepherd-band-wrap {
+  max-width: var(--file-line-width, 46rem);
+  margin: 0 auto;
+  padding: 12px 0 10px;
+}
+.shepherd-band-wrap .shepherd-band-inner { max-width: none; margin: 0; padding: 10px 0 0; }
+.shepherd-band-top { display: flex; align-items: center; gap: 12px; }
+.shepherd-band-avatar {
+  width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex: none;
+  background: var(--background-modifier-hover);
+}
+.shepherd-band-who {
+  font-size: 10.5px; font-weight: 500; letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+}
+.shepherd-band-actions { margin-left: auto; display: flex; align-items: center; gap: 4px; flex: none; }
+.shepherd-band-link {
+  font-size: 13px; color: var(--text-muted); text-decoration: none; padding: 4px 8px; border-radius: 6px;
+}
+.shepherd-band-link:hover { background: var(--background-modifier-hover); color: var(--text-normal); }
+.shepherd-band-btn {
+  font-size: 13px; padding: 4px 10px; height: auto; border-radius: 6px; margin-left: 4px; cursor: pointer;
+}
+.shepherd-band-people {
+  display: flex; flex-wrap: wrap; gap: 4px 18px; margin-top: 8px; padding-top: 8px;
+  border-top: 1px dashed var(--background-modifier-border); font-size: 12.5px; color: var(--text-muted);
+}
+.shepherd-band-people-label {
+  font-size: 10.5px; font-weight: 500; letter-spacing: 0.09em; text-transform: uppercase; color: var(--text-faint);
+}
+.shepherd-band-person { color: var(--text-normal); cursor: pointer; text-decoration: none; }
+.shepherd-band-person:hover { text-decoration: underline; }
+.shepherd-modal-input { width: 100%; font-size: 15px; padding: 8px 10px; resize: vertical; }
+@media (max-width: 700px) {
+  .shepherd-band-top { flex-wrap: wrap; }
+  .shepherd-band-actions { margin-left: 0; width: 100%; flex-wrap: wrap; }
+}
 .shepherd-band {
   flex: none;
   border-bottom: 1px solid var(--background-modifier-border);

@@ -22,7 +22,7 @@ __export(main_exports, {
   default: () => ShepherdPlugin
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian8 = require("obsidian");
+var import_obsidian9 = require("obsidian");
 
 // src/ShepherdView.tsx
 var import_obsidian5 = require("obsidian");
@@ -1519,9 +1519,30 @@ var ShepherdView = class extends import_obsidian5.ItemView {
 };
 
 // src/BandManager.ts
-var import_obsidian6 = require("obsidian");
+var import_obsidian7 = require("obsidian");
 
 // src/components/MemberBand.tsx
+var import_obsidian6 = require("obsidian");
+function People({ label, people, onOpen, max = 4 }) {
+  if (!people.length)
+    return null;
+  const shown = people.slice(0, max);
+  return /* @__PURE__ */ _("span", { class: "shepherd-band-people-group" }, /* @__PURE__ */ _("span", { class: "shepherd-band-people-label" }, label), " ", shown.map((p3, i3) => /* @__PURE__ */ _("span", null, p3.file ? /* @__PURE__ */ _("a", { class: "shepherd-band-person", onClick: () => onOpen(p3.file) }, p3.name) : /* @__PURE__ */ _("span", null, p3.name), i3 < shown.length - 1 ? ", " : "")), people.length > max && /* @__PURE__ */ _("span", { class: "shepherd-band-sub" }, " +", people.length - max));
+}
+function TopRow({ member, photoUrl, onAction }) {
+  const bits = [];
+  if (member.age != null)
+    bits.push(String(member.age));
+  if (member.priesthood && member.priesthood !== "none")
+    bits.push(member.priesthood.replace(/-/g, " "));
+  const tenure = formatMovedInSince(member.movedIn);
+  if (tenure)
+    bits.push(tenure);
+  const digits = (member.phone || "").replace(/\D/g, "");
+  const city = parseCity(member.address);
+  const maps = member.address ? buildMapsUrl(member.address, import_obsidian6.Platform.isMacOS || import_obsidian6.Platform.isIosApp) : "";
+  return /* @__PURE__ */ _("div", { class: "shepherd-band-top" }, photoUrl ? /* @__PURE__ */ _("img", { class: "shepherd-band-avatar", src: photoUrl, alt: "" }) : /* @__PURE__ */ _("div", { class: "shepherd-band-avatar is-empty" }), /* @__PURE__ */ _("div", { class: "shepherd-band-who" }, bits.join(" \xB7 ")), /* @__PURE__ */ _("div", { class: "shepherd-band-actions" }, digits && /* @__PURE__ */ _("a", { class: "shepherd-band-link", href: `tel:${digits}` }, "Call"), digits && /* @__PURE__ */ _("a", { class: "shepherd-band-link", href: `sms:${digits}` }, "Text"), member.email && /* @__PURE__ */ _("a", { class: "shepherd-band-link", href: `mailto:${member.email}` }, "Email"), city && /* @__PURE__ */ _("a", { class: "shepherd-band-link", href: maps, target: "_blank", title: member.address }, city), onAction && /* @__PURE__ */ _("button", { type: "button", class: "shepherd-band-btn mod-cta", onClick: (e3) => onAction("log", e3) }, "Log interaction"), onAction && /* @__PURE__ */ _("button", { type: "button", class: "shepherd-band-btn", "aria-label": "Presence and check-in", title: "Presence and check-in", onClick: (e3) => onAction("more", e3) }, "\u22EF")));
+}
 var ORDINANCE = {
   unknown: "Unknown",
   baptism: "Baptism",
@@ -1570,7 +1591,13 @@ function Cell({ label, field, onPick, children }) {
     inner
   );
 }
-function MemberBand({ member, onPick }) {
+function MemberBand({ member, onPick, onAction, onOpen, photoUrl = null, people }) {
+  const open = onOpen != null ? onOpen : () => {
+  };
+  const hasPeople = !!people && people.ministeredBy.length + people.ministersTo.length + people.housemates.length > 0;
+  return /* @__PURE__ */ _("div", { class: "shepherd-band-wrap" }, /* @__PURE__ */ _(TopRow, { member, photoUrl, onAction }), /* @__PURE__ */ _(StatusCells, { member, onPick }), hasPeople && /* @__PURE__ */ _("div", { class: "shepherd-band-people" }, /* @__PURE__ */ _(People, { label: "Ministered by", people: people.ministeredBy, onOpen: open }), /* @__PURE__ */ _(People, { label: "Ministers to", people: people.ministersTo, onOpen: open, max: 3 }), /* @__PURE__ */ _(People, { label: "Housemates", people: people.housemates, onOpen: open })));
+}
+function StatusCells({ member, onPick }) {
   var _a, _b, _c;
   const rec = (_a = RECOMMEND[member.recommend]) != null ? _a : RECOMMEND.unknown;
   const exp = monthYear(member.recommendExp);
@@ -1582,6 +1609,41 @@ function MemberBand({ member, onPick }) {
 
 // src/BandManager.ts
 var TITLE = (s3) => s3 ? s3.replace(/-/g, " ").replace(/^./, (c3) => c3.toUpperCase()) : "None";
+var TextModal = class extends import_obsidian7.Modal {
+  constructor(app, heading, initial, multiline, placeholder, onSave) {
+    super(app);
+    this.heading = heading;
+    this.initial = initial;
+    this.multiline = multiline;
+    this.placeholder = placeholder;
+    this.onSave = onSave;
+  }
+  onOpen() {
+    this.titleEl.setText(this.heading);
+    let value = this.initial;
+    const input = this.multiline ? this.contentEl.createEl("textarea", { cls: "shepherd-modal-input", attr: { rows: "5", placeholder: this.placeholder } }) : this.contentEl.createEl("input", { cls: "shepherd-modal-input", attr: { type: "text", placeholder: this.placeholder } });
+    input.value = value;
+    input.addEventListener("input", () => {
+      value = input.value;
+    });
+    const save = () => {
+      this.close();
+      if (value.trim() || !this.multiline)
+        this.onSave(value);
+    };
+    input.addEventListener("keydown", (e3) => {
+      if (e3.key === "Enter" && !(this.multiline && e3.shiftKey)) {
+        e3.preventDefault();
+        save();
+      }
+    });
+    new import_obsidian7.Setting(this.contentEl).addButton((b) => b.setButtonText("Save").setCta().onClick(save));
+    window.setTimeout(() => input.focus(), 0);
+  }
+  onClose() {
+    this.contentEl.empty();
+  }
+};
 var BandManager = class {
   constructor(app, memberService) {
     this.app = app;
@@ -1590,7 +1652,7 @@ var BandManager = class {
   }
   pick(member, field, e3) {
     const file = member.file;
-    const menu = new import_obsidian6.Menu();
+    const menu = new import_obsidian7.Menu();
     const add = (opts, current, write) => {
       for (const o3 of opts) {
         menu.addItem((i3) => i3.setTitle(TITLE(o3)).setChecked(o3 === current).onClick(() => void write(o3)));
@@ -1609,13 +1671,58 @@ var BandManager = class {
     }
     if (field === "contact") {
       menu.addItem((i3) => i3.setTitle("Mark contacted today").setIcon("check").onClick(() => void this.writer.markContacted(file)));
+      menu.addItem((i3) => i3.setTitle("Log interaction\u2026").setIcon("pencil").onClick(() => this.logInteraction(member)));
+    }
+    menu.showAtMouseEvent(e3);
+  }
+  logInteraction(member) {
+    new TextModal(
+      this.app,
+      `Log interaction \xB7 ${member.name}`,
+      "",
+      true,
+      "What happened?",
+      (note) => void this.writer.logInteraction(member.file, note.trim())
+    ).open();
+  }
+  action(member, a3, e3) {
+    if (a3 === "log") {
+      this.logInteraction(member);
+      return;
+    }
+    const file = member.file;
+    const menu = new import_obsidian7.Menu();
+    const add = (opts, current, write) => {
+      for (const o3 of opts) {
+        menu.addItem((i3) => i3.setTitle(TITLE(o3)).setChecked(o3 === current).onClick(() => void write(o3)));
+      }
+    };
+    menu.addItem((i3) => i3.setTitle("Presence").setIsLabel(true));
+    add(STATUSES, member.status, (v3) => this.writer.setStatus(file, v3));
+    menu.addSeparator();
+    menu.addItem((i3) => i3.setTitle("Check-in").setIsLabel(true));
+    add(CHECK_INS, member.checkIn, (v3) => this.writer.setCheckIn(file, v3));
+    if (member.checkIn !== "none") {
+      menu.addSeparator();
+      menu.addItem((i3) => i3.setTitle("Message").setIsLabel(true));
+      add(CHECK_IN_STYLES, member.checkInStyle, (v3) => this.writer.setCheckInStyle(file, v3));
+      if (member.checkInStyle === "gif") {
+        menu.addItem((i3) => i3.setTitle(member.gifPrompt ? `GIF prompt: ${member.gifPrompt}` : "Set GIF prompt\u2026").setIcon("image").onClick(() => new TextModal(
+          this.app,
+          "GIF prompt",
+          member.gifPrompt,
+          false,
+          "e.g. locked in, you got this",
+          (v3) => void this.writer.setGifPrompt(file, v3)
+        ).open()));
+      }
     }
     menu.showAtMouseEvent(e3);
   }
   /** Re-render the band in every markdown leaf (cheap: a handful of leaves). */
   refreshAll() {
     this.app.workspace.getLeavesOfType("markdown").forEach((leaf) => {
-      if (leaf.view instanceof import_obsidian6.MarkdownView)
+      if (leaf.view instanceof import_obsidian7.MarkdownView)
         void this.refreshView(leaf.view);
     });
   }
@@ -1623,7 +1730,7 @@ var BandManager = class {
   refreshFile(file) {
     this.app.workspace.getLeavesOfType("markdown").forEach((leaf) => {
       var _a;
-      if (leaf.view instanceof import_obsidian6.MarkdownView && ((_a = leaf.view.file) == null ? void 0 : _a.path) === file.path) {
+      if (leaf.view instanceof import_obsidian7.MarkdownView && ((_a = leaf.view.file) == null ? void 0 : _a.path) === file.path) {
         void this.refreshView(leaf.view);
       }
     });
@@ -1648,7 +1755,22 @@ var BandManager = class {
       const member = await this.memberService.buildMemberState(file);
       if (((_a = view.file) == null ? void 0 : _a.path) !== file.path)
         return;
-      J(_(MemberBand, { member, onPick: (f3, e3) => this.pick(member, f3, e3) }), band);
+      const photo = member.photo ? this.app.vault.getAbstractFileByPath(member.photo) : null;
+      const photoUrl = photo instanceof import_obsidian7.TFile ? this.app.vault.getResourcePath(photo) : null;
+      const person = (name) => ({ name, file: this.memberService.resolveMemberByName(name) });
+      const people = {
+        ministeredBy: member.ministeredBy.map(person),
+        ministersTo: member.ministersTo.map(person),
+        housemates: this.memberService.getHousemates(member)
+      };
+      J(_(MemberBand, {
+        member,
+        photoUrl,
+        people,
+        onPick: (f3, e3) => this.pick(member, f3, e3),
+        onAction: (a3, e3) => this.action(member, a3, e3),
+        onOpen: (target) => void view.leaf.openFile(target)
+      }), band);
     } catch (e3) {
       J(null, band);
       band.remove();
@@ -1663,8 +1785,8 @@ var BandManager = class {
 };
 
 // src/SettingsTab.ts
-var import_obsidian7 = require("obsidian");
-var ShepherdSettingTab = class extends import_obsidian7.PluginSettingTab {
+var import_obsidian8 = require("obsidian");
+var ShepherdSettingTab = class extends import_obsidian8.PluginSettingTab {
   constructor(app, plugin) {
     super(app, plugin);
     this.plugin = plugin;
@@ -1672,20 +1794,20 @@ var ShepherdSettingTab = class extends import_obsidian7.PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    new import_obsidian7.Setting(containerEl).setName("Member folder").setDesc("Vault-relative folder holding member files. Files outside it get the empty panel.").addText(
+    new import_obsidian8.Setting(containerEl).setName("Member folder").setDesc("Vault-relative folder holding member files. Files outside it get the empty panel.").addText(
       (text) => text.setPlaceholder("Church/Members").setValue(this.plugin.settings.memberDir).onChange(async (value) => {
         this.plugin.settings.memberDir = value.replace(/\/+$/, "").trim();
         await this.plugin.saveSettings();
         this.plugin.refreshView();
       })
     );
-    new import_obsidian7.Setting(containerEl).setName("Dashboard path").setDesc('Note opened by the "Open Dashboard" link in the empty state.').addText(
+    new import_obsidian8.Setting(containerEl).setName("Dashboard path").setDesc('Note opened by the "Open Dashboard" link in the empty state.').addText(
       (text) => text.setPlaceholder("Church/_system/views/_dashboard.md").setValue(this.plugin.settings.dashboardPath).onChange(async (value) => {
         this.plugin.settings.dashboardPath = value.trim();
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian7.Setting(containerEl).setName("Overdue threshold (days)").setDesc("Days without contact before a top-10 or high-priority member is flagged overdue.").addText(
+    new import_obsidian8.Setting(containerEl).setName("Overdue threshold (days)").setDesc("Days without contact before a top-10 or high-priority member is flagged overdue.").addText(
       (text) => text.setPlaceholder("14").setValue(String(this.plugin.settings.overdueThreshold)).onChange(async (value) => {
         const n2 = Number(value);
         if (!Number.isFinite(n2) || n2 <= 0)
@@ -1695,7 +1817,7 @@ var ShepherdSettingTab = class extends import_obsidian7.PluginSettingTab {
         this.plugin.refreshView();
       })
     );
-    new import_obsidian7.Setting(containerEl).setName("Show contact bar").setDesc("Display call / text / email chips on the member panel.").addToggle(
+    new import_obsidian8.Setting(containerEl).setName("Show contact bar").setDesc("Display call / text / email chips on the member panel.").addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.showContactBar).onChange(async (value) => {
         this.plugin.settings.showContactBar = value;
         await this.plugin.saveSettings();
@@ -1706,7 +1828,7 @@ var ShepherdSettingTab = class extends import_obsidian7.PluginSettingTab {
 };
 
 // src/main.ts
-var ShepherdPlugin = class extends import_obsidian8.Plugin {
+var ShepherdPlugin = class extends import_obsidian9.Plugin {
   constructor() {
     super(...arguments);
     this.settings = DEFAULT_SETTINGS;
@@ -1787,13 +1909,13 @@ var ShepherdPlugin = class extends import_obsidian8.Plugin {
     this.registerEvent(
       this.app.metadataCache.on("changed", (file) => {
         var _a;
-        if (file instanceof import_obsidian8.TFile && this.isMemberFile(file))
+        if (file instanceof import_obsidian9.TFile && this.isMemberFile(file))
           (_a = this.bands) == null ? void 0 : _a.refreshFile(file);
       })
     );
     this.registerEvent(
       this.app.workspace.on("file-open", (file) => {
-        if (file instanceof import_obsidian8.TFile) {
+        if (file instanceof import_obsidian9.TFile) {
           this.scheduleRefresh(file);
         }
       })
@@ -1806,7 +1928,7 @@ var ShepherdPlugin = class extends import_obsidian8.Plugin {
     );
     this.registerEvent(
       this.app.vault.on("modify", (file) => {
-        if (!(file instanceof import_obsidian8.TFile) || !this.isMemberFile(file))
+        if (!(file instanceof import_obsidian9.TFile) || !this.isMemberFile(file))
           return;
         const view = this.getView();
         if (!view)
