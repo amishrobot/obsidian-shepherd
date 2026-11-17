@@ -1,5 +1,5 @@
 import { App, EventRef, TFile, parseYaml } from 'obsidian';
-import { MemberState, Priority, MemberStatus, PastoralState, Ordinance, Recommend, PriesthoodOffice, Task, Interaction, ShepherdSettings, RelationshipPerson } from '../models/types';
+import { MemberState, Priority, MemberStatus, PastoralState, Ordinance, Recommend, PriesthoodOffice, Task, Interaction, ShepherdSettings, RelationshipPerson, CheckIn, CheckInStyle } from '../models/types';
 import { parseMinistering, normalizeAddress } from './helpers';
 
 interface MemberIndexEntry {
@@ -63,6 +63,9 @@ export class MemberService {
       priority: (fm.priority || 'normal') as Priority,
       status: (fm.status || 'new') as MemberStatus,
       pastoralState: (fm['pastoral-state'] || '') as PastoralState,
+      checkIn: (fm['check-in'] || 'none') as CheckIn,
+      checkInStyle: (fm['check-in-style'] || 'gif') as CheckInStyle,
+      gifPrompt: String(fm['gif-prompt'] || ''),
       nextOrdinance: (fm['next-ordinance'] || 'unknown') as Ordinance,
       recommend: (fm.recommend || 'unknown') as Recommend,
       recommendExp: String(fm['recommend-exp'] || ''),

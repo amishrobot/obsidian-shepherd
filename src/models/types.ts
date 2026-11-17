@@ -7,11 +7,15 @@ export type Ordinance = 'unknown' | 'baptism' | 'confirmation'
   | 'aaronic-priesthood' | 'melchizedek-priesthood'
   | 'endowment' | 'sealing';
 export type Recommend = 'current' | 'expiring' | 'expired' | 'none' | 'unknown';
+export type CheckIn = 'none' | 'daily' | 'weekly';
+export type CheckInStyle = 'gif' | 'quick-text' | 'encouragement' | 'scripture' | 'write-myself';
 export type PriesthoodOffice = 'none' | 'deacon' | 'teacher' | 'priest' | 'elder' | 'high-priest';
 
 export const PRIORITIES: Priority[] = ['top-10', 'high', 'normal', 'new-move-in'];
 export const STATUSES: MemberStatus[] = ['new', 'active', 'inactive'];
 export const PASTORAL_STATES: PastoralState[] = ['', 'working-with', 'under-restrictions', 'non-responsive', 'resolved', 'dating-seriously', 'getting-married', 'preparing-for-baptism'];
+export const CHECK_INS: CheckIn[] = ['none', 'daily', 'weekly'];
+export const CHECK_IN_STYLES: CheckInStyle[] = ['gif', 'quick-text', 'encouragement', 'scripture', 'write-myself'];
 export const ORDINANCES: (Ordinance & string)[] = [
   'unknown', 'baptism', 'confirmation', 'aaronic-priesthood',
   'melchizedek-priesthood', 'endowment', 'sealing',
@@ -45,6 +49,9 @@ export interface MemberState {
   priority: Priority;
   status: MemberStatus;
   pastoralState: PastoralState;
+  checkIn: CheckIn;
+  checkInStyle: CheckInStyle;
+  gifPrompt: string;
   nextOrdinance: Ordinance;
   recommend: Recommend;
   recommendExp: string;

@@ -3,7 +3,7 @@ import { h, render } from 'preact';
 import { ShepherdPanel } from './components/ShepherdPanel';
 import { MemberService } from './services/MemberService';
 import { WriteService } from './services/WriteService';
-import { MemberState, Priority, MemberStatus, PastoralState, Ordinance, Recommend, ShepherdSettings } from './models/types';
+import { MemberState, Priority, MemberStatus, PastoralState, Ordinance, Recommend, CheckIn, CheckInStyle, ShepherdSettings } from './models/types';
 
 export const VIEW_TYPE_SHEPHERD = 'shepherd-view';
 
@@ -141,6 +141,18 @@ export class ShepherdView extends ItemView {
         },
         onRecommendChange: async (r: Recommend) => {
           await this.writeService.setRecommend(file, r);
+          await refresh();
+        },
+        onCheckInChange: async (c: CheckIn) => {
+          await this.writeService.setCheckIn(file, c);
+          await refresh();
+        },
+        onCheckInStyleChange: async (s: CheckInStyle) => {
+          await this.writeService.setCheckInStyle(file, s);
+          await refresh();
+        },
+        onGifPromptChange: async (prompt: string) => {
+          await this.writeService.setGifPrompt(file, prompt);
           await refresh();
         },
         onMarkContacted: async () => {

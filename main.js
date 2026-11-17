@@ -22,7 +22,7 @@ __export(main_exports, {
   default: () => ShepherdPlugin
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian7 = require("obsidian");
+var import_obsidian8 = require("obsidian");
 
 // src/ShepherdView.tsx
 var import_obsidian5 = require("obsidian");
@@ -777,6 +777,8 @@ function LogInteractionCTA({ lastContact, onMarkContacted, onLogInteraction, exp
 var PRIORITIES = ["top-10", "high", "normal", "new-move-in"];
 var STATUSES = ["new", "active", "inactive"];
 var PASTORAL_STATES = ["", "working-with", "under-restrictions", "non-responsive", "resolved", "dating-seriously", "getting-married", "preparing-for-baptism"];
+var CHECK_INS = ["none", "daily", "weekly"];
+var CHECK_IN_STYLES = ["gif", "quick-text", "encouragement", "scripture", "write-myself"];
 var ORDINANCES = [
   "unknown",
   "baptism",
@@ -833,6 +835,13 @@ var PASTORAL_LABELS = {
   "getting-married": "getting married",
   "preparing-for-baptism": "preparing for baptism"
 };
+var CHECK_IN_STYLE_LABELS = {
+  "gif": "GIF",
+  "quick-text": "quick text",
+  "encouragement": "encouragement",
+  "scripture": "scripture / spiritual thought",
+  "write-myself": "I'll write it"
+};
 function StatusTable(p3) {
   const pastoralVariant = p3.pastoral === "working-with" ? "warn" : p3.pastoral === "under-restrictions" ? "danger" : void 0;
   const recommendVariant = p3.recommend === "expired" ? "danger" : p3.recommend === "expiring" ? "warn" : void 0;
@@ -844,7 +853,33 @@ function StatusTable(p3) {
       onChange: p3.onPastoralChange,
       labels: PASTORAL_LABELS
     }
-  ))), /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Next ord."), /* @__PURE__ */ _(
+  ))), /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Check-in"), /* @__PURE__ */ _(Segmented, { options: CHECK_INS, current: p3.checkIn, onChange: p3.onCheckInChange })), p3.checkIn !== "none" && /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Message"), /* @__PURE__ */ _(
+    Dropdown,
+    {
+      options: CHECK_IN_STYLES,
+      current: p3.checkInStyle,
+      onChange: p3.onCheckInStyleChange,
+      labels: CHECK_IN_STYLE_LABELS
+    }
+  )), p3.checkIn !== "none" && p3.checkInStyle === "gif" && /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "GIF prompt"), /* @__PURE__ */ _(
+    "input",
+    {
+      key: p3.gifPrompt,
+      class: "shepherd-dropdown shepherd-gif-prompt",
+      type: "text",
+      placeholder: "e.g. locked in, you got this",
+      defaultValue: p3.gifPrompt,
+      onBlur: (e3) => {
+        const v3 = e3.target.value;
+        if (v3.trim() !== p3.gifPrompt)
+          p3.onGifPromptChange(v3);
+      },
+      onKeyDown: (e3) => {
+        if (e3.key === "Enter")
+          e3.target.blur();
+      }
+    }
+  )), /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Next ord."), /* @__PURE__ */ _(
     Dropdown,
     {
       options: ORDINANCES,
@@ -935,11 +970,17 @@ function ShepherdPanel(p3) {
       nextOrdinance: m3.nextOrdinance,
       recommend: m3.recommend,
       recommendExp: m3.recommendExp,
+      checkIn: m3.checkIn,
+      checkInStyle: m3.checkInStyle,
+      gifPrompt: m3.gifPrompt,
       onPriorityChange: p3.onPriorityChange,
       onStatusChange: p3.onStatusChange,
       onPastoralChange: p3.onPastoralStateChange,
       onOrdinanceChange: p3.onOrdinanceChange,
-      onRecommendChange: p3.onRecommendChange
+      onRecommendChange: p3.onRecommendChange,
+      onCheckInChange: p3.onCheckInChange,
+      onCheckInStyleChange: p3.onCheckInStyleChange,
+      onGifPromptChange: p3.onGifPromptChange
     }
   ), /* @__PURE__ */ _(TaskList, { tasks: m3.tasks, onToggle: p3.onToggleTask, onAdd: p3.onAddTask }));
 }
@@ -987,6 +1028,9 @@ var MemberService = class {
       priority: fm.priority || "normal",
       status: fm.status || "new",
       pastoralState: fm["pastoral-state"] || "",
+      checkIn: fm["check-in"] || "none",
+      checkInStyle: fm["check-in-style"] || "gif",
+      gifPrompt: String(fm["gif-prompt"] || ""),
       nextOrdinance: fm["next-ordinance"] || "unknown",
       recommend: fm.recommend || "unknown",
       recommendExp: String(fm["recommend-exp"] || ""),
@@ -1164,6 +1208,28 @@ var WriteService = class {
   async setPastoralState(file, state) {
     await this.app.fileManager.processFrontMatter(file, (fm) => {
       fm["pastoral-state"] = state;
+    });
+  }
+  async setCheckIn(file, checkIn) {
+    await this.app.fileManager.processFrontMatter(file, (fm) => {
+      if (checkIn === "none")
+        delete fm["check-in"];
+      else
+        fm["check-in"] = checkIn;
+    });
+  }
+  async setCheckInStyle(file, style) {
+    await this.app.fileManager.processFrontMatter(file, (fm) => {
+      fm["check-in-style"] = style;
+    });
+  }
+  async setGifPrompt(file, prompt) {
+    const value = prompt.trim();
+    await this.app.fileManager.processFrontMatter(file, (fm) => {
+      if (value)
+        fm["gif-prompt"] = value;
+      else
+        delete fm["gif-prompt"];
     });
   }
   async setOrdinance(file, ordinance) {
@@ -1407,6 +1473,18 @@ var ShepherdView = class extends import_obsidian5.ItemView {
           await this.writeService.setRecommend(file, r3);
           await refresh();
         },
+        onCheckInChange: async (c3) => {
+          await this.writeService.setCheckIn(file, c3);
+          await refresh();
+        },
+        onCheckInStyleChange: async (s3) => {
+          await this.writeService.setCheckInStyle(file, s3);
+          await refresh();
+        },
+        onGifPromptChange: async (prompt) => {
+          await this.writeService.setGifPrompt(file, prompt);
+          await refresh();
+        },
         onMarkContacted: async () => {
           await this.writeService.markContacted(file);
           await refresh();
@@ -1432,9 +1510,116 @@ var ShepherdView = class extends import_obsidian5.ItemView {
   }
 };
 
-// src/SettingsTab.ts
+// src/BandManager.ts
 var import_obsidian6 = require("obsidian");
-var ShepherdSettingTab = class extends import_obsidian6.PluginSettingTab {
+
+// src/components/MemberBand.tsx
+var ORDINANCE = {
+  unknown: "Unknown",
+  baptism: "Baptism",
+  confirmation: "Confirmation",
+  "aaronic-priesthood": "Aaronic Priesthood",
+  "melchizedek-priesthood": "Melchizedek Priesthood",
+  endowment: "Endowment",
+  sealing: "Sealing"
+};
+var RECOMMEND = {
+  current: { label: "Current", tone: "ok" },
+  expiring: { label: "Expiring", tone: "warn" },
+  expired: { label: "Expired", tone: "danger" },
+  none: { label: "None", tone: "muted" },
+  unknown: { label: "Unknown", tone: "muted" }
+};
+var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+function monthYear(iso) {
+  const m3 = /^(\d{4})-(\d{2})/.exec(iso || "");
+  if (!m3)
+    return "";
+  const mi = parseInt(m3[2], 10) - 1;
+  return mi >= 0 && mi < 12 ? `${MONTHS[mi]} ${m3[1]}` : "";
+}
+function callingNames(raw) {
+  return (raw || "").split("/").map((c3) => c3.replace(/\s*\([^)]*\)\s*$/, "").trim()).filter(Boolean).join(" \xB7 ");
+}
+function Cell({ label, children }) {
+  return /* @__PURE__ */ _("div", { class: "shepherd-band-cell" }, /* @__PURE__ */ _("div", { class: "shepherd-band-label" }, label), /* @__PURE__ */ _("div", { class: "shepherd-band-value" }, children));
+}
+function MemberBand({ member }) {
+  var _a, _b;
+  const rec = (_a = RECOMMEND[member.recommend]) != null ? _a : RECOMMEND.unknown;
+  const exp = monthYear(member.recommendExp);
+  const calling = callingNames(member.calling);
+  const contact = formatLastContact(member.lastContact || null);
+  const flags = [];
+  if (member.priority && member.priority !== "normal") {
+    flags.push({ text: member.priority === "new-move-in" ? "new move-in" : member.priority, tone: member.priority === "new-move-in" ? "info" : "warn" });
+  }
+  if (member.pastoralState)
+    flags.push({ text: member.pastoralState.replace(/-/g, " "), tone: "info" });
+  if (member.checkIn && member.checkIn !== "none")
+    flags.push({ text: `check-in ${member.checkIn}`, tone: "muted" });
+  return /* @__PURE__ */ _("div", { class: "shepherd-band-inner" }, /* @__PURE__ */ _(Cell, { label: "Recommend" }, /* @__PURE__ */ _("span", { class: `shepherd-band-pill is-${rec.tone}` }, rec.label), exp && member.recommend !== "none" && /* @__PURE__ */ _("span", { class: "shepherd-band-sub" }, member.recommend === "expired" ? "since" : "until", " ", exp)), /* @__PURE__ */ _(Cell, { label: "Next ordinance" }, (_b = ORDINANCE[member.nextOrdinance]) != null ? _b : "\u2014"), /* @__PURE__ */ _(Cell, { label: "Calling" }, calling ? /* @__PURE__ */ _("span", { class: "shepherd-band-text", title: member.calling }, calling) : /* @__PURE__ */ _("span", { class: "shepherd-band-none" }, "None")), /* @__PURE__ */ _(Cell, { label: "Last contact" }, /* @__PURE__ */ _("span", { class: contact === "never" ? "shepherd-band-none" : "" }, contact === "never" ? "Never logged" : contact)), flags.length > 0 && /* @__PURE__ */ _("div", { class: "shepherd-band-flags" }, flags.map((f3) => /* @__PURE__ */ _("span", { class: `shepherd-band-pill is-${f3.tone}` }, f3.text))));
+}
+
+// src/BandManager.ts
+var BandManager = class {
+  constructor(app, memberService) {
+    this.app = app;
+    this.memberService = memberService;
+  }
+  /** Re-render the band in every markdown leaf (cheap: a handful of leaves). */
+  refreshAll() {
+    this.app.workspace.getLeavesOfType("markdown").forEach((leaf) => {
+      if (leaf.view instanceof import_obsidian6.MarkdownView)
+        void this.refreshView(leaf.view);
+    });
+  }
+  /** Re-render only the leaves showing this file. */
+  refreshFile(file) {
+    this.app.workspace.getLeavesOfType("markdown").forEach((leaf) => {
+      var _a;
+      if (leaf.view instanceof import_obsidian6.MarkdownView && ((_a = leaf.view.file) == null ? void 0 : _a.path) === file.path) {
+        void this.refreshView(leaf.view);
+      }
+    });
+  }
+  async refreshView(view) {
+    var _a;
+    const host = view.contentEl;
+    let band = host.querySelector(":scope > .shepherd-band");
+    const file = view.file;
+    if (!file || !this.memberService.isMemberFile(file)) {
+      if (band) {
+        J(null, band);
+        band.remove();
+      }
+      return;
+    }
+    if (!band) {
+      band = createDiv({ cls: "shepherd-band" });
+      host.prepend(band);
+    }
+    try {
+      const member = await this.memberService.buildMemberState(file);
+      if (((_a = view.file) == null ? void 0 : _a.path) !== file.path)
+        return;
+      J(_(MemberBand, { member }), band);
+    } catch (e3) {
+      J(null, band);
+      band.remove();
+    }
+  }
+  removeAll() {
+    document.querySelectorAll(".shepherd-band").forEach((el) => {
+      J(null, el);
+      el.remove();
+    });
+  }
+};
+
+// src/SettingsTab.ts
+var import_obsidian7 = require("obsidian");
+var ShepherdSettingTab = class extends import_obsidian7.PluginSettingTab {
   constructor(app, plugin) {
     super(app, plugin);
     this.plugin = plugin;
@@ -1442,20 +1627,20 @@ var ShepherdSettingTab = class extends import_obsidian6.PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    new import_obsidian6.Setting(containerEl).setName("Member folder").setDesc("Vault-relative folder holding member files. Files outside it get the empty panel.").addText(
+    new import_obsidian7.Setting(containerEl).setName("Member folder").setDesc("Vault-relative folder holding member files. Files outside it get the empty panel.").addText(
       (text) => text.setPlaceholder("Church/Members").setValue(this.plugin.settings.memberDir).onChange(async (value) => {
         this.plugin.settings.memberDir = value.replace(/\/+$/, "").trim();
         await this.plugin.saveSettings();
         this.plugin.refreshView();
       })
     );
-    new import_obsidian6.Setting(containerEl).setName("Dashboard path").setDesc('Note opened by the "Open Dashboard" link in the empty state.').addText(
+    new import_obsidian7.Setting(containerEl).setName("Dashboard path").setDesc('Note opened by the "Open Dashboard" link in the empty state.').addText(
       (text) => text.setPlaceholder("Church/_system/views/_dashboard.md").setValue(this.plugin.settings.dashboardPath).onChange(async (value) => {
         this.plugin.settings.dashboardPath = value.trim();
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian6.Setting(containerEl).setName("Overdue threshold (days)").setDesc("Days without contact before a top-10 or high-priority member is flagged overdue.").addText(
+    new import_obsidian7.Setting(containerEl).setName("Overdue threshold (days)").setDesc("Days without contact before a top-10 or high-priority member is flagged overdue.").addText(
       (text) => text.setPlaceholder("14").setValue(String(this.plugin.settings.overdueThreshold)).onChange(async (value) => {
         const n2 = Number(value);
         if (!Number.isFinite(n2) || n2 <= 0)
@@ -1465,7 +1650,7 @@ var ShepherdSettingTab = class extends import_obsidian6.PluginSettingTab {
         this.plugin.refreshView();
       })
     );
-    new import_obsidian6.Setting(containerEl).setName("Show contact bar").setDesc("Display call / text / email chips on the member panel.").addToggle(
+    new import_obsidian7.Setting(containerEl).setName("Show contact bar").setDesc("Display call / text / email chips on the member panel.").addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.showContactBar).onChange(async (value) => {
         this.plugin.settings.showContactBar = value;
         await this.plugin.saveSettings();
@@ -1476,11 +1661,12 @@ var ShepherdSettingTab = class extends import_obsidian6.PluginSettingTab {
 };
 
 // src/main.ts
-var ShepherdPlugin = class extends import_obsidian7.Plugin {
+var ShepherdPlugin = class extends import_obsidian8.Plugin {
   constructor() {
     super(...arguments);
     this.settings = DEFAULT_SETTINGS;
     this.modifyTimeout = null;
+    this.bands = null;
   }
   async onload() {
     console.log("Loading Shepherd");
@@ -1537,9 +1723,32 @@ var ShepherdPlugin = class extends import_obsidian7.Plugin {
         return true;
       }
     });
+    const bandMembers = new MemberService(this.app, this.settings);
+    this.registerEvent(bandMembers.indexInvalidationRef);
+    this.bands = new BandManager(this.app, bandMembers);
+    document.body.addClass("shepherd-band-on");
+    this.app.workspace.onLayoutReady(() => {
+      var _a;
+      return (_a = this.bands) == null ? void 0 : _a.refreshAll();
+    });
+    this.registerEvent(this.app.workspace.on("layout-change", () => {
+      var _a;
+      return (_a = this.bands) == null ? void 0 : _a.refreshAll();
+    }));
+    this.registerEvent(this.app.workspace.on("file-open", () => {
+      var _a;
+      return (_a = this.bands) == null ? void 0 : _a.refreshAll();
+    }));
+    this.registerEvent(
+      this.app.metadataCache.on("changed", (file) => {
+        var _a;
+        if (file instanceof import_obsidian8.TFile && this.isMemberFile(file))
+          (_a = this.bands) == null ? void 0 : _a.refreshFile(file);
+      })
+    );
     this.registerEvent(
       this.app.workspace.on("file-open", (file) => {
-        if (file instanceof import_obsidian7.TFile) {
+        if (file instanceof import_obsidian8.TFile) {
           this.scheduleRefresh(file);
         }
       })
@@ -1552,7 +1761,7 @@ var ShepherdPlugin = class extends import_obsidian7.Plugin {
     );
     this.registerEvent(
       this.app.vault.on("modify", (file) => {
-        if (!(file instanceof import_obsidian7.TFile) || !this.isMemberFile(file))
+        if (!(file instanceof import_obsidian8.TFile) || !this.isMemberFile(file))
           return;
         const view = this.getView();
         if (!view)
@@ -1564,7 +1773,10 @@ var ShepherdPlugin = class extends import_obsidian7.Plugin {
     );
   }
   async onunload() {
+    var _a;
     console.log("Unloading Shepherd");
+    (_a = this.bands) == null ? void 0 : _a.removeAll();
+    document.body.removeClass("shepherd-band-on");
   }
   isMemberFile(file) {
     return file.path.startsWith(this.settings.memberDir + "/") && file.extension === "md";

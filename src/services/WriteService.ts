@@ -1,5 +1,5 @@
 import { App, TFile } from 'obsidian';
-import { Priority, MemberStatus, PastoralState, Ordinance, Recommend } from '../models/types';
+import { Priority, MemberStatus, PastoralState, Ordinance, Recommend, CheckIn, CheckInStyle } from '../models/types';
 
 export class WriteService {
   constructor(private app: App) {}
@@ -19,6 +19,27 @@ export class WriteService {
   async setPastoralState(file: TFile, state: PastoralState): Promise<void> {
     await this.app.fileManager.processFrontMatter(file, (fm) => {
       fm['pastoral-state'] = state;
+    });
+  }
+
+  async setCheckIn(file: TFile, checkIn: CheckIn): Promise<void> {
+    await this.app.fileManager.processFrontMatter(file, (fm) => {
+      if (checkIn === 'none') delete fm['check-in'];
+      else fm['check-in'] = checkIn;
+    });
+  }
+
+  async setCheckInStyle(file: TFile, style: CheckInStyle): Promise<void> {
+    await this.app.fileManager.processFrontMatter(file, (fm) => {
+      fm['check-in-style'] = style;
+    });
+  }
+
+  async setGifPrompt(file: TFile, prompt: string): Promise<void> {
+    const value = prompt.trim();
+    await this.app.fileManager.processFrontMatter(file, (fm) => {
+      if (value) fm['gif-prompt'] = value;
+      else delete fm['gif-prompt'];
     });
   }
 

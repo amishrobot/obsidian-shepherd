@@ -1,7 +1,7 @@
 import { h, JSX } from 'preact';
 import {
-  Priority, MemberStatus, PastoralState, Ordinance, Recommend,
-  PRIORITIES, STATUSES, PASTORAL_STATES, ORDINANCES, RECOMMEND_ACTIONABLE,
+  Priority, MemberStatus, PastoralState, Ordinance, Recommend, CheckIn, CheckInStyle,
+  PRIORITIES, STATUSES, PASTORAL_STATES, ORDINANCES, RECOMMEND_ACTIONABLE, CHECK_INS, CHECK_IN_STYLES,
 } from '../models/types';
 
 interface Props {
@@ -11,11 +11,17 @@ interface Props {
   nextOrdinance: Ordinance;
   recommend: Recommend;
   recommendExp: string;
+  checkIn: CheckIn;
+  checkInStyle: CheckInStyle;
+  gifPrompt: string;
   onPriorityChange: (p: Priority) => void;
   onStatusChange: (s: MemberStatus) => void;
   onPastoralChange: (s: PastoralState) => void;
   onOrdinanceChange: (o: Ordinance) => void;
   onRecommendChange: (r: Recommend) => void;
+  onCheckInChange: (c: CheckIn) => void;
+  onCheckInStyleChange: (s: CheckInStyle) => void;
+  onGifPromptChange: (prompt: string) => void;
 }
 
 function Segmented<T extends string>({ options, current, onChange, variant }: {
@@ -70,6 +76,14 @@ const PASTORAL_LABELS: Record<string, string> = {
   'preparing-for-baptism': 'preparing for baptism',
 };
 
+const CHECK_IN_STYLE_LABELS: Record<CheckInStyle, string> = {
+  'gif': 'GIF',
+  'quick-text': 'quick text',
+  'encouragement': 'encouragement',
+  'scripture': 'scripture / spiritual thought',
+  'write-myself': "I'll write it",
+};
+
 export function StatusTable(p: Props) {
   const pastoralVariant: 'warn' | 'danger' | undefined =
     p.pastoral === 'working-with' ? 'warn' :
@@ -102,6 +116,40 @@ export function StatusTable(p: Props) {
           />
         </div>
       </div>
+      <div class="shepherd-row">
+        <div class="shepherd-row-label">Check-in</div>
+        <Segmented options={CHECK_INS} current={p.checkIn} onChange={p.onCheckInChange} />
+      </div>
+      {p.checkIn !== 'none' && (
+        <div class="shepherd-row">
+          <div class="shepherd-row-label">Message</div>
+          <Dropdown
+            options={CHECK_IN_STYLES as string[]}
+            current={p.checkInStyle}
+            onChange={p.onCheckInStyleChange as (v: string) => void}
+            labels={CHECK_IN_STYLE_LABELS}
+          />
+        </div>
+      )}
+      {p.checkIn !== 'none' && p.checkInStyle === 'gif' && (
+        <div class="shepherd-row">
+          <div class="shepherd-row-label">GIF prompt</div>
+          <input
+            key={p.gifPrompt}
+            class="shepherd-dropdown shepherd-gif-prompt"
+            type="text"
+            placeholder="e.g. locked in, you got this"
+            defaultValue={p.gifPrompt}
+            onBlur={(e) => {
+              const v = (e.target as HTMLInputElement).value;
+              if (v.trim() !== p.gifPrompt) p.onGifPromptChange(v);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+            }}
+          />
+        </div>
+      )}
       <div class="shepherd-row">
         <div class="shepherd-row-label">Next ord.</div>
         <Dropdown
