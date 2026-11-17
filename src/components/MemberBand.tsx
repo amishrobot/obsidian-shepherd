@@ -41,45 +41,62 @@ export function callingNames(raw: string): string {
     .join(' · ');
 }
 
-function Cell({ label, children }: { label: string; children: any }) {
-  return (
-    <div class="shepherd-band-cell">
+export type BandField = 'recommend' | 'ordinance' | 'flags' | 'contact';
+
+const PRIORITY: Record<string, { label: string; tone: string }> = {
+  'top-10': { label: 'Top 10', tone: 'warn' },
+  high: { label: 'High', tone: 'warn' },
+  normal: { label: 'Normal', tone: '' },
+  'new-move-in': { label: 'New move-in', tone: 'info' },
+};
+
+function Cell({ label, field, onPick, children }: {
+  label: string; field?: BandField; onPick?: (f: BandField, e: MouseEvent) => void; children: any;
+}) {
+  const inner = (
+    <div>
       <div class="shepherd-band-label">{label}</div>
       <div class="shepherd-band-value">{children}</div>
     </div>
   );
+  if (!field || !onPick) return <div class="shepherd-band-cell">{inner}</div>;
+  return (
+    <button
+      type="button"
+      class="shepherd-band-cell is-editable"
+      aria-label={`Change ${label.toLowerCase()}`}
+      onClick={(e) => onPick(field, e as unknown as MouseEvent)}
+    >{inner}</button>
+  );
 }
 
-export function MemberBand({ member }: { member: MemberState }) {
+export function MemberBand({ member, onPick }: {
+  member: MemberState; onPick?: (f: BandField, e: MouseEvent) => void;
+}) {
   const rec = RECOMMEND[member.recommend] ?? RECOMMEND.unknown;
   const exp = monthYear(member.recommendExp);
   const calling = callingNames(member.calling);
   const contact = formatLastContact(member.lastContact || null);
-  const flags: { text: string; tone: string }[] = [];
-  if (member.priority && member.priority !== 'normal') {
-    flags.push({ text: member.priority === 'new-move-in' ? 'new move-in' : member.priority, tone: member.priority === 'new-move-in' ? 'info' : 'warn' });
-  }
-  if (member.pastoralState) flags.push({ text: member.pastoralState.replace(/-/g, ' '), tone: 'info' });
-  if (member.checkIn && member.checkIn !== 'none') flags.push({ text: `check-in ${member.checkIn}`, tone: 'muted' });
+  const pri = PRIORITY[member.priority] ?? PRIORITY.normal;
 
   return (
     <div class="shepherd-band-inner">
-      <Cell label="Recommend">
+      <Cell label="Recommend" field="recommend" onPick={onPick}>
         <span class={`shepherd-band-pill is-${rec.tone}`}>{rec.label}</span>
         {exp && member.recommend !== 'none' && <span class="shepherd-band-sub">{member.recommend === 'expired' ? 'since' : 'until'} {exp}</span>}
       </Cell>
-      <Cell label="Next ordinance">{ORDINANCE[member.nextOrdinance] ?? '—'}</Cell>
+      <Cell label="Next ordinance" field="ordinance" onPick={onPick}>{ORDINANCE[member.nextOrdinance] ?? '—'}</Cell>
       <Cell label="Calling">
         {calling ? <span class="shepherd-band-text" title={member.calling}>{calling}</span> : <span class="shepherd-band-none">None</span>}
       </Cell>
-      <Cell label="Last contact">
+      <Cell label="Last contact" field="contact" onPick={onPick}>
         <span class={contact === 'never' ? 'shepherd-band-none' : ''}>{contact === 'never' ? 'Never logged' : contact}</span>
       </Cell>
-      {flags.length > 0 && (
-        <div class="shepherd-band-flags">
-          {flags.map((f) => <span class={`shepherd-band-pill is-${f.tone}`}>{f.text}</span>)}
-        </div>
-      )}
+      <Cell label="Flags" field="flags" onPick={onPick}>
+        {pri.tone && <span class={`shepherd-band-pill is-${pri.tone}`}>{pri.label}</span>}
+        {member.pastoralState && <span class="shepherd-band-pill is-info">{member.pastoralState.replace(/-/g, ' ')}</span>}
+        {!pri.tone && !member.pastoralState && <span class="shepherd-band-none">None</span>}
+      </Cell>
     </div>
   );
 }

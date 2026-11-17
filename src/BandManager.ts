@@ -1,13 +1,49 @@
-import { App, MarkdownView, TFile } from 'obsidian';
+import { App, MarkdownView, Menu, TFile } from 'obsidian';
 import { h, render } from 'preact';
-import { MemberBand } from './components/MemberBand';
+import { BandField, MemberBand } from './components/MemberBand';
 import { MemberService } from './services/MemberService';
+import { WriteService } from './services/WriteService';
+import {
+  MemberState, ORDINANCES, PASTORAL_STATES, PRIORITIES, RECOMMENDS,
+  Ordinance, PastoralState, Priority, Recommend,
+} from './models/types';
 
-// Draws the read-only status band at the top of every open member note,
-// outside the note's scroller so it stays visible while reading. One band per
-// markdown leaf; leaves showing a non-member file get none.
+const TITLE = (s: string) => (s ? s.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase()) : 'None');
+
+// Draws the status band at the top of every open member note, outside the
+// note's scroller so it stays visible while reading. One band per markdown
+// leaf; leaves showing a non-member file get none. Each editable cell opens a
+// menu that writes frontmatter; the metadata-change event then redraws the
+// band and the side panel.
 export class BandManager {
-  constructor(private app: App, private memberService: MemberService) {}
+  private writer: WriteService;
+
+  constructor(private app: App, private memberService: MemberService) {
+    this.writer = new WriteService(app);
+  }
+
+  private pick(member: MemberState, field: BandField, e: MouseEvent): void {
+    const file = member.file;
+    const menu = new Menu();
+    const add = <T extends string>(opts: readonly T[], current: string, write: (v: T) => Promise<void>) => {
+      for (const o of opts) {
+        menu.addItem((i) => i.setTitle(TITLE(o)).setChecked(o === current).onClick(() => void write(o)));
+      }
+    };
+    if (field === 'recommend') add(RECOMMENDS as Recommend[], member.recommend, (v) => this.writer.setRecommend(file, v));
+    if (field === 'ordinance') add(ORDINANCES as Ordinance[], member.nextOrdinance, (v) => this.writer.setOrdinance(file, v));
+    if (field === 'flags') {
+      menu.addItem((i) => i.setTitle('Priority').setIsLabel(true));
+      add(PRIORITIES, member.priority, (v: Priority) => this.writer.setPriority(file, v));
+      menu.addSeparator();
+      menu.addItem((i) => i.setTitle('Pastoral').setIsLabel(true));
+      add(PASTORAL_STATES, member.pastoralState, (v: PastoralState) => this.writer.setPastoralState(file, v));
+    }
+    if (field === 'contact') {
+      menu.addItem((i) => i.setTitle('Mark contacted today').setIcon('check').onClick(() => void this.writer.markContacted(file)));
+    }
+    menu.showAtMouseEvent(e);
+  }
 
   /** Re-render the band in every markdown leaf (cheap: a handful of leaves). */
   refreshAll(): void {
@@ -41,7 +77,7 @@ export class BandManager {
       const member = await this.memberService.buildMemberState(file);
       // The leaf may have moved to another file while we awaited.
       if (view.file?.path !== file.path) return;
-      render(h(MemberBand, { member }), band);
+      render(h(MemberBand, { member, onPick: (f: BandField, e: MouseEvent) => this.pick(member, f, e) }), band);
     } catch {
       render(null, band);
       band.remove();

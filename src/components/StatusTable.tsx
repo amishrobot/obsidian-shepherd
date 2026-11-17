@@ -1,4 +1,4 @@
-import { h, JSX } from 'preact';
+import { h, Fragment, JSX } from 'preact';
 import {
   Priority, MemberStatus, PastoralState, Ordinance, Recommend, CheckIn, CheckInStyle,
   PRIORITIES, STATUSES, PASTORAL_STATES, ORDINANCES, RECOMMEND_ACTIONABLE, CHECK_INS, CHECK_IN_STYLES,
@@ -14,6 +14,9 @@ interface Props {
   checkIn: CheckIn;
   checkInStyle: CheckInStyle;
   gifPrompt: string;
+  /** When the status band is drawing above the note, the band owns priority,
+   *  pastoral state, next ordinance and recommend; the panel drops them. */
+  bandOn?: boolean;
   onPriorityChange: (p: Priority) => void;
   onStatusChange: (s: MemberStatus) => void;
   onPastoralChange: (s: PastoralState) => void;
@@ -97,25 +100,29 @@ export function StatusTable(p: Props) {
   return (
     <div class="shepherd-status">
       <div class="shepherd-section-label">Status</div>
-      <div class="shepherd-row">
-        <div class="shepherd-row-label">Priority</div>
-        <Segmented options={PRIORITIES} current={p.priority} onChange={p.onPriorityChange} />
-      </div>
+      {!p.bandOn && (
+        <div class="shepherd-row">
+          <div class="shepherd-row-label">Priority</div>
+          <Segmented options={PRIORITIES} current={p.priority} onChange={p.onPriorityChange} />
+        </div>
+      )}
       <div class="shepherd-row">
         <div class="shepherd-row-label">Presence</div>
         <Segmented options={STATUSES} current={p.status} onChange={p.onStatusChange as (v: string) => void} />
       </div>
-      <div class="shepherd-row">
-        <div class="shepherd-row-label">Pastoral</div>
-        <div class={`shepherd-dd-wrap${pastoralVariant ? ' shepherd-dd-' + pastoralVariant : ''}`}>
-          <Dropdown
-            options={PASTORAL_STATES as string[]}
-            current={p.pastoral}
-            onChange={p.onPastoralChange as (v: string) => void}
-            labels={PASTORAL_LABELS}
-          />
+      {!p.bandOn && (
+        <div class="shepherd-row">
+          <div class="shepherd-row-label">Pastoral</div>
+          <div class={`shepherd-dd-wrap${pastoralVariant ? ' shepherd-dd-' + pastoralVariant : ''}`}>
+            <Dropdown
+              options={PASTORAL_STATES as string[]}
+              current={p.pastoral}
+              onChange={p.onPastoralChange as (v: string) => void}
+              labels={PASTORAL_LABELS}
+            />
+          </div>
         </div>
-      </div>
+      )}
       <div class="shepherd-row">
         <div class="shepherd-row-label">Check-in</div>
         <Segmented options={CHECK_INS} current={p.checkIn} onChange={p.onCheckInChange} />
@@ -150,6 +157,7 @@ export function StatusTable(p: Props) {
           />
         </div>
       )}
+      {!p.bandOn && (<>
       <div class="shepherd-row">
         <div class="shepherd-row-label">Next ord.</div>
         <Dropdown
@@ -175,6 +183,7 @@ export function StatusTable(p: Props) {
           )}
         </div>
       </div>
+      </>)}
     </div>
   );
 }

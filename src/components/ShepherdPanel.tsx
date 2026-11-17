@@ -52,6 +52,7 @@ export function ShepherdPanel(p: Props) {
         expandSignal={p.expandLogSignal}
       />
       <StatusTable
+        bandOn={document.body.hasClass('shepherd-band-on')}
         priority={m.priority}
         status={m.status}
         pastoral={m.pastoralState}

@@ -788,6 +788,13 @@ var ORDINANCES = [
   "endowment",
   "sealing"
 ];
+var RECOMMENDS = [
+  "current",
+  "expiring",
+  "expired",
+  "none",
+  "unknown"
+];
 var DEFAULT_SETTINGS = {
   memberDir: "Church/Members",
   dashboardPath: "Church/_system/views/_dashboard.md",
@@ -845,7 +852,7 @@ var CHECK_IN_STYLE_LABELS = {
 function StatusTable(p3) {
   const pastoralVariant = p3.pastoral === "working-with" ? "warn" : p3.pastoral === "under-restrictions" ? "danger" : void 0;
   const recommendVariant = p3.recommend === "expired" ? "danger" : p3.recommend === "expiring" ? "warn" : void 0;
-  return /* @__PURE__ */ _("div", { class: "shepherd-status" }, /* @__PURE__ */ _("div", { class: "shepherd-section-label" }, "Status"), /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Priority"), /* @__PURE__ */ _(Segmented, { options: PRIORITIES, current: p3.priority, onChange: p3.onPriorityChange })), /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Presence"), /* @__PURE__ */ _(Segmented, { options: STATUSES, current: p3.status, onChange: p3.onStatusChange })), /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Pastoral"), /* @__PURE__ */ _("div", { class: `shepherd-dd-wrap${pastoralVariant ? " shepherd-dd-" + pastoralVariant : ""}` }, /* @__PURE__ */ _(
+  return /* @__PURE__ */ _("div", { class: "shepherd-status" }, /* @__PURE__ */ _("div", { class: "shepherd-section-label" }, "Status"), !p3.bandOn && /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Priority"), /* @__PURE__ */ _(Segmented, { options: PRIORITIES, current: p3.priority, onChange: p3.onPriorityChange })), /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Presence"), /* @__PURE__ */ _(Segmented, { options: STATUSES, current: p3.status, onChange: p3.onStatusChange })), !p3.bandOn && /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Pastoral"), /* @__PURE__ */ _("div", { class: `shepherd-dd-wrap${pastoralVariant ? " shepherd-dd-" + pastoralVariant : ""}` }, /* @__PURE__ */ _(
     Dropdown,
     {
       options: PASTORAL_STATES,
@@ -879,7 +886,7 @@ function StatusTable(p3) {
           e3.target.blur();
       }
     }
-  )), /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Next ord."), /* @__PURE__ */ _(
+  )), !p3.bandOn && /* @__PURE__ */ _(k, null, /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Next ord."), /* @__PURE__ */ _(
     Dropdown,
     {
       options: ORDINANCES,
@@ -895,7 +902,7 @@ function StatusTable(p3) {
       onChange: p3.onRecommendChange,
       variant: recommendVariant
     }
-  ), p3.recommendExp && /* @__PURE__ */ _("span", { class: `shepherd-recommend-exp${p3.recommend === "expired" ? " is-danger" : ""}` }, "exp ", p3.recommendExp))));
+  ), p3.recommendExp && /* @__PURE__ */ _("span", { class: `shepherd-recommend-exp${p3.recommend === "expired" ? " is-danger" : ""}` }, "exp ", p3.recommendExp)))));
 }
 
 // src/components/TaskList.tsx
@@ -964,6 +971,7 @@ function ShepherdPanel(p3) {
   ), /* @__PURE__ */ _(
     StatusTable,
     {
+      bandOn: document.body.hasClass("shepherd-band-on"),
       priority: m3.priority,
       status: m3.status,
       pastoral: m3.pastoralState,
@@ -1541,31 +1549,68 @@ function monthYear(iso) {
 function callingNames(raw) {
   return (raw || "").split("/").map((c3) => c3.replace(/\s*\([^)]*\)\s*$/, "").trim()).filter(Boolean).join(" \xB7 ");
 }
-function Cell({ label, children }) {
-  return /* @__PURE__ */ _("div", { class: "shepherd-band-cell" }, /* @__PURE__ */ _("div", { class: "shepherd-band-label" }, label), /* @__PURE__ */ _("div", { class: "shepherd-band-value" }, children));
+var PRIORITY = {
+  "top-10": { label: "Top 10", tone: "warn" },
+  high: { label: "High", tone: "warn" },
+  normal: { label: "Normal", tone: "" },
+  "new-move-in": { label: "New move-in", tone: "info" }
+};
+function Cell({ label, field, onPick, children }) {
+  const inner = /* @__PURE__ */ _("div", null, /* @__PURE__ */ _("div", { class: "shepherd-band-label" }, label), /* @__PURE__ */ _("div", { class: "shepherd-band-value" }, children));
+  if (!field || !onPick)
+    return /* @__PURE__ */ _("div", { class: "shepherd-band-cell" }, inner);
+  return /* @__PURE__ */ _(
+    "button",
+    {
+      type: "button",
+      class: "shepherd-band-cell is-editable",
+      "aria-label": `Change ${label.toLowerCase()}`,
+      onClick: (e3) => onPick(field, e3)
+    },
+    inner
+  );
 }
-function MemberBand({ member }) {
-  var _a, _b;
+function MemberBand({ member, onPick }) {
+  var _a, _b, _c;
   const rec = (_a = RECOMMEND[member.recommend]) != null ? _a : RECOMMEND.unknown;
   const exp = monthYear(member.recommendExp);
   const calling = callingNames(member.calling);
   const contact = formatLastContact(member.lastContact || null);
-  const flags = [];
-  if (member.priority && member.priority !== "normal") {
-    flags.push({ text: member.priority === "new-move-in" ? "new move-in" : member.priority, tone: member.priority === "new-move-in" ? "info" : "warn" });
-  }
-  if (member.pastoralState)
-    flags.push({ text: member.pastoralState.replace(/-/g, " "), tone: "info" });
-  if (member.checkIn && member.checkIn !== "none")
-    flags.push({ text: `check-in ${member.checkIn}`, tone: "muted" });
-  return /* @__PURE__ */ _("div", { class: "shepherd-band-inner" }, /* @__PURE__ */ _(Cell, { label: "Recommend" }, /* @__PURE__ */ _("span", { class: `shepherd-band-pill is-${rec.tone}` }, rec.label), exp && member.recommend !== "none" && /* @__PURE__ */ _("span", { class: "shepherd-band-sub" }, member.recommend === "expired" ? "since" : "until", " ", exp)), /* @__PURE__ */ _(Cell, { label: "Next ordinance" }, (_b = ORDINANCE[member.nextOrdinance]) != null ? _b : "\u2014"), /* @__PURE__ */ _(Cell, { label: "Calling" }, calling ? /* @__PURE__ */ _("span", { class: "shepherd-band-text", title: member.calling }, calling) : /* @__PURE__ */ _("span", { class: "shepherd-band-none" }, "None")), /* @__PURE__ */ _(Cell, { label: "Last contact" }, /* @__PURE__ */ _("span", { class: contact === "never" ? "shepherd-band-none" : "" }, contact === "never" ? "Never logged" : contact)), flags.length > 0 && /* @__PURE__ */ _("div", { class: "shepherd-band-flags" }, flags.map((f3) => /* @__PURE__ */ _("span", { class: `shepherd-band-pill is-${f3.tone}` }, f3.text))));
+  const pri = (_b = PRIORITY[member.priority]) != null ? _b : PRIORITY.normal;
+  return /* @__PURE__ */ _("div", { class: "shepherd-band-inner" }, /* @__PURE__ */ _(Cell, { label: "Recommend", field: "recommend", onPick }, /* @__PURE__ */ _("span", { class: `shepherd-band-pill is-${rec.tone}` }, rec.label), exp && member.recommend !== "none" && /* @__PURE__ */ _("span", { class: "shepherd-band-sub" }, member.recommend === "expired" ? "since" : "until", " ", exp)), /* @__PURE__ */ _(Cell, { label: "Next ordinance", field: "ordinance", onPick }, (_c = ORDINANCE[member.nextOrdinance]) != null ? _c : "\u2014"), /* @__PURE__ */ _(Cell, { label: "Calling" }, calling ? /* @__PURE__ */ _("span", { class: "shepherd-band-text", title: member.calling }, calling) : /* @__PURE__ */ _("span", { class: "shepherd-band-none" }, "None")), /* @__PURE__ */ _(Cell, { label: "Last contact", field: "contact", onPick }, /* @__PURE__ */ _("span", { class: contact === "never" ? "shepherd-band-none" : "" }, contact === "never" ? "Never logged" : contact)), /* @__PURE__ */ _(Cell, { label: "Flags", field: "flags", onPick }, pri.tone && /* @__PURE__ */ _("span", { class: `shepherd-band-pill is-${pri.tone}` }, pri.label), member.pastoralState && /* @__PURE__ */ _("span", { class: "shepherd-band-pill is-info" }, member.pastoralState.replace(/-/g, " ")), !pri.tone && !member.pastoralState && /* @__PURE__ */ _("span", { class: "shepherd-band-none" }, "None")));
 }
 
 // src/BandManager.ts
+var TITLE = (s3) => s3 ? s3.replace(/-/g, " ").replace(/^./, (c3) => c3.toUpperCase()) : "None";
 var BandManager = class {
   constructor(app, memberService) {
     this.app = app;
     this.memberService = memberService;
+    this.writer = new WriteService(app);
+  }
+  pick(member, field, e3) {
+    const file = member.file;
+    const menu = new import_obsidian6.Menu();
+    const add = (opts, current, write) => {
+      for (const o3 of opts) {
+        menu.addItem((i3) => i3.setTitle(TITLE(o3)).setChecked(o3 === current).onClick(() => void write(o3)));
+      }
+    };
+    if (field === "recommend")
+      add(RECOMMENDS, member.recommend, (v3) => this.writer.setRecommend(file, v3));
+    if (field === "ordinance")
+      add(ORDINANCES, member.nextOrdinance, (v3) => this.writer.setOrdinance(file, v3));
+    if (field === "flags") {
+      menu.addItem((i3) => i3.setTitle("Priority").setIsLabel(true));
+      add(PRIORITIES, member.priority, (v3) => this.writer.setPriority(file, v3));
+      menu.addSeparator();
+      menu.addItem((i3) => i3.setTitle("Pastoral").setIsLabel(true));
+      add(PASTORAL_STATES, member.pastoralState, (v3) => this.writer.setPastoralState(file, v3));
+    }
+    if (field === "contact") {
+      menu.addItem((i3) => i3.setTitle("Mark contacted today").setIcon("check").onClick(() => void this.writer.markContacted(file)));
+    }
+    menu.showAtMouseEvent(e3);
   }
   /** Re-render the band in every markdown leaf (cheap: a handful of leaves). */
   refreshAll() {
@@ -1603,7 +1648,7 @@ var BandManager = class {
       const member = await this.memberService.buildMemberState(file);
       if (((_a = view.file) == null ? void 0 : _a.path) !== file.path)
         return;
-      J(_(MemberBand, { member }), band);
+      J(_(MemberBand, { member, onPick: (f3, e3) => this.pick(member, f3, e3) }), band);
     } catch (e3) {
       J(null, band);
       band.remove();

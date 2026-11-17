@@ -653,7 +653,20 @@ body.is-mobile .shepherd-row {
   border-right: 1px solid var(--background-modifier-border);
   min-width: 0;
 }
-.shepherd-band-cell:last-of-type { border-right: 0; margin-right: 0; }
+.shepherd-band-cell:last-child { border-right: 0; margin-right: 0; }
+button.shepherd-band-cell {
+  all: unset;
+  box-sizing: border-box;
+  padding: 2px 22px 2px 0;
+  margin-right: 22px;
+  border-right: 1px solid var(--background-modifier-border);
+  cursor: pointer;
+  border-radius: 4px;
+}
+button.shepherd-band-cell:last-child { border-right: 0; margin-right: 0; }
+button.shepherd-band-cell:hover .shepherd-band-label { color: var(--text-muted); }
+button.shepherd-band-cell:hover .shepherd-band-value { text-decoration: underline dotted var(--text-faint); text-underline-offset: 3px; }
+button.shepherd-band-cell:focus-visible { outline: 2px solid var(--interactive-accent); outline-offset: 2px; }
 .shepherd-band-label {
   font-size: 10.5px;
   font-weight: 500;
