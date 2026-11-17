@@ -1,6 +1,8 @@
 import { Plugin, WorkspaceLeaf, TFile } from 'obsidian';
 import { ShepherdView, VIEW_TYPE_SHEPHERD } from './ShepherdView';
 import { WriteService } from './services/WriteService';
+import { MemberService } from './services/MemberService';
+import { BandManager } from './BandManager';
 // On workspace restore, custom-view leaves exist as deferred placeholders
 // before the plugin's view type is registered. instanceof guards against
 // TypeError when methods like refresh() are called on those placeholders.
@@ -10,6 +12,7 @@ import { ShepherdSettingTab } from './SettingsTab';
 export default class ShepherdPlugin extends Plugin {
   settings: ShepherdSettings = DEFAULT_SETTINGS;
   private modifyTimeout: ReturnType<typeof setTimeout> | null = null;
+  private bands: BandManager | null = null;
 
   async onload() {
     console.log('Loading Shepherd');
@@ -65,6 +68,21 @@ export default class ShepherdPlugin extends Plugin {
       },
     });
 
+    // Status band above member notes (replaces the [!member-card] callout,
+    // which styles.css hides while this class is on the body).
+    const bandMembers = new MemberService(this.app, this.settings);
+    this.registerEvent(bandMembers.indexInvalidationRef);
+    this.bands = new BandManager(this.app, bandMembers);
+    document.body.addClass('shepherd-band-on');
+    this.app.workspace.onLayoutReady(() => this.bands?.refreshAll());
+    this.registerEvent(this.app.workspace.on('layout-change', () => this.bands?.refreshAll()));
+    this.registerEvent(this.app.workspace.on('file-open', () => this.bands?.refreshAll()));
+    this.registerEvent(
+      this.app.metadataCache.on('changed', (file) => {
+        if (file instanceof TFile && this.isMemberFile(file)) this.bands?.refreshFile(file);
+      })
+    );
+
     // React to active file changes
     this.registerEvent(
       this.app.workspace.on('file-open', (file) => {
@@ -96,6 +114,8 @@ export default class ShepherdPlugin extends Plugin {
 
   async onunload() {
     console.log('Unloading Shepherd');
+    this.bands?.removeAll();
+    document.body.removeClass('shepherd-band-on');
   }
 
   private isMemberFile(file: TFile): boolean {
