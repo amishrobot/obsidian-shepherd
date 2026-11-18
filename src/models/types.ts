@@ -66,6 +66,8 @@ export interface MemberState {
   lastContact: string;
   convertDate: string;
   movedIn: string;
+  /** Does the bishop know who this is? true / false, null = not sorted yet. */
+  met: boolean | null;
   tags: string[];
   daysSinceContact: number | null;
   isOverdue: boolean;

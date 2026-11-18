@@ -83,6 +83,12 @@ export class BandManager {
         menu.addItem((i) => i.setTitle(TITLE(o)).setChecked(o === current).onClick(() => void write(o)));
       }
     };
+    menu.addItem((i) => i.setTitle('Met').setIsLabel(true));
+    menu.addItem((i) => i.setTitle('I know them').setChecked(member.met === true)
+      .onClick(() => void this.writer.setMet(file, true)));
+    menu.addItem((i) => i.setTitle("Haven't met").setChecked(member.met === false)
+      .onClick(() => void this.writer.setMet(file, false)));
+    menu.addSeparator();
     menu.addItem((i) => i.setTitle('Presence').setIsLabel(true));
     add(STATUSES, member.status, (v: MemberStatus) => this.writer.setStatus(file, v));
     menu.addSeparator();

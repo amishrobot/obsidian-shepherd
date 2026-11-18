@@ -3,6 +3,7 @@ import { ShepherdView, VIEW_TYPE_SHEPHERD } from './ShepherdView';
 import { WriteService } from './services/WriteService';
 import { MemberService } from './services/MemberService';
 import { BandManager } from './BandManager';
+import { MetSweepModal } from './MetSweepModal';
 // On workspace restore, custom-view leaves exist as deferred placeholders
 // before the plugin's view type is registered. instanceof guards against
 // TypeError when methods like refresh() are called on those placeholders.
@@ -33,6 +34,15 @@ export default class ShepherdPlugin extends Plugin {
       id: 'open-shepherd',
       name: 'Open Shepherd Panel',
       callback: () => this.activateView(),
+    });
+
+    this.addCommand({
+      id: 'sort-who-i-know',
+      name: 'Who do I know? (sort members by met / not met)',
+      callback: () => {
+        const members = new MemberService(this.app, this.settings);
+        new MetSweepModal(this.app, members, new WriteService(this.app), this.settings.memberDir).open();
+      },
     });
 
     this.addCommand({

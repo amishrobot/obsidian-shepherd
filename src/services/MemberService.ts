@@ -80,6 +80,7 @@ export class MemberService {
       lastContact,
       convertDate: String(fm['convert-date'] || ''),
       movedIn: String(fm['moved-in'] || ''),
+      met: fm.met === true || fm.met === 'true' ? true : fm.met === false || fm.met === 'false' ? false : null,
       tags: Array.isArray(fm.tags) ? fm.tags : [],
       daysSinceContact,
       isOverdue: this.checkOverdue(fm.priority as Priority, daysSinceContact),

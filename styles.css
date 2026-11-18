@@ -760,3 +760,20 @@ button.shepherd-band-cell:focus-visible { outline: 2px solid var(--interactive-a
 /* The band carries what the agent-written member card used to show; hide
    the card while the band is drawing so the same facts are not shown twice. */
 body.shepherd-band-on .member-profile .callout[data-callout="member-card"] { display: none; }
+
+/* "Who do I know?" card sort */
+.shepherd-sweep-modal { max-width: 420px; }
+.shepherd-sweep-progress { font-size: var(--font-ui-smaller); color: var(--text-muted); text-align: center; margin-bottom: 12px; }
+.shepherd-sweep-card { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
+.shepherd-sweep-photo { width: 168px; height: 168px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; }
+.shepherd-sweep-photo.is-empty {
+  display: flex; align-items: center; justify-content: center;
+  background: var(--background-modifier-hover); color: var(--text-muted); font-size: 44px; font-weight: 600;
+}
+.shepherd-sweep-name { font-size: 1.4em; font-weight: 700; }
+.shepherd-sweep-sub { color: var(--text-muted); }
+.shepherd-sweep-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+.shepherd-sweep-btn { height: 48px; font-size: 1em; font-weight: 600; }
+.shepherd-sweep-foot { display: flex; justify-content: center; gap: 18px; margin-top: 10px; }
+.shepherd-sweep-link { background: none; box-shadow: none; border: none; color: var(--text-muted); padding: 6px 8px; min-height: 44px; }
+.shepherd-sweep-done { text-align: center; padding: 24px 0; }

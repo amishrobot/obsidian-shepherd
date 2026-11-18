@@ -10,6 +10,14 @@ export class WriteService {
     });
   }
 
+  /** `met: true|false`; null removes it (back to "not sorted"). */
+  async setMet(file: TFile, met: boolean | null): Promise<void> {
+    await this.app.fileManager.processFrontMatter(file, (fm) => {
+      if (met === null) delete fm.met;
+      else fm.met = met;
+    });
+  }
+
   async setStatus(file: TFile, status: MemberStatus): Promise<void> {
     await this.app.fileManager.processFrontMatter(file, (fm) => {
       fm.status = status;
