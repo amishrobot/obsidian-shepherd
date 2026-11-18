@@ -1,7 +1,7 @@
 import { h } from 'preact';
 import { Platform, TFile } from 'obsidian';
 import { MemberState, RelationshipPerson } from '../models/types';
-import { buildMapsUrl, formatLastContact, formatMovedInSince, parseCity } from '../services/helpers';
+import { buildMapsUrl, formatLastContact, parseCity } from '../services/helpers';
 
 // The member band: everything Shepherd shows about a member, drawn above the
 // note's text so the side panel isn't needed. Top row: photo, who they are,
@@ -45,8 +45,9 @@ function TopRow({ member, photoUrl, onAction }: {
   const bits: string[] = [];
   if (member.age != null) bits.push(String(member.age));
   if (member.priesthood && member.priesthood !== 'none') bits.push(member.priesthood.replace(/-/g, ' '));
-  const tenure = formatMovedInSince(member.movedIn);
-  if (tenure) bits.push(tenure);
+  // Short form so the line never truncates: "since Jul 2026".
+  const since = monthYear(member.movedIn);
+  if (since) bits.push(`since ${since}`);
   const digits = (member.phone || '').replace(/\D/g, '');
   const city = parseCity(member.address);
   const maps = member.address ? buildMapsUrl(member.address, Platform.isMacOS || Platform.isIosApp) : '';
