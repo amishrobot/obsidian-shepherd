@@ -722,7 +722,13 @@ button.shepherd-band-cell:focus-visible { outline: 2px solid var(--interactive-a
   font-variant-numeric: lining-nums tabular-nums;
   white-space: nowrap;
 }
-.shepherd-band-text { max-width: 16em; overflow: hidden; text-overflow: ellipsis; }
+.shepherd-band-text { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+/* Calling is last and absorbs the leftover width, truncating instead of
+   pushing the other cells onto a second line. */
+.shepherd-band-inner { flex-wrap: nowrap; }
+.shepherd-band-cell.is-calling { flex: 1 1 0; min-width: 0; }
+.shepherd-band-cell.is-calling .shepherd-band-value { display: block; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 700px) { .shepherd-band-inner { flex-wrap: wrap; } }
 .shepherd-band-sub { font-size: 12px; font-weight: 400; color: var(--text-muted); }
 .shepherd-band-none { color: var(--text-faint); font-weight: 400; }
 .shepherd-band-flags { display: flex; gap: 6px; align-items: center; margin-left: auto; }

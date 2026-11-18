@@ -171,9 +171,6 @@ function StatusCells({ member, onPick }: {
         {exp && member.recommend !== 'none' && <span class="shepherd-band-sub">{member.recommend === 'expired' ? 'since' : 'until'} {exp}</span>}
       </Cell>
       <Cell label="Next ordinance" field="ordinance" onPick={onPick}>{ORDINANCE[member.nextOrdinance] ?? '—'}</Cell>
-      <Cell label="Calling">
-        {calling ? <span class="shepherd-band-text" title={member.calling}>{calling}</span> : <span class="shepherd-band-none">None</span>}
-      </Cell>
       <Cell label="Last contact" field="contact" onPick={onPick}>
         <span class={contact === 'never' ? 'shepherd-band-none' : ''}>{contact === 'never' ? 'Never logged' : contact}</span>
       </Cell>
@@ -182,6 +179,12 @@ function StatusCells({ member, onPick }: {
         {member.pastoralState && <span class="shepherd-band-pill is-info">{member.pastoralState.replace(/-/g, ' ')}</span>}
         {!pri.tone && !member.pastoralState && <span class="shepherd-band-none">None</span>}
       </Cell>
+      <div class="shepherd-band-cell is-calling" title={member.calling || undefined}>
+        <div class="shepherd-band-label">Calling</div>
+        <div class="shepherd-band-value">
+          {calling ? <span class="shepherd-band-text">{calling}</span> : <span class="shepherd-band-none">None</span>}
+        </div>
+      </div>
     </div>
   );
 }
