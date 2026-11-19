@@ -32,6 +32,23 @@ function sectionFolds(view: MarkdownView, headings: string[]): { from: number; t
   return folds;
 }
 
+/** Each "### Confidential..." block, folded to its heading line. */
+function confidentialFolds(view: MarkdownView): { from: number; to: number }[] {
+  const editor = view.editor;
+  if (!editor) return [];
+  const n = editor.lineCount();
+  const folds: { from: number; to: number }[] = [];
+  for (let i = 0; i < n; i++) {
+    if (!/^###\s+confidential/i.test(editor.getLine(i))) continue;
+    let j = i + 1;
+    while (j < n && !/^#{1,3}\s/.test(editor.getLine(j)) && editor.getLine(j).trim() !== '---') j++;
+    let end = j - 1;
+    while (end > i && !editor.getLine(end).trim()) end--;
+    if (end > i) folds.push({ from: i, to: end });
+  }
+  return folds;
+}
+
 function views(ws: Workspace, file: TFile): MarkdownView[] {
   return ws.getLeavesOfType('markdown')
     .map((l) => l.view)
@@ -44,7 +61,7 @@ export function foldPanelSections(ws: Workspace, file: TFile): void {
     const mode = view.currentMode as unknown as FoldMode;
     if (!mode.getFoldInfo || !mode.applyFoldInfo) continue;
     try {
-      const want = sectionFolds(view, PANEL_SECTIONS);
+      const want = [...sectionFolds(view, PANEL_SECTIONS), ...confidentialFolds(view)];
       const have = mode.getFoldInfo()?.folds ?? [];
       const merged = [...have.filter((f) => !want.some((w) => w.from === f.from)), ...want];
       mode.applyFoldInfo({ folds: merged, lines: view.editor.lineCount() });

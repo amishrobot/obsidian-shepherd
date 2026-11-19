@@ -4,6 +4,7 @@ import { WriteService } from './services/WriteService';
 import { MemberService } from './services/MemberService';
 import { MetSweepModal } from './MetSweepModal';
 import { foldPanelSections } from './folds';
+import { makeNoteBodyProcessor } from './noteBody';
 // On workspace restore, custom-view leaves exist as deferred placeholders
 // before the plugin's view type is registered. instanceof guards against
 // TypeError when methods like refresh() are called on those placeholders.
@@ -81,6 +82,9 @@ export default class ShepherdPlugin extends Plugin {
     // it while this class is on the body. It stays in the file for places the
     // plugin doesn't run.
     document.body.addClass('shepherd-panel-on');
+
+    // Member notes read as a conversation timeline in reading view.
+    this.registerMarkdownPostProcessor(makeNoteBodyProcessor(this.app, (f) => this.isMemberFile(f)));
 
     // React to active file changes
     this.registerEvent(
