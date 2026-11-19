@@ -22,7 +22,7 @@ __export(main_exports, {
   default: () => ShepherdPlugin
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian8 = require("obsidian");
+var import_obsidian9 = require("obsidian");
 
 // src/ShepherdView.tsx
 var import_obsidian5 = require("obsidian");
@@ -1360,6 +1360,26 @@ function sectionFolds(view, headings) {
   }
   return folds;
 }
+function confidentialFolds(view) {
+  const editor = view.editor;
+  if (!editor)
+    return [];
+  const n2 = editor.lineCount();
+  const folds = [];
+  for (let i3 = 0; i3 < n2; i3++) {
+    if (!/^###\s+confidential/i.test(editor.getLine(i3)))
+      continue;
+    let j3 = i3 + 1;
+    while (j3 < n2 && !/^#{1,3}\s/.test(editor.getLine(j3)) && editor.getLine(j3).trim() !== "---")
+      j3++;
+    let end = j3 - 1;
+    while (end > i3 && !editor.getLine(end).trim())
+      end--;
+    if (end > i3)
+      folds.push({ from: i3, to: end });
+  }
+  return folds;
+}
 function views(ws, file) {
   return ws.getLeavesOfType("markdown").map((l3) => l3.view).filter((v3) => {
     var _a;
@@ -1373,7 +1393,7 @@ function foldPanelSections(ws, file) {
     if (!mode.getFoldInfo || !mode.applyFoldInfo)
       continue;
     try {
-      const want = sectionFolds(view, PANEL_SECTIONS);
+      const want = [...sectionFolds(view, PANEL_SECTIONS), ...confidentialFolds(view)];
       const have = (_b = (_a = mode.getFoldInfo()) == null ? void 0 : _a.folds) != null ? _b : [];
       const merged = [...have.filter((f3) => !want.some((w3) => w3.from === f3.from)), ...want];
       mode.applyFoldInfo({ folds: merged, lines: view.editor.lineCount() });
@@ -1849,9 +1869,143 @@ var MetSweepModal = class extends import_obsidian6.Modal {
   }
 };
 
-// src/SettingsTab.ts
+// src/noteBody.ts
 var import_obsidian7 = require("obsidian");
-var ShepherdSettingTab = class extends import_obsidian7.PluginSettingTab {
+var MONTHS2 = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+var ENTRY = /^(\d{4})-(\d{2})-(\d{2})\s*(?:[—–·:-]\s*)?(.*)$/;
+function entryDate(y3, m3, d3, thisYear = (/* @__PURE__ */ new Date()).getFullYear()) {
+  var _a;
+  const base = `${(_a = MONTHS2[parseInt(m3, 10) - 1]) != null ? _a : m3} ${parseInt(d3, 10)}`;
+  return parseInt(y3, 10) === thisYear ? base : `${base}, ${y3}`;
+}
+function entryKind(type) {
+  const t3 = type.toLowerCase();
+  if (/interview|recommend|personal meeting|met with/.test(t3))
+    return { kind: "interview", icon: "message-square" };
+  if (/text|replied/.test(t3))
+    return { kind: "text", icon: "message-circle" };
+  if (/visit|welcome/.test(t3))
+    return { kind: "visit", icon: "home" };
+  if (/monologue|granola|circleback|call/.test(t3))
+    return { kind: "recording", icon: "mic" };
+  if (/tithing/.test(t3))
+    return { kind: "tithing", icon: "receipt" };
+  if (/welfare|assistance/.test(t3))
+    return { kind: "welfare", icon: "hand-heart" };
+  if (/ordain|ordinance|baptism|sealing/.test(t3))
+    return { kind: "ordinance", icon: "sparkles" };
+  if (/contact|hallway|sunday/.test(t3))
+    return { kind: "contact", icon: "user" };
+  return { kind: "note", icon: "file-text" };
+}
+function splitEntry(rest) {
+  const empty = /,\s*no notes\s*$/i.test(rest);
+  const clean = rest.replace(/,\s*no notes\s*$/i, "").trim();
+  const [type, ...more] = clean.split(/\s+[—–]\s+/);
+  return { type: type || "Note", topic: more.join(" \u2014 "), empty };
+}
+function replaceText(h3, build) {
+  for (const n2 of Array.from(h3.childNodes))
+    if (n2.nodeType === Node.TEXT_NODE)
+      n2.remove();
+  const frag = document.createDocumentFragment();
+  build(frag);
+  h3.appendChild(frag);
+}
+function tile(parent, icon, cls = "") {
+  const t3 = parent.createSpan({ cls: `sh-tile ${cls}`.trim() });
+  (0, import_obsidian7.setIcon)(t3, icon);
+  return t3;
+}
+function makeNoteBodyProcessor(app, isMember) {
+  return (el, ctx) => {
+    var _a, _b;
+    const file = app.vault.getAbstractFileByPath(ctx.sourcePath);
+    if (!(file instanceof import_obsidian7.TFile) || !isMember(file))
+      return;
+    const fm = (_b = (_a = app.metadataCache.getFileCache(file)) == null ? void 0 : _a.frontmatter) != null ? _b : {};
+    el.querySelectorAll("h1").forEach((h3) => {
+      if (h3.hasClass("sh-title"))
+        return;
+      h3.addClass("sh-title");
+      const callings = callingNames(String(fm.calling || "")).split(" \xB7 ").filter(Boolean);
+      if (!callings.length)
+        return;
+      const row = createDiv({ cls: "sh-callings" });
+      for (const c3 of callings) {
+        const chip = row.createSpan({ cls: "sh-calling" });
+        (0, import_obsidian7.setIcon)(chip.createSpan({ cls: "sh-calling-ic" }), "users");
+        chip.createSpan({ text: c3 });
+      }
+      h3.insertAdjacentElement("afterend", row);
+    });
+    el.querySelectorAll("h2").forEach((h3) => {
+      var _a2, _b2;
+      if (h3.dataset.heading !== "Interactions" || h3.hasClass("sh-conv-h"))
+        return;
+      h3.addClass("sh-conv-h");
+      const heads = (_b2 = (_a2 = app.metadataCache.getFileCache(file)) == null ? void 0 : _a2.headings) != null ? _b2 : [];
+      const dated = heads.filter((x2) => x2.level === 3 && ENTRY.test(x2.heading));
+      const first = dated.map((x2) => x2.heading.slice(0, 7)).sort()[0];
+      replaceText(h3, (f3) => {
+        f3.createSpan({ cls: "sh-conv-title", text: "Conversations" });
+        if (dated.length) {
+          const [y3, m3] = (first || "").split("-");
+          const since = y3 && m3 ? ` since ${MONTHS2[parseInt(m3, 10) - 1]} ${y3}` : "";
+          f3.createSpan({ cls: "sh-conv-count", text: `${dated.length} ${dated.length === 1 ? "entry" : "entries"}${since}` });
+        }
+      });
+      const btn = createEl("button", { cls: "sh-compose", attr: { type: "button" } });
+      (0, import_obsidian7.setIcon)(btn.createSpan({ cls: "sh-compose-ic" }), "plus");
+      btn.createSpan({ text: "What did you talk about today?" });
+      btn.createEl("kbd", { text: "L" });
+      btn.addEventListener("click", (e3) => {
+        e3.preventDefault();
+        app.commands.executeCommandById("shepherd:log-interaction");
+      });
+      h3.insertAdjacentElement("afterend", btn);
+    });
+    el.querySelectorAll("h3").forEach((h3) => {
+      var _a2, _b2;
+      if (h3.hasClass("sh-ev"))
+        return;
+      const text = (_b2 = (_a2 = h3.dataset.heading) != null ? _a2 : h3.textContent) != null ? _b2 : "";
+      if (/^confidential/i.test(text)) {
+        const m4 = /(\d{4})-(\d{2})-(\d{2})/.exec(text);
+        const from = /from (bishop [a-z]+)/i.exec(text);
+        h3.addClass("sh-ev", "sh-conf");
+        replaceText(h3, (f3) => {
+          tile(f3, "lock", "sh-tile-lock");
+          f3.createSpan({ cls: "sh-ev-date", text: m4 ? entryDate(m4[1], m4[2], m4[3]) : from ? `From ${from[1].replace(/\bbishop\b/i, "Bishop")}` : "Earlier" });
+          f3.createSpan({ cls: "sh-ev-conf", text: "Confidential" });
+        });
+        return;
+      }
+      const m3 = ENTRY.exec(text);
+      if (!m3)
+        return;
+      const { type, topic, empty } = splitEntry(m3[4]);
+      const { kind, icon } = entryKind(type);
+      h3.addClass("sh-ev");
+      h3.dataset.kind = kind;
+      if (empty)
+        h3.addClass("sh-ev-empty");
+      replaceText(h3, (f3) => {
+        tile(f3, icon);
+        f3.createSpan({ cls: "sh-ev-date", text: entryDate(m3[1], m3[2], m3[3]) });
+        f3.createSpan({ cls: "sh-ev-type", text: type });
+        if (topic)
+          f3.createSpan({ cls: "sh-ev-topic", text: topic });
+        if (empty)
+          f3.createSpan({ cls: "sh-ev-none", text: "no notes" });
+      });
+    });
+  };
+}
+
+// src/SettingsTab.ts
+var import_obsidian8 = require("obsidian");
+var ShepherdSettingTab = class extends import_obsidian8.PluginSettingTab {
   constructor(app, plugin) {
     super(app, plugin);
     this.plugin = plugin;
@@ -1859,20 +2013,20 @@ var ShepherdSettingTab = class extends import_obsidian7.PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    new import_obsidian7.Setting(containerEl).setName("Member folder").setDesc("Vault-relative folder holding member files. Files outside it get the empty panel.").addText(
+    new import_obsidian8.Setting(containerEl).setName("Member folder").setDesc("Vault-relative folder holding member files. Files outside it get the empty panel.").addText(
       (text) => text.setPlaceholder("Church/Members").setValue(this.plugin.settings.memberDir).onChange(async (value) => {
         this.plugin.settings.memberDir = value.replace(/\/+$/, "").trim();
         await this.plugin.saveSettings();
         this.plugin.refreshView();
       })
     );
-    new import_obsidian7.Setting(containerEl).setName("Dashboard path").setDesc('Note opened by the "Open Dashboard" link in the empty state.').addText(
+    new import_obsidian8.Setting(containerEl).setName("Dashboard path").setDesc('Note opened by the "Open Dashboard" link in the empty state.').addText(
       (text) => text.setPlaceholder("Church/_system/views/_dashboard.md").setValue(this.plugin.settings.dashboardPath).onChange(async (value) => {
         this.plugin.settings.dashboardPath = value.trim();
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian7.Setting(containerEl).setName("Overdue threshold (days)").setDesc("Days without contact before a top-10 or high-priority member is flagged overdue.").addText(
+    new import_obsidian8.Setting(containerEl).setName("Overdue threshold (days)").setDesc("Days without contact before a top-10 or high-priority member is flagged overdue.").addText(
       (text) => text.setPlaceholder("14").setValue(String(this.plugin.settings.overdueThreshold)).onChange(async (value) => {
         const n2 = Number(value);
         if (!Number.isFinite(n2) || n2 <= 0)
@@ -1882,7 +2036,7 @@ var ShepherdSettingTab = class extends import_obsidian7.PluginSettingTab {
         this.plugin.refreshView();
       })
     );
-    new import_obsidian7.Setting(containerEl).setName("Open the panel with member notes").setDesc("Opens the Shepherd panel in the right sidebar when you open a member note and it isn\u2019t already there.").addToggle(
+    new import_obsidian8.Setting(containerEl).setName("Open the panel with member notes").setDesc("Opens the Shepherd panel in the right sidebar when you open a member note and it isn\u2019t already there.").addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.autoOpenPanel).onChange(async (value) => {
         this.plugin.settings.autoOpenPanel = value;
         await this.plugin.saveSettings();
@@ -1892,7 +2046,7 @@ var ShepherdSettingTab = class extends import_obsidian7.PluginSettingTab {
 };
 
 // src/main.ts
-var ShepherdPlugin = class extends import_obsidian8.Plugin {
+var ShepherdPlugin = class extends import_obsidian9.Plugin {
   constructor() {
     super(...arguments);
     this.settings = DEFAULT_SETTINGS;
@@ -1962,9 +2116,10 @@ var ShepherdPlugin = class extends import_obsidian8.Plugin {
       }
     });
     document.body.addClass("shepherd-panel-on");
+    this.registerMarkdownPostProcessor(makeNoteBodyProcessor(this.app, (f3) => this.isMemberFile(f3)));
     this.registerEvent(
       this.app.workspace.on("file-open", (file) => {
-        if (file instanceof import_obsidian8.TFile) {
+        if (file instanceof import_obsidian9.TFile) {
           if (this.settings.autoOpenPanel && this.isMemberFile(file) && !this.getView()) {
             void this.openPanelQuietly();
           }
@@ -1984,7 +2139,7 @@ var ShepherdPlugin = class extends import_obsidian8.Plugin {
     );
     this.registerEvent(
       this.app.vault.on("modify", (file) => {
-        if (!(file instanceof import_obsidian8.TFile) || !this.isMemberFile(file))
+        if (!(file instanceof import_obsidian9.TFile) || !this.isMemberFile(file))
           return;
         const view = this.getView();
         if (!view)
