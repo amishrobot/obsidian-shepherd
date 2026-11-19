@@ -1,4 +1,5 @@
 import { App, TFile } from 'obsidian';
+import * as sections from './sections';
 import { Priority, MemberStatus, PastoralState, Ordinance, Recommend, CheckIn, CheckInStyle } from '../models/types';
 
 export class WriteService {
@@ -70,12 +71,12 @@ export class WriteService {
   }
 
   async markContacted(file: TFile): Promise<void> {
-    const today = new Date().toISOString().slice(0, 10);
+    const day = today();
     const content = await this.app.vault.read(file);
     const lines = content.split('\n');
 
     // Only add a body entry if there isn't already one for today
-    if (!this.hasInteractionHeadingFor(lines, today)) {
+    if (!this.hasInteractionHeadingFor(lines, day)) {
       let insertIdx = -1;
       for (let i = 0; i < lines.length; i++) {
         if (lines[i].match(/^##\s+Interactions/)) {
@@ -84,14 +85,14 @@ export class WriteService {
         }
       }
       if (insertIdx >= 0) {
-        const entry = `\n### ${today} — Contact\n`;
+        const entry = `\n### ${day} — Contact\n`;
         lines.splice(insertIdx, 0, entry);
         await this.app.vault.modify(file, lines.join('\n'));
       }
     }
 
     await this.app.fileManager.processFrontMatter(file, (fm) => {
-      fm['last-contact'] = today;
+      fm['last-contact'] = day;
     });
   }
 
@@ -127,33 +128,31 @@ export class WriteService {
   }
 
   async addTask(file: TFile, text: string): Promise<void> {
-    const content = await this.app.vault.read(file);
-    const lines = content.split('\n');
+    await this.app.vault.process(file, (c) => sections.addTask(c, text.trim()));
+  }
 
-    // Find ## Next Steps section
-    let insertIdx = -1;
-    let inSection = false;
-    for (let i = 0; i < lines.length; i++) {
-      if (lines[i].match(/^##\s+Next Steps/)) {
-        inSection = true;
-        insertIdx = i + 1;
-        continue;
-      }
-      if (inSection) {
-        if (lines[i].match(/^##\s/)) break;
-        if (lines[i].match(/^- \[/)) insertIdx = i + 1;
-        else if (lines[i].trim() === '' && insertIdx === i) insertIdx = i + 1;
-      }
-    }
+  async upsertFact(file: TFile, label: string, value: string): Promise<void> {
+    await this.app.vault.process(file, (c) => sections.upsertFact(c, label, value.trim(), today()));
+  }
 
-    if (insertIdx >= 0) {
-      lines.splice(insertIdx, 0, `- [ ] ${text}`);
-      await this.app.vault.modify(file, lines.join('\n'));
-    }
+  async addHelp(file: TFile, date: string, amount: string, purpose: string): Promise<void> {
+    await this.app.vault.process(file, (c) => sections.addHelp(c, date || today(), amount, purpose));
+  }
+
+  async addRestriction(file: TFile, date: string, text: string): Promise<void> {
+    await this.app.vault.process(file, (c) => sections.addRestriction(c, date || today(), text));
+  }
+
+  async liftRestriction(file: TFile, index: number): Promise<void> {
+    await this.app.vault.process(file, (c) => sections.liftRestriction(c, index, today()));
+  }
+
+  async ensurePrivateHeading(file: TFile, sub: string): Promise<void> {
+    await this.app.vault.process(file, (c) => sections.ensurePrivateHeading(c, sub));
   }
 
   async logInteraction(file: TFile, note: string): Promise<void> {
-    const today = new Date().toISOString().slice(0, 10);
+    const day = today();
     const content = await this.app.vault.read(file);
     const lines = content.split('\n');
 
@@ -167,7 +166,7 @@ export class WriteService {
     }
 
     if (insertIdx >= 0) {
-      const entry = `\n### ${today} \u2014 Note\n${note}\n`;
+      const entry = `\n### ${day} \u2014 Note\n${note}\n`;
       lines.splice(insertIdx, 0, entry);
       await this.app.vault.modify(file, lines.join('\n'));
     }
@@ -175,4 +174,10 @@ export class WriteService {
     // Also update last-contact
     await this.markContacted(file);
   }
+}
+
+/** Local date, YYYY-MM-DD (toISOString would give tomorrow's date on a Utah evening). */
+export function today(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }

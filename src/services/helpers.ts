@@ -147,3 +147,22 @@ export function formatMovedInSince(movedIn: string, nowMs: number = Date.now()):
 
   return `in ward since ${label} · ${parts.join(' ')}`;
 }
+
+const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/** "2026-07-14" → "Jul 2026"; '' when unparseable. */
+export function monthYear(iso: string): string {
+  const m = /^(\d{4})-(\d{2})/.exec(iso || '');
+  if (!m) return '';
+  const mi = parseInt(m[2], 10) - 1;
+  return mi >= 0 && mi < 12 ? `${MONTHS_SHORT[mi]} ${m[1]}` : '';
+}
+
+/** "Temple Worker (Temple Workers) / Bishopric Second Counselor (Bishopric)" → "Temple Worker · Bishopric Second Counselor" */
+export function callingNames(raw: string): string {
+  return (raw || '')
+    .split('/')
+    .map((c) => c.replace(/\s*\([^)]*\)\s*$/, '').trim())
+    .filter(Boolean)
+    .join(' · ');
+}

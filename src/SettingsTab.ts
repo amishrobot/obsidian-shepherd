@@ -54,13 +54,12 @@ export class ShepherdSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName('Show contact bar')
-      .setDesc('Display call / text / email chips on the member panel.')
+      .setName('Open the panel with member notes')
+      .setDesc('Opens the Shepherd panel in the right sidebar when you open a member note and it isn’t already there.')
       .addToggle((toggle) =>
-        toggle.setValue(this.plugin.settings.showContactBar).onChange(async (value) => {
-          this.plugin.settings.showContactBar = value;
+        toggle.setValue(this.plugin.settings.autoOpenPanel).onChange(async (value) => {
+          this.plugin.settings.autoOpenPanel = value;
           await this.plugin.saveSettings();
-          this.plugin.refreshView();
         })
       );
   }

@@ -1,9 +1,11 @@
-import { ItemView, WorkspaceLeaf, TFile } from 'obsidian';
+import { ItemView, Menu, TFile, WorkspaceLeaf } from 'obsidian';
 import { h, render } from 'preact';
-import { ShepherdPanel } from './components/ShepherdPanel';
+import { MemberPanel, PanelActions, Tab, TABS } from './components/MemberPanel';
 import { MemberService } from './services/MemberService';
 import { WriteService } from './services/WriteService';
-import { MemberState, Priority, MemberStatus, PastoralState, Ordinance, Recommend, CheckIn, CheckInStyle, ShepherdSettings } from './models/types';
+import { MemberState, ShepherdSettings } from './models/types';
+import { unfoldSection } from './folds';
+import { addFact, addHelp, addRestriction, logInteraction, showMoreMenu } from './menus';
 
 export const VIEW_TYPE_SHEPHERD = 'shepherd-view';
 
@@ -11,171 +13,154 @@ export class ShepherdView extends ItemView {
   private memberService: MemberService;
   private writeService: WriteService;
   private currentFile: TFile | null = null;
-  private settings: ShepherdSettings;
-  private expandLogSignal = 0;
+  private member: MemberState | null = null;
+  private tab: Tab = 'facts';
 
-  constructor(leaf: WorkspaceLeaf, settings: ShepherdSettings) {
+  constructor(leaf: WorkspaceLeaf, private settings: ShepherdSettings) {
     super(leaf);
-    this.settings = settings;
     this.memberService = new MemberService(this.app, settings);
     this.registerEvent(this.memberService.indexInvalidationRef);
     this.writeService = new WriteService(this.app);
   }
 
-  getViewType(): string {
-    return VIEW_TYPE_SHEPHERD;
-  }
+  getViewType(): string { return VIEW_TYPE_SHEPHERD; }
+  getDisplayText(): string { return 'Shepherd'; }
+  getIcon(): string { return 'heart'; }
 
-  getDisplayText(): string {
-    return 'Shepherd';
-  }
-
-  getIcon(): string {
-    return 'heart';
+  private get host(): HTMLElement {
+    return this.containerEl.children[1] as HTMLElement;
   }
 
   async onOpen() {
+    this.host.addClass('shepherd-view');
+    this.host.tabIndex = -1;
+    this.registerDomEvent(this.host, 'keydown', (e: KeyboardEvent) => this.onKey(e));
     const file = this.app.workspace.getActiveFile();
-    if (file && this.memberService.isMemberFile(file)) {
-      await this.showMember(file);
-    } else {
-      this.showEmpty();
-    }
+    if (file && this.memberService.isMemberFile(file)) await this.showMember(file);
+    else this.showEmpty();
   }
 
   async onClose() {
-    const container = this.containerEl.children[1] as HTMLElement;
-    render(null, container);
+    render(null, this.host);
+  }
+
+  /** 1/2/3 switch tabs, L logs, C/T/E call/text/email: only while focus is in the panel and not typing. */
+  private onKey(e: KeyboardEvent) {
+    if (!this.member || e.metaKey || e.ctrlKey || e.altKey) return;
+    const t = e.target as HTMLElement;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
+    const k = e.key.toLowerCase();
+    const tab = TABS.find((x) => x.key === k);
+    if (tab) { e.preventDefault(); this.setTab(tab.id); return; }
+    if (k === 'l') { e.preventDefault(); this.triggerLogExpand(); return; }
+    const label = ({ c: 'Call', t: 'Text', e: 'Email' } as Record<string, string>)[k];
+    if (label) {
+      const a = this.host.querySelector(`.sh2-actions a[aria-label="${label}"]`) as HTMLAnchorElement | null;
+      if (a) { e.preventDefault(); a.click(); }
+    }
+  }
+
+  setTab(tab: Tab) {
+    this.tab = tab;
+    if (this.member) this.renderPanel(this.member);
   }
 
   async showMember(file: TFile) {
     this.currentFile = file;
-    const container = this.containerEl.children[1] as HTMLElement;
-
     try {
       const member = await this.memberService.buildMemberState(file);
-      this.renderPanel(container, member);
+      if (this.currentFile?.path !== file.path) return;
+      this.member = member;
+      this.renderPanel(member);
     } catch (e) {
-      // Use safe DOM methods instead of innerHTML
-      container.empty();
-      const errDiv = container.createDiv({ cls: 'shepherd-empty' });
+      this.member = null;
+      render(null, this.host);
+      this.host.empty();
+      const errDiv = this.host.createDiv({ cls: 'shepherd-empty' });
       errDiv.createDiv({ text: `Error loading member: ${e}`, cls: 'shepherd-empty-text' });
     }
   }
 
   showEmpty() {
     this.currentFile = null;
-    const container = this.containerEl.children[1] as HTMLElement;
+    this.member = null;
     const dashPath = this.settings.dashboardPath;
-
     render(
       h('div', { class: 'shepherd-empty' },
-        h('div', { class: 'shepherd-empty-icon' }, '🐑'),
-        h('div', { class: 'shepherd-empty-text' }, 'Open a member file to see pastoral controls.'),
-        h('span', {
+        h('div', { class: 'shepherd-empty-text' }, 'Open a member note to see them here.'),
+        h('a', {
           class: 'shepherd-empty-link',
           onClick: () => {
-            const f = this.app.vault.getAbstractFileByPath(dashPath);
-            if (f instanceof TFile) {
+            if (this.app.vault.getAbstractFileByPath(dashPath) instanceof TFile) {
               this.app.workspace.openLinkText(dashPath, '', false);
             }
           },
-        }, '📂 Open Dashboard'),
+        }, 'Open the dashboard'),
       ),
-      container
+      this.host,
     );
   }
 
   async refresh(file?: TFile) {
     const target = file || this.currentFile;
-    if (target && this.memberService.isMemberFile(target)) {
-      await this.showMember(target);
-    } else {
-      this.showEmpty();
-    }
+    if (target && this.memberService.isMemberFile(target)) await this.showMember(target);
+    else this.showEmpty();
   }
 
+  /** Open the log form (command and the L key). */
   triggerLogExpand() {
-    this.expandLogSignal++;
-    if (this.currentFile) {
-      this.showMember(this.currentFile);
-    }
+    if (this.member) logInteraction(this.app, this.writeService, this.member);
   }
 
-  private renderPanel(container: HTMLElement, member: MemberState) {
+  private noteLeaf(): WorkspaceLeaf {
+    return this.app.workspace.getMostRecentLeaf() ?? this.app.workspace.getLeaf(false);
+  }
+
+  private renderPanel(member: MemberState) {
     const file = member.file;
+    const w = this.writeService;
+    const after = (p: Promise<void>) => void p.then(() => this.showMember(file));
+    const photo = member.photo ? this.app.vault.getAbstractFileByPath(member.photo) : null;
+    const photoUrl = photo instanceof TFile ? this.app.vault.getResourcePath(photo) : null;
+    const person = (name: string) => ({ name, file: this.memberService.resolveMemberByName(name) });
 
-    const refresh = () => this.showMember(file);
-
-    const housemates = this.memberService.getHousemates(member);
-    const ministeredBy = member.ministeredBy.map((name) => ({
-      name, file: this.memberService.resolveMemberByName(name),
-    }));
-    const ministersTo = member.ministersTo.map((name) => ({
-      name, file: this.memberService.resolveMemberByName(name),
-    }));
+    const act: PanelActions = {
+      log: () => logInteraction(this.app, w, member),
+      more: (e) => showMoreMenu(this.app, w, member, e),
+      toggleTask: (line) => after(w.toggleTask(file, line)),
+      addTask: (text) => after(w.addTask(file, text)),
+      addFact: (label) => addFact(this.app, w, member, label),
+      addHelp: () => addHelp(this.app, w, member),
+      addRestriction: () => addRestriction(this.app, w, member),
+      liftRestriction: (i, e) => {
+        const menu = new Menu();
+        menu.addItem((it) => it.setTitle('Mark lifted today').setIcon('check').onClick(() => after(w.liftRestriction(file, i))));
+        menu.showAtMouseEvent(e);
+      },
+      editPrivate: (sub) => {
+        void w.ensurePrivateHeading(file, sub).then(() =>
+          this.noteLeaf().openFile(file, { eState: { subpath: `#${sub}` } })).then(() =>
+          unfoldSection(this.app.workspace, file, 'Private'));
+      },
+      open: (target) => void this.noteLeaf().openFile(target),
+    };
 
     render(
-      h(ShepherdPanel, {
+      h(MemberPanel, {
         app: this.app,
+        component: this,
         member,
-        housemates,
-        ministeredBy,
-        ministersTo,
-        expandLogSignal: this.expandLogSignal,
-        onPriorityChange: async (p: Priority) => {
-          await this.writeService.setPriority(file, p);
-          await refresh();
+        photoUrl,
+        people: {
+          housemates: this.memberService.getHousemates(member),
+          ministeredBy: member.ministeredBy.map(person),
+          ministersTo: member.ministersTo.map(person),
         },
-        onStatusChange: async (s: MemberStatus) => {
-          await this.writeService.setStatus(file, s);
-          await refresh();
-        },
-        onPastoralStateChange: async (s: PastoralState) => {
-          await this.writeService.setPastoralState(file, s);
-          await refresh();
-        },
-        onOrdinanceChange: async (o: Ordinance) => {
-          await this.writeService.setOrdinance(file, o);
-          await refresh();
-        },
-        onRecommendChange: async (r: Recommend) => {
-          await this.writeService.setRecommend(file, r);
-          await refresh();
-        },
-        onCheckInChange: async (c: CheckIn) => {
-          await this.writeService.setCheckIn(file, c);
-          await refresh();
-        },
-        onCheckInStyleChange: async (s: CheckInStyle) => {
-          await this.writeService.setCheckInStyle(file, s);
-          await refresh();
-        },
-        onGifPromptChange: async (prompt: string) => {
-          await this.writeService.setGifPrompt(file, prompt);
-          await refresh();
-        },
-        onMarkContacted: async () => {
-          await this.writeService.markContacted(file);
-          await refresh();
-        },
-        onToggleTask: async (line: number) => {
-          await this.writeService.toggleTask(file, line);
-          await refresh();
-        },
-        onAddTask: async (text: string) => {
-          await this.writeService.addTask(file, text);
-          await refresh();
-        },
-        onLogInteraction: async (note: string) => {
-          await this.writeService.logInteraction(file, note);
-          await refresh();
-        },
-        onOpenPerson: (target: TFile) => {
-          this.app.workspace.getLeaf(false).openFile(target);
-        },
+        tab: this.tab,
+        onTab: (t: Tab) => this.setTab(t),
+        act,
       }),
-      container
+      this.host,
     );
   }
 }

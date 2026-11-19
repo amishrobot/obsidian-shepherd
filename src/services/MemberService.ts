@@ -1,6 +1,7 @@
 import { App, EventRef, TFile, parseYaml } from 'obsidian';
-import { MemberState, Priority, MemberStatus, PastoralState, Ordinance, Recommend, PriesthoodOffice, Task, Interaction, ShepherdSettings, RelationshipPerson, CheckIn, CheckInStyle } from '../models/types';
+import { MemberState, Priority, MemberStatus, PastoralState, Ordinance, Recommend, PriesthoodOffice, Interaction, ShepherdSettings, RelationshipPerson, CheckIn, CheckInStyle } from '../models/types';
 import { parseMinistering, normalizeAddress } from './helpers';
+import { parseFacts, parsePrivate, parseTasks, splitBody } from './sections';
 
 interface MemberIndexEntry {
   file: TFile;
@@ -39,15 +40,15 @@ export class MemberService {
 
     // Read body (single file)
     const content = await this.app.vault.read(file);
-    const bodyMatch = content.match(/^---[\s\S]*?---\n([\s\S]*)$/);
-    const body = bodyMatch ? bodyMatch[1] : content;
+    const { body } = splitBody(content);
 
-    const tasks = this.parseTasks(body);
+    const tasks = parseTasks(body);
     const interactions = this.parseInteractions(body);
-    const whereTheyAre = this.parseSection(body, 'Where They Are');
 
     const lastContact = String(fm['last-contact'] || '');
-    const daysSinceContact = this.daysSince(lastContact);
+    const newestEntry = interactions.map((i) => i.date).filter(Boolean).sort().pop() || '';
+    const lastTalked = [lastContact.slice(0, 10), newestEntry].filter(Boolean).sort().pop() || '';
+    const daysSinceContact = this.daysSince(lastTalked);
     const ministering = parseMinistering(String(fm['ministering-assignment'] || ''));
 
     return {
@@ -86,7 +87,12 @@ export class MemberService {
       isOverdue: this.checkOverdue(fm.priority as Priority, daysSinceContact),
       tasks,
       interactions,
-      whereTheyAre,
+      facts: parseFacts(body),
+      private: parsePrivate(body),
+      callingSince: String(fm['calling-since'] || ''),
+      priorUnit: String(fm['prior-unit'] || ''),
+      mission: String(fm.mission || ''),
+      lastTalked,
     };
   }
 
@@ -102,35 +108,6 @@ export class MemberService {
     if (days === null) return false;
     const highPriority = priority === 'top-10' || priority === 'high';
     return highPriority && days > this.settings.overdueThreshold;
-  }
-
-  private parseTasks(body: string): Task[] {
-    const tasks: Task[] = [];
-    const section = this.findSection(body, 'Next Steps');
-    if (!section) return tasks;
-
-    // Find absolute line offset of section in the full content
-    const lines = body.split('\n');
-    let inSection = false;
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      if (line.match(/^##\s+Next Steps/)) {
-        inSection = true;
-        continue;
-      }
-      if (inSection && line.match(/^##\s/)) break;
-      if (!inSection) continue;
-
-      const taskMatch = line.match(/^- \[([ xX])\]\s+(.*)/);
-      if (taskMatch) {
-        tasks.push({
-          completed: taskMatch[1] !== ' ',
-          text: taskMatch[2],
-          line: i, // relative to body start
-        });
-      }
-    }
-    return tasks;
   }
 
   private parseInteractions(body: string): Interaction[] {
@@ -170,12 +147,6 @@ export class MemberService {
     }
     if (current) interactions.push(current);
     return interactions;
-  }
-
-  private parseSection(body: string, sectionName: string): string {
-    const section = this.findSection(body, sectionName);
-    if (!section) return '';
-    return section.trim().substring(0, 300);
   }
 
   /** All other member files sharing a normalized address, excluding moved-out members. */
@@ -221,19 +192,5 @@ export class MemberService {
           status: String(fm.status || ''),
         };
       });
-  }
-
-  private findSection(body: string, name: string): string | null {
-    const regex = new RegExp(`^##\\s+${name}\\s*$`, 'm');
-    const match = body.match(regex);
-    if (!match || match.index === undefined) return null;
-
-    const start = match.index + match[0].length;
-    const nextSection = body.slice(start).match(/^##\s/m);
-    const end = nextSection && nextSection.index !== undefined
-      ? start + nextSection.index
-      : body.length;
-
-    return body.slice(start, end);
   }
 }

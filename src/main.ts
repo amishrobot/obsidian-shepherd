@@ -2,8 +2,8 @@ import { Plugin, WorkspaceLeaf, TFile } from 'obsidian';
 import { ShepherdView, VIEW_TYPE_SHEPHERD } from './ShepherdView';
 import { WriteService } from './services/WriteService';
 import { MemberService } from './services/MemberService';
-import { BandManager } from './BandManager';
 import { MetSweepModal } from './MetSweepModal';
+import { foldPanelSections } from './folds';
 // On workspace restore, custom-view leaves exist as deferred placeholders
 // before the plugin's view type is registered. instanceof guards against
 // TypeError when methods like refresh() are called on those placeholders.
@@ -13,7 +13,6 @@ import { ShepherdSettingTab } from './SettingsTab';
 export default class ShepherdPlugin extends Plugin {
   settings: ShepherdSettings = DEFAULT_SETTINGS;
   private modifyTimeout: ReturnType<typeof setTimeout> | null = null;
-  private bands: BandManager | null = null;
 
   async onload() {
     console.log('Loading Shepherd');
@@ -78,25 +77,25 @@ export default class ShepherdPlugin extends Plugin {
       },
     });
 
-    // Status band above member notes (replaces the [!member-card] callout,
-    // which styles.css hides while this class is on the body).
-    const bandMembers = new MemberService(this.app, this.settings);
-    this.registerEvent(bandMembers.indexInvalidationRef);
-    this.bands = new BandManager(this.app, bandMembers);
-    document.body.addClass('shepherd-band-on');
-    this.app.workspace.onLayoutReady(() => this.bands?.refreshAll());
-    this.registerEvent(this.app.workspace.on('layout-change', () => this.bands?.refreshAll()));
-    this.registerEvent(this.app.workspace.on('file-open', () => this.bands?.refreshAll()));
-    this.registerEvent(
-      this.app.metadataCache.on('changed', (file) => {
-        if (file instanceof TFile && this.isMemberFile(file)) this.bands?.refreshFile(file);
-      })
-    );
+    // The generated [!member-card] callout duplicates the panel; styles.css hides
+    // it while this class is on the body. It stays in the file for places the
+    // plugin doesn't run.
+    document.body.addClass('shepherd-panel-on');
 
     // React to active file changes
     this.registerEvent(
       this.app.workspace.on('file-open', (file) => {
         if (file instanceof TFile) {
+          if (this.settings.autoOpenPanel && this.isMemberFile(file) && !this.getView()) {
+            void this.openPanelQuietly();
+          }
+          // Fold what the panel shows so the note reads as the timeline.
+          // Once per open; unfolding by hand sticks until the note is reopened.
+          // Twice: a fresh tab's syntax tree isn't parsed at the first pass, and
+          // the editor clamps each fold to what it has parsed so far.
+          if (this.isMemberFile(file)) {
+            for (const ms of [150, 900]) window.setTimeout(() => foldPanelSections(this.app.workspace, file), ms);
+          }
           this.scheduleRefresh(file);
         }
       })
@@ -124,8 +123,7 @@ export default class ShepherdPlugin extends Plugin {
 
   async onunload() {
     console.log('Unloading Shepherd');
-    this.bands?.removeAll();
-    document.body.removeClass('shepherd-band-on');
+    document.body.removeClass('shepherd-panel-on');
   }
 
   private isMemberFile(file: TFile): boolean {
@@ -170,6 +168,16 @@ export default class ShepherdPlugin extends Plugin {
       await leaf.setViewState({ type: VIEW_TYPE_SHEPHERD, active: true });
       this.app.workspace.revealLeaf(leaf);
     }
+  }
+
+  /** Create the panel in the right sidebar without taking focus from the note. */
+  private async openPanelQuietly() {
+    if (this.app.workspace.getLeavesOfType(VIEW_TYPE_SHEPHERD).length) return;
+    const leaf = this.app.workspace.getRightLeaf(false);
+    if (!leaf) return;
+    await leaf.setViewState({ type: VIEW_TYPE_SHEPHERD, active: false });
+    if (this.app.workspace.rightSplit.collapsed) this.app.workspace.rightSplit.expand();
+    this.app.workspace.revealLeaf(leaf);
   }
 
   async loadSettings() {

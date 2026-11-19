@@ -24,11 +24,8 @@ export const RECOMMENDS: (Recommend & string)[] = [
   'current', 'expiring', 'expired', 'none', 'unknown',
 ];
 
-export interface Task {
-  text: string;
-  completed: boolean;
-  line: number;
-}
+import type { Fact, PrivateInfo, Task } from '../services/sections';
+export type { Fact, PrivateInfo, Task } from '../services/sections';
 
 export interface Interaction {
   date: string;
@@ -73,7 +70,13 @@ export interface MemberState {
   isOverdue: boolean;
   tasks: Task[];
   interactions: Interaction[];
-  whereTheyAre: string;
+  facts: Fact[];
+  private: PrivateInfo;
+  callingSince: string;
+  priorUnit: string;
+  mission: string;
+  /** Newest of last-contact and the newest dated interaction. */
+  lastTalked: string;
 }
 
 export interface RelationshipPerson {
@@ -86,6 +89,8 @@ export interface ShepherdSettings {
   dashboardPath: string;
   overdueThreshold: number;
   showContactBar: boolean;
+  /** Open the side panel automatically when a member note opens and no panel exists. */
+  autoOpenPanel: boolean;
 }
 
 export const DEFAULT_SETTINGS: ShepherdSettings = {
@@ -93,6 +98,7 @@ export const DEFAULT_SETTINGS: ShepherdSettings = {
   dashboardPath: 'Church/_system/views/_dashboard.md',
   overdueThreshold: 14,
   showContactBar: true,
+  autoOpenPanel: true,
 };
 
 export const PRIORITY_COLORS: Record<Priority, string> = {

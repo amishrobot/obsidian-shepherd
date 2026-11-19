@@ -2,7 +2,7 @@ import { App, Modal, TFile } from 'obsidian';
 import { MemberService } from './services/MemberService';
 import { WriteService } from './services/WriteService';
 import { MemberState } from './models/types';
-import { callingNames, monthYear } from './components/MemberBand';
+import { callingNames, monthYear } from './services/helpers';
 
 // One card per member nobody has sorted yet: photo, name, calling, how long
 // they've been in the ward, who they live with. "I know them" / "Haven't met"
