@@ -22,7 +22,7 @@ __export(main_exports, {
   default: () => ShepherdPlugin
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian10 = require("obsidian");
+var import_obsidian8 = require("obsidian");
 
 // src/ShepherdView.tsx
 var import_obsidian5 = require("obsidian");
@@ -485,83 +485,10 @@ function D2(n2, t3) {
   return "function" == typeof t3 ? t3(n2) : t3;
 }
 
-// src/components/IdentityBlock.tsx
+// src/components/MemberPanel.tsx
 var import_obsidian = require("obsidian");
 
 // src/services/helpers.ts
-function monogramFromName(name) {
-  const trimmed = name.trim();
-  if (!trimmed)
-    return "";
-  const parts = trimmed.split(/\s+/);
-  if (parts.length === 1) {
-    return parts[0].slice(0, 2).toUpperCase();
-  }
-  const first = parts[0][0];
-  const last = parts[parts.length - 1][0];
-  return (first + last).toUpperCase();
-}
-function parseEyebrowSegments(input) {
-  const segments = [];
-  if (input.age != null)
-    segments.push(String(input.age));
-  if (input.priesthood && input.priesthood !== "none") {
-    segments.push(input.priesthood.toUpperCase());
-  }
-  const orgMatch = input.calling.match(/\(([^)]+)\)\s*$/);
-  if (orgMatch)
-    segments.push(orgMatch[1].toUpperCase());
-  return segments;
-}
-function parseCallingSubtitle(calling) {
-  if (!calling.trim())
-    return null;
-  const stripped = calling.replace(/\s*\([^)]+\)\s*$/, "").trim();
-  return stripped || null;
-}
-function parseCity(address) {
-  var _a, _b;
-  if (!address.trim())
-    return null;
-  const lastSegment = (_b = (_a = address.split(",").pop()) == null ? void 0 : _a.trim()) != null ? _b : "";
-  const match = lastSegment.match(/^(.+?)\s+([A-Z]{2})\s+\d{5}/i);
-  if (!match)
-    return null;
-  const cityRaw = match[1].trim();
-  const state = match[2].toUpperCase();
-  const city = cityRaw.toLowerCase().split(/\s+/).map((w3) => w3.charAt(0).toUpperCase() + w3.slice(1)).join(" ");
-  return `${city}, ${state}`;
-}
-function parsePhoneDisplay(raw) {
-  if (!raw)
-    return "";
-  const digits = raw.replace(/\D/g, "");
-  let useDigits = digits;
-  if (digits.length === 11 && digits.startsWith("1")) {
-    useDigits = digits.slice(1);
-  }
-  if (useDigits.length === 10) {
-    return `${useDigits.slice(0, 3)}-${useDigits.slice(3, 6)}-${useDigits.slice(6)}`;
-  }
-  return raw;
-}
-function formatLastContact(dateStr, nowMs = Date.now()) {
-  if (!dateStr)
-    return "never";
-  const d3 = new Date(dateStr);
-  if (isNaN(d3.getTime()))
-    return "never";
-  const days = Math.floor((nowMs - d3.getTime()) / (1e3 * 60 * 60 * 24));
-  if (days <= 0)
-    return "today";
-  if (days <= 30)
-    return `${days}d ago`;
-  const weeks = Math.floor(days / 7);
-  if (weeks <= 12)
-    return `${weeks}w ago`;
-  const months = Math.floor(days / 30);
-  return `${months}mo ago`;
-}
 function buildMapsUrl(address, isAppleDevice) {
   if (!address)
     return "";
@@ -595,413 +522,493 @@ function normalizeAddress(address) {
     return "";
   return address.toLowerCase().replace(/[.,#]/g, " ").replace(/(\d{5})-\d{4}\b/, "$1").replace(/\s+/g, " ").trim();
 }
-function formatMovedInSince(movedIn, nowMs = Date.now()) {
-  if (!movedIn.trim())
-    return null;
-  const d3 = new Date(movedIn);
-  if (isNaN(d3.getTime()))
-    return null;
-  const now = new Date(nowMs);
-  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const label = `${monthNames[d3.getMonth()]} ${d3.getFullYear()}`;
-  let totalMonths = (now.getFullYear() - d3.getFullYear()) * 12 + (now.getMonth() - d3.getMonth());
-  if (now.getDate() < d3.getDate())
-    totalMonths -= 1;
-  if (totalMonths < 0)
-    totalMonths = 0;
-  const years = Math.floor(totalMonths / 12);
-  const months = totalMonths % 12;
-  const parts = [];
-  if (years > 0)
-    parts.push(`${years} yr`);
-  if (months > 0 || years === 0)
-    parts.push(`${months} mo`);
-  return `in ward since ${label} \xB7 ${parts.join(" ")}`;
+var MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+function monthYear(iso) {
+  const m3 = /^(\d{4})-(\d{2})/.exec(iso || "");
+  if (!m3)
+    return "";
+  const mi = parseInt(m3[2], 10) - 1;
+  return mi >= 0 && mi < 12 ? `${MONTHS_SHORT[mi]} ${m3[1]}` : "";
+}
+function callingNames(raw) {
+  return (raw || "").split("/").map((c3) => c3.replace(/\s*\([^)]*\)\s*$/, "").trim()).filter(Boolean).join(" \xB7 ");
 }
 
-// src/components/IdentityBlock.tsx
-function IdentityBlock({ app, member }) {
-  const monogram = monogramFromName(member.name);
-  const eyebrowSegments = parseEyebrowSegments({
-    age: member.age,
-    priesthood: member.priesthood,
-    calling: member.calling
-  });
-  const subtitle = parseCallingSubtitle(member.calling);
-  const tenure = formatMovedInSince(member.movedIn);
-  const photoFile = member.photo ? app.vault.getAbstractFileByPath(member.photo) : null;
-  const photoUrl = photoFile instanceof import_obsidian.TFile ? app.vault.getResourcePath(photoFile) : null;
-  const [photoFailed, setPhotoFailed] = d2(false);
-  const [zoomed, setZoomed] = d2(false);
-  y2(() => setPhotoFailed(false), [photoUrl]);
+// src/components/MemberPanel.tsx
+var TABS = [
+  { id: "facts", label: "Facts", key: "1" },
+  { id: "private", label: "Private", key: "2" },
+  { id: "ward", label: "Ward", key: "3" }
+];
+var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+function shortDate(iso, withYear = true) {
+  var _a;
+  const m3 = /^(\d{4})-(\d{2})(?:-(\d{2}))?/.exec(iso || "");
+  if (!m3)
+    return iso || "";
+  const mon = (_a = MONTHS[parseInt(m3[2], 10) - 1]) != null ? _a : "";
+  if (!m3[3])
+    return `${mon} ${m3[1]}`;
+  const day = parseInt(m3[3], 10);
+  return withYear ? `${mon} ${day}, ${m3[1]}` : `${mon} ${day}`;
+}
+function daysAgo(iso) {
+  const m3 = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || "");
+  if (!m3)
+    return null;
+  const then = new Date(+m3[1], +m3[2] - 1, +m3[3]).getTime();
+  const now = /* @__PURE__ */ new Date();
+  const today2 = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  return Math.round((today2 - then) / 864e5);
+}
+function lastTalkedLabel(iso) {
+  const d3 = daysAgo(iso);
+  if (d3 === null)
+    return "Never";
+  if (d3 <= 0)
+    return "Today";
+  if (d3 === 1)
+    return "Yesterday";
+  if (d3 < 60)
+    return `${d3} days ago`;
+  const mo = Math.round(d3 / 30);
+  if (mo < 18)
+    return `${mo} months ago`;
+  return `${Math.round(d3 / 365)} years ago`;
+}
+function callingList(raw) {
+  return (raw || "").split("/").map((c3) => c3.replace(/\s*\([^)]*\)\s*$/, "").trim()).filter(Boolean);
+}
+function money(n2) {
+  return "$" + n2.toLocaleString("en-US", { minimumFractionDigits: n2 % 1 ? 2 : 0, maximumFractionDigits: 2 });
+}
+function Icon({ name, class: cls = "" }) {
+  const ref = A2(null);
   y2(() => {
-    if (!zoomed)
+    if (ref.current) {
+      ref.current.empty();
+      (0, import_obsidian.setIcon)(ref.current, name);
+    }
+  }, [name]);
+  return /* @__PURE__ */ _("span", { ref, class: `sh2-icon ${cls}`, "aria-hidden": "true" });
+}
+function Markdown({ app, component, text, path }) {
+  const ref = A2(null);
+  y2(() => {
+    const el = ref.current;
+    if (!el)
       return;
-    const onKey = (e3) => {
-      if (e3.key === "Escape")
-        setZoomed(false);
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [zoomed]);
-  y2(() => setZoomed(false), [member.name]);
-  const showPhoto = photoUrl && !photoFailed;
-  return /* @__PURE__ */ _("div", { class: "shepherd-identity" }, /* @__PURE__ */ _("div", { class: "shepherd-monogram", "data-gender": member.gender || "U" }, showPhoto ? /* @__PURE__ */ _(
-    "img",
-    {
-      class: "shepherd-avatar-img",
-      src: photoUrl,
-      alt: member.name,
-      role: "button",
-      tabIndex: 0,
-      title: "Click to enlarge",
-      onError: () => setPhotoFailed(true),
-      onClick: () => setZoomed(true),
-      onKeyDown: (e3) => {
-        if (e3.key === "Enter" || e3.key === " ") {
-          e3.preventDefault();
-          setZoomed(true);
-        }
-      }
-    }
-  ) : monogram), zoomed && showPhoto && /* @__PURE__ */ _(
-    "div",
-    {
-      class: "shepherd-lightbox",
-      role: "dialog",
-      "aria-label": `${member.name} \u2014 photo`,
-      onClick: () => setZoomed(false)
-    },
-    /* @__PURE__ */ _("img", { class: "shepherd-lightbox-img", src: photoUrl, alt: member.name })
-  ), /* @__PURE__ */ _("div", { class: "shepherd-identity-text" }, eyebrowSegments.length > 0 && /* @__PURE__ */ _("div", { class: "shepherd-eyebrow" }, eyebrowSegments.join(" \xB7 ")), /* @__PURE__ */ _("div", { class: "shepherd-name" }, member.name), subtitle && /* @__PURE__ */ _("div", { class: "shepherd-subtitle" }, subtitle), tenure && /* @__PURE__ */ _("div", { class: "shepherd-tenure" }, tenure)));
+    el.empty();
+    void import_obsidian.MarkdownRenderer.render(app, text, el, path, component);
+  }, [text, path]);
+  return /* @__PURE__ */ _("div", { ref, class: "sh2-prose" });
 }
-
-// src/components/ContactChips.tsx
-var import_obsidian2 = require("obsidian");
-function ContactChips({ phone, email, address }) {
-  const phoneDigits = phone.replace(/\D/g, "");
-  const phoneDisplay = parsePhoneDisplay(phone);
-  const city = parseCity(address);
-  const isApple = import_obsidian2.Platform.isMacOS || import_obsidian2.Platform.isIosApp;
-  const mapsUrl = buildMapsUrl(address, isApple);
-  const emailLocal = email.split("@")[0] || email;
-  return /* @__PURE__ */ _("div", { class: "shepherd-chips" }, phone && /* @__PURE__ */ _("a", { class: "shepherd-chip", href: `tel:${phoneDigits}` }, "\u{1F4DE} ", phoneDisplay), email && /* @__PURE__ */ _("a", { class: "shepherd-chip", href: `mailto:${email}` }, "\u2709 ", emailLocal), city && /* @__PURE__ */ _("a", { class: "shepherd-chip", href: mapsUrl, target: "_blank" }, "\u{1F4CD} ", city));
-}
-
-// src/components/RelationshipChips.tsx
-var import_obsidian3 = require("obsidian");
-var COLLAPSE_AT = import_obsidian3.Platform.isMobile ? 2 : 4;
-function ChipRow({ label, people, onOpenPerson }) {
-  const [expanded, setExpanded] = d2(false);
-  if (people.length === 0)
-    return null;
-  const collapsed = !expanded && people.length > COLLAPSE_AT;
-  const shown = collapsed ? people.slice(0, COLLAPSE_AT) : people;
-  const hidden = people.length - shown.length;
-  return /* @__PURE__ */ _("div", { class: "shepherd-rel-row" }, /* @__PURE__ */ _("div", { class: "shepherd-rel-label" }, label), /* @__PURE__ */ _("div", { class: "shepherd-rel-chips" }, shown.map((person) => person.file ? /* @__PURE__ */ _(
-    "span",
-    {
-      class: "shepherd-chip shepherd-chip-person",
-      onClick: () => onOpenPerson(person.file)
-    },
-    person.name
-  ) : /* @__PURE__ */ _("span", { class: "shepherd-chip shepherd-chip-inert" }, person.name)), collapsed && /* @__PURE__ */ _(
-    "span",
-    {
-      class: "shepherd-chip shepherd-chip-more",
-      onClick: () => setExpanded(true)
-    },
-    "+",
-    hidden
-  )));
-}
-function RelationshipChips({ housemates, ministeredBy, ministersTo, onOpenPerson }) {
-  if (housemates.length === 0 && ministeredBy.length === 0 && ministersTo.length === 0) {
-    return null;
+function IconButton({ icon, label, hint, href, onClick }) {
+  const title = hint ? `${label} \xB7 ${hint}` : label;
+  if (href) {
+    return /* @__PURE__ */ _("a", { class: "sh2-iconbtn", href, "aria-label": label, title }, /* @__PURE__ */ _(Icon, { name: icon }));
   }
-  return /* @__PURE__ */ _("div", { class: "shepherd-relationships" }, /* @__PURE__ */ _(ChipRow, { label: "Housemates", people: housemates, onOpenPerson }), /* @__PURE__ */ _(ChipRow, { label: "Ministered by", people: ministeredBy, onOpenPerson }), /* @__PURE__ */ _(ChipRow, { label: "Ministers to", people: ministersTo, onOpenPerson }));
-}
-
-// src/components/LogInteractionCTA.tsx
-function LogInteractionCTA({ lastContact, onMarkContacted, onLogInteraction, expandSignal }) {
-  const [expanded, setExpanded] = d2(false);
-  const [note, setNote] = d2("");
-  const textareaRef = A2(null);
-  const formatted = formatLastContact(lastContact || null);
-  y2(() => {
-    if (expandSignal > 0) {
-      setExpanded(true);
-      setTimeout(() => {
-        var _a;
-        return (_a = textareaRef.current) == null ? void 0 : _a.focus();
-      }, 0);
-    }
-  }, [expandSignal]);
-  const submit = () => {
-    const trimmed = note.trim();
-    if (trimmed) {
-      onLogInteraction(trimmed);
-    } else {
-      onMarkContacted();
-    }
-    setNote("");
-    setExpanded(false);
-  };
-  const handleKeyDown = (e3) => {
-    if (e3.key === "Enter" && !e3.shiftKey) {
-      e3.preventDefault();
-      submit();
-    } else if (e3.key === "Escape") {
-      setExpanded(false);
-      setNote("");
-    }
-  };
-  return /* @__PURE__ */ _("div", { class: "shepherd-cta-wrap" }, /* @__PURE__ */ _("div", { class: `shepherd-last-contact${formatted === "never" ? " is-never" : ""}` }, "Last contact \xB7 ", formatted), expanded ? /* @__PURE__ */ _("div", { class: "shepherd-cta-expanded" }, /* @__PURE__ */ _(
-    "textarea",
-    {
-      ref: textareaRef,
-      class: "shepherd-cta-textarea",
-      placeholder: "Add a note (or press Enter alone to just mark contacted)",
-      value: note,
-      onInput: (e3) => setNote(e3.target.value),
-      onKeyDown: handleKeyDown,
-      rows: 3
-    }
-  ), /* @__PURE__ */ _("div", { class: "shepherd-cta-actions" }, /* @__PURE__ */ _("button", { class: "shepherd-cta-cancel", onClick: () => {
-    setExpanded(false);
-    setNote("");
-  } }, "Cancel"), /* @__PURE__ */ _("button", { class: "shepherd-cta-submit", onClick: submit }, note.trim() ? "Log Interaction" : "Mark Contacted"))) : /* @__PURE__ */ _("button", { class: "shepherd-cta-btn", onClick: () => setExpanded(true) }, /* @__PURE__ */ _("span", { class: "shepherd-cta-label" }, "\u{1F4DD} Log Interaction"), /* @__PURE__ */ _("span", { class: "shepherd-cta-kbd" }, "\u2318\u21E7L")));
-}
-
-// src/models/types.ts
-var PRIORITIES = ["top-10", "high", "normal", "new-move-in"];
-var STATUSES = ["new", "active", "inactive"];
-var PASTORAL_STATES = ["", "working-with", "under-restrictions", "non-responsive", "resolved", "dating-seriously", "getting-married", "preparing-for-baptism"];
-var CHECK_INS = ["none", "daily", "weekly"];
-var CHECK_IN_STYLES = ["gif", "quick-text", "encouragement", "scripture", "write-myself"];
-var ORDINANCES = [
-  "unknown",
-  "baptism",
-  "confirmation",
-  "aaronic-priesthood",
-  "melchizedek-priesthood",
-  "endowment",
-  "sealing"
-];
-var RECOMMENDS = [
-  "current",
-  "expiring",
-  "expired",
-  "none",
-  "unknown"
-];
-var DEFAULT_SETTINGS = {
-  memberDir: "Church/Members",
-  dashboardPath: "Church/_system/views/_dashboard.md",
-  overdueThreshold: 14,
-  showContactBar: true
-};
-var RECOMMEND_ACTIONABLE = ["current", "expiring", "expired"];
-
-// src/components/StatusTable.tsx
-function Segmented({ options, current, onChange, variant }) {
-  return /* @__PURE__ */ _("div", { class: `shepherd-seg${variant ? " shepherd-seg-" + variant : ""}` }, options.map((opt) => /* @__PURE__ */ _(
+  return /* @__PURE__ */ _(
     "button",
     {
-      class: `shepherd-seg-btn${current === opt ? " is-on" : ""}`,
-      onClick: () => onChange(opt)
+      type: "button",
+      class: "sh2-iconbtn",
+      "aria-label": label,
+      title,
+      onClick: (e3) => onClick == null ? void 0 : onClick(e3)
     },
-    opt
-  )));
+    /* @__PURE__ */ _(Icon, { name: icon })
+  );
 }
-function Dropdown({ options, current, onChange, labels }) {
-  const handleChange = (e3) => {
-    onChange(e3.target.value);
+function Header({ m: m3, photoUrl, act }) {
+  const callings = callingList(m3.calling);
+  const digits = (m3.phone || "").replace(/\D/g, "");
+  const maps = m3.address ? buildMapsUrl(m3.address, import_obsidian.Platform.isMacOS || import_obsidian.Platform.isIosApp) : "";
+  const meta = [];
+  if (m3.age != null)
+    meta.push(String(m3.age));
+  if (m3.priesthood && m3.priesthood !== "none")
+    meta.push(m3.priesthood.replace(/-/g, " ").replace(/^./, (c3) => c3.toUpperCase()));
+  if (m3.movedIn)
+    meta.push(`in ward since ${shortDate(m3.movedIn.slice(0, 7))}`);
+  const days = daysAgo(m3.lastTalked);
+  const tone = days === null ? "is-never" : days > 60 ? "is-stale" : "";
+  const initials = m3.name.split(/\s+/).map((w3) => w3[0]).slice(0, 2).join("");
+  return /* @__PURE__ */ _("header", { class: "sh2-head" }, /* @__PURE__ */ _("div", { class: "sh2-id" }, photoUrl ? /* @__PURE__ */ _("img", { class: "sh2-avatar", src: photoUrl, alt: "" }) : /* @__PURE__ */ _("div", { class: "sh2-avatar is-empty" }, initials), /* @__PURE__ */ _("div", { class: "sh2-id-text" }, /* @__PURE__ */ _("div", { class: "sh2-name" }, m3.name), /* @__PURE__ */ _("div", { class: `sh2-calling ${callings.length ? "" : "is-none"}` }, callings.length ? callings.join(" \xB7 ") : "No calling"), meta.length > 0 && /* @__PURE__ */ _("div", { class: "sh2-meta" }, meta.join(" \xB7 ")))), /* @__PURE__ */ _("div", { class: "sh2-last" }, /* @__PURE__ */ _("span", { class: "sh2-label" }, "Last talked"), /* @__PURE__ */ _("span", { class: `sh2-last-value ${tone}` }, lastTalkedLabel(m3.lastTalked)), m3.met === false && /* @__PURE__ */ _("span", { class: "sh2-chip" }, "Haven\u2019t met"), m3.met === null && /* @__PURE__ */ _("span", { class: "sh2-chip is-quiet" }, "Met? not sorted")), /* @__PURE__ */ _("div", { class: "sh2-actions" }, digits && /* @__PURE__ */ _(IconButton, { icon: "phone", label: "Call", hint: "C", href: `tel:${digits}` }), digits && /* @__PURE__ */ _(IconButton, { icon: "message-circle", label: "Text", hint: "T", href: `sms:${digits}` }), m3.email && /* @__PURE__ */ _(IconButton, { icon: "mail", label: "Email", hint: "E", href: `mailto:${m3.email}` }), maps && /* @__PURE__ */ _(IconButton, { icon: "map-pin", label: m3.address, href: maps }), /* @__PURE__ */ _("button", { type: "button", class: "sh2-btn mod-cta", title: "Log a conversation \xB7 L", onClick: act.log }, /* @__PURE__ */ _(Icon, { name: "pencil" }), " Log"), /* @__PURE__ */ _(IconButton, { icon: "more-horizontal", label: "Status, recommend, check-in", onClick: act.more })));
+}
+function Threads({ tasks, act }) {
+  const [draft, setDraft] = d2("");
+  const open = tasks.filter((t3) => !t3.completed);
+  const done = tasks.filter((t3) => t3.completed);
+  const [showDone, setShowDone] = d2(false);
+  const shown = showDone ? [...open, ...done] : open;
+  const submit = () => {
+    if (draft.trim())
+      act.addTask(draft.trim());
+    setDraft("");
   };
-  return /* @__PURE__ */ _("select", { class: "shepherd-dropdown", value: current, onChange: handleChange }, options.map((opt) => {
-    var _a;
-    return /* @__PURE__ */ _("option", { value: opt }, (_a = labels == null ? void 0 : labels[opt]) != null ? _a : opt);
-  }));
-}
-var ORDINANCE_LABELS = {
-  "unknown": "Unknown",
-  "baptism": "Baptism",
-  "confirmation": "Confirmation",
-  "aaronic-priesthood": "Aaronic Priesthood",
-  "melchizedek-priesthood": "Melchizedek Priesthood",
-  "endowment": "Endowment",
-  "sealing": "Sealing"
-};
-var PASTORAL_LABELS = {
-  "": "none",
-  "working-with": "working with",
-  "under-restrictions": "under restrictions",
-  "non-responsive": "non-responsive",
-  "resolved": "resolved",
-  "dating-seriously": "dating seriously",
-  "getting-married": "getting married",
-  "preparing-for-baptism": "preparing for baptism"
-};
-var CHECK_IN_STYLE_LABELS = {
-  "gif": "GIF",
-  "quick-text": "quick text",
-  "encouragement": "encouragement",
-  "scripture": "scripture / spiritual thought",
-  "write-myself": "I'll write it"
-};
-function StatusTable(p3) {
-  const pastoralVariant = p3.pastoral === "working-with" ? "warn" : p3.pastoral === "under-restrictions" ? "danger" : void 0;
-  const recommendVariant = p3.recommend === "expired" ? "danger" : p3.recommend === "expiring" ? "warn" : void 0;
-  return /* @__PURE__ */ _("div", { class: "shepherd-status" }, /* @__PURE__ */ _("div", { class: "shepherd-section-label" }, "Status"), !p3.bandOn && /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Priority"), /* @__PURE__ */ _(Segmented, { options: PRIORITIES, current: p3.priority, onChange: p3.onPriorityChange })), /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Presence"), /* @__PURE__ */ _(Segmented, { options: STATUSES, current: p3.status, onChange: p3.onStatusChange })), !p3.bandOn && /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Pastoral"), /* @__PURE__ */ _("div", { class: `shepherd-dd-wrap${pastoralVariant ? " shepherd-dd-" + pastoralVariant : ""}` }, /* @__PURE__ */ _(
-    Dropdown,
-    {
-      options: PASTORAL_STATES,
-      current: p3.pastoral,
-      onChange: p3.onPastoralChange,
-      labels: PASTORAL_LABELS
-    }
-  ))), /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Check-in"), /* @__PURE__ */ _(Segmented, { options: CHECK_INS, current: p3.checkIn, onChange: p3.onCheckInChange })), p3.checkIn !== "none" && /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Message"), /* @__PURE__ */ _(
-    Dropdown,
-    {
-      options: CHECK_IN_STYLES,
-      current: p3.checkInStyle,
-      onChange: p3.onCheckInStyleChange,
-      labels: CHECK_IN_STYLE_LABELS
-    }
-  )), p3.checkIn !== "none" && p3.checkInStyle === "gif" && /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "GIF prompt"), /* @__PURE__ */ _(
-    "input",
-    {
-      key: p3.gifPrompt,
-      class: "shepherd-dropdown shepherd-gif-prompt",
-      type: "text",
-      placeholder: "e.g. locked in, you got this",
-      defaultValue: p3.gifPrompt,
-      onBlur: (e3) => {
-        const v3 = e3.target.value;
-        if (v3.trim() !== p3.gifPrompt)
-          p3.onGifPromptChange(v3);
-      },
-      onKeyDown: (e3) => {
-        if (e3.key === "Enter")
-          e3.target.blur();
+  return /* @__PURE__ */ _("section", { class: "sh2-section" }, /* @__PURE__ */ _("div", { class: "sh2-section-head" }, /* @__PURE__ */ _("span", { class: "sh2-section-title" }, "Open threads"), open.length > 0 && /* @__PURE__ */ _("span", { class: "sh2-count" }, open.length), done.length > 0 && /* @__PURE__ */ _("button", { type: "button", class: "sh2-link", onClick: () => setShowDone(!showDone) }, showDone ? "Hide done" : `${done.length} done`)), /* @__PURE__ */ _("div", { class: "sh2-group" }, shown.map((t3) => {
+    const d3 = t3.due ? daysAgo(t3.due) : null;
+    return /* @__PURE__ */ _("label", { class: `sh2-row sh2-task ${t3.completed ? "is-done" : ""}` }, /* @__PURE__ */ _(
+      "input",
+      {
+        type: "checkbox",
+        class: "task-list-item-checkbox",
+        checked: t3.completed,
+        onChange: () => act.toggleTask(t3.line)
       }
-    }
-  )), !p3.bandOn && /* @__PURE__ */ _(k, null, /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Next ord."), /* @__PURE__ */ _(
-    Dropdown,
-    {
-      options: ORDINANCES,
-      current: p3.nextOrdinance,
-      onChange: p3.onOrdinanceChange,
-      labels: ORDINANCE_LABELS
-    }
-  )), /* @__PURE__ */ _("div", { class: "shepherd-row" }, /* @__PURE__ */ _("div", { class: "shepherd-row-label" }, "Recommend"), /* @__PURE__ */ _("div", { class: "shepherd-recommend-wrap" }, /* @__PURE__ */ _(
-    Segmented,
-    {
-      options: RECOMMEND_ACTIONABLE,
-      current: p3.recommend,
-      onChange: p3.onRecommendChange,
-      variant: recommendVariant
-    }
-  ), p3.recommendExp && /* @__PURE__ */ _("span", { class: `shepherd-recommend-exp${p3.recommend === "expired" ? " is-danger" : ""}` }, "exp ", p3.recommendExp)))));
-}
-
-// src/components/TaskList.tsx
-function renderInlineMarkdown(text) {
-  return text.replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\*(.+?)\*/g, "<em>$1</em>").replace(/~~(.+?)~~/g, "<del>$1</del>");
-}
-function TaskList({ tasks, onToggle, onAdd }) {
-  const [adding, setAdding] = d2(false);
-  const [newText, setNewText] = d2("");
-  const handleAdd = () => {
-    const text = newText.trim();
-    if (text) {
-      onAdd(text);
-      setNewText("");
-      setAdding(false);
-    }
-  };
-  return /* @__PURE__ */ _("div", { class: "shepherd-section" }, /* @__PURE__ */ _("div", { class: "shepherd-section-header" }, "Next Steps"), tasks.length === 0 && !adding && /* @__PURE__ */ _("div", { class: "shepherd-empty-text" }, "No open tasks"), tasks.map((t3) => /* @__PURE__ */ _(
-    "div",
-    {
-      key: t3.line,
-      class: `shepherd-task ${t3.completed ? "shepherd-task-done" : ""}`,
-      onClick: () => onToggle(t3.line)
-    },
-    /* @__PURE__ */ _("span", { class: "shepherd-task-check" }, t3.completed ? "\u2611" : "\u2610"),
-    /* @__PURE__ */ _("span", { class: "shepherd-task-text", dangerouslySetInnerHTML: { __html: renderInlineMarkdown(t3.text) } })
-  )), adding ? /* @__PURE__ */ _("div", { class: "shepherd-task-add-row" }, /* @__PURE__ */ _(
+    ), /* @__PURE__ */ _("span", { class: "sh2-task-text" }, t3.text), t3.due && /* @__PURE__ */ _("span", { class: `sh2-due ${d3 !== null && d3 > 0 && !t3.completed ? "is-late" : ""}` }, shortDate(t3.due, false)));
+  }), /* @__PURE__ */ _("div", { class: "sh2-row sh2-add-row" }, /* @__PURE__ */ _(Icon, { name: "plus", class: "sh2-muted" }), /* @__PURE__ */ _(
     "input",
     {
       type: "text",
-      class: "shepherd-task-input",
-      placeholder: "New step...",
-      value: newText,
-      onInput: (e3) => setNewText(e3.target.value),
+      class: "sh2-input",
+      placeholder: "Add a thread",
+      value: draft,
+      onInput: (e3) => setDraft(e3.target.value),
       onKeyDown: (e3) => {
-        if (e3.key === "Enter")
-          handleAdd();
-        if (e3.key === "Escape") {
-          setAdding(false);
-          setNewText("");
+        if (e3.key === "Enter") {
+          e3.preventDefault();
+          submit();
         }
       }
     }
-  ), /* @__PURE__ */ _("span", { class: "shepherd-pill shepherd-pill-active", onClick: handleAdd }, "Add")) : /* @__PURE__ */ _("span", { class: "shepherd-add-btn", onClick: () => setAdding(true) }, "+ Add step"));
+  ))));
 }
-
-// src/components/ShepherdPanel.tsx
-function ShepherdPanel(p3) {
-  const m3 = p3.member;
-  return /* @__PURE__ */ _("div", { class: "shepherd-panel" }, /* @__PURE__ */ _(IdentityBlock, { app: p3.app, member: m3 }), /* @__PURE__ */ _(ContactChips, { phone: m3.phone, email: m3.email, address: m3.address }), /* @__PURE__ */ _(
-    RelationshipChips,
+function Segmented({ tab, onTab }) {
+  return /* @__PURE__ */ _("div", { class: "sh2-segmented", role: "tablist" }, TABS.map((t3) => /* @__PURE__ */ _(
+    "button",
     {
-      housemates: p3.housemates,
-      ministeredBy: p3.ministeredBy,
-      ministersTo: p3.ministersTo,
-      onOpenPerson: p3.onOpenPerson
-    }
-  ), m3.whereTheyAre && /* @__PURE__ */ _("div", { class: "shepherd-where" }, m3.whereTheyAre), /* @__PURE__ */ _(
-    LogInteractionCTA,
+      type: "button",
+      role: "tab",
+      "aria-selected": tab === t3.id,
+      class: `sh2-seg ${tab === t3.id ? "is-active" : ""} ${t3.id === "private" ? "is-private" : ""}`,
+      onClick: () => onTab(t3.id)
+    },
+    t3.id === "private" && /* @__PURE__ */ _(Icon, { name: "lock" }),
+    t3.label,
+    /* @__PURE__ */ _("kbd", { class: "sh2-kbd" }, t3.key)
+  )));
+}
+function Labeled({ label, date, children, onClick }) {
+  return /* @__PURE__ */ _("div", { class: `sh2-row sh2-fact ${onClick ? "is-clickable" : ""}`, onClick }, /* @__PURE__ */ _("div", { class: "sh2-fact-body" }, /* @__PURE__ */ _("div", { class: "sh2-label" }, label), /* @__PURE__ */ _("div", { class: "sh2-value" }, children)), date && /* @__PURE__ */ _("span", { class: "sh2-date" }, shortDate(date)));
+}
+function FactsTab({ m: m3, act }) {
+  const facts = m3.facts.slice();
+  const has = (l3) => facts.some((f3) => f3.label.toLowerCase() === l3.toLowerCase());
+  const restricted = m3.private.membership.some((r3) => !r3.lifted);
+  if (!has("Temple") && !restricted && (m3.endowed || m3.recommend !== "unknown")) {
+    const bits = [];
+    if (m3.endowed)
+      bits.push("Endowed");
+    if (m3.recommend === "current" || m3.recommend === "expiring")
+      bits.push(`recommend good until ${shortDate(m3.recommendExp.slice(0, 7)) || "\u2014"}`);
+    if (m3.recommend === "expired")
+      bits.push(`recommend expired ${shortDate(m3.recommendExp.slice(0, 7))}`.trim());
+    if (m3.recommend === "none")
+      bits.push("no recommend");
+    if (bits.length)
+      facts.push({ label: "Temple", value: bits.join(", ").replace(/^./, (c3) => c3.toUpperCase()), date: "" });
+  }
+  if (!has("Mission") && m3.mission)
+    facts.push({ label: "Mission", value: m3.mission, date: "" });
+  return /* @__PURE__ */ _("div", { class: "sh2-tab" }, facts.length === 0 ? /* @__PURE__ */ _("div", { class: "sh2-empty" }, "Nothing written yet. Facts are what\u2019s true now: work, school, family, where they live.") : /* @__PURE__ */ _("div", { class: "sh2-group" }, facts.map((f3) => /* @__PURE__ */ _(
+    Labeled,
     {
-      lastContact: m3.lastContact,
-      onMarkContacted: p3.onMarkContacted,
-      onLogInteraction: p3.onLogInteraction,
-      expandSignal: p3.expandLogSignal
-    }
-  ), /* @__PURE__ */ _(
-    StatusTable,
-    {
-      bandOn: document.body.hasClass("shepherd-band-on"),
-      priority: m3.priority,
-      status: m3.status,
-      pastoral: m3.pastoralState,
-      nextOrdinance: m3.nextOrdinance,
-      recommend: m3.recommend,
-      recommendExp: m3.recommendExp,
-      checkIn: m3.checkIn,
-      checkInStyle: m3.checkInStyle,
-      gifPrompt: m3.gifPrompt,
-      onPriorityChange: p3.onPriorityChange,
-      onStatusChange: p3.onStatusChange,
-      onPastoralChange: p3.onPastoralStateChange,
-      onOrdinanceChange: p3.onOrdinanceChange,
-      onRecommendChange: p3.onRecommendChange,
-      onCheckInChange: p3.onCheckInChange,
-      onCheckInStyleChange: p3.onCheckInStyleChange,
-      onGifPromptChange: p3.onGifPromptChange
-    }
-  ), /* @__PURE__ */ _(TaskList, { tasks: m3.tasks, onToggle: p3.onToggleTask, onAdd: p3.onAddTask }));
+      label: f3.label,
+      date: f3.date,
+      onClick: m3.facts.includes(f3) ? () => act.addFact(f3.label) : void 0
+    },
+    f3.value
+  ))), /* @__PURE__ */ _("button", { type: "button", class: "sh2-add", onClick: () => act.addFact() }, /* @__PURE__ */ _(Icon, { name: "plus" }), " Add fact"));
+}
+function RestrictionRow({ r: r3, i: i3, act }) {
+  const when = r3.lifted ? `${shortDate(r3.since)} \u2013 lifted ${shortDate(r3.lifted)}` : r3.since ? `Since ${shortDate(r3.since)}` : "";
+  return /* @__PURE__ */ _("div", { class: `sh2-row sh2-restriction ${r3.lifted ? "is-lifted" : ""}` }, /* @__PURE__ */ _("div", { class: "sh2-fact-body" }, /* @__PURE__ */ _("div", { class: "sh2-value" }, r3.text), when && /* @__PURE__ */ _("div", { class: "sh2-sub" }, when)), !r3.lifted && /* @__PURE__ */ _("button", { type: "button", class: "sh2-link", onClick: (e3) => act.liftRestriction(i3, e3) }, "Lift"));
+}
+function HelpRows({ help }) {
+  const total = help.reduce((s3, x2) => {
+    var _a;
+    return s3 + ((_a = x2.amount) != null ? _a : 0);
+  }, 0);
+  return /* @__PURE__ */ _(k, null, help.map((x2) => /* @__PURE__ */ _("div", { class: "sh2-row sh2-help" }, /* @__PURE__ */ _("div", { class: "sh2-fact-body" }, /* @__PURE__ */ _("div", { class: "sh2-value" }, x2.purpose || "\u2014"), x2.date && /* @__PURE__ */ _("div", { class: "sh2-sub" }, shortDate(x2.date))), /* @__PURE__ */ _("span", { class: "sh2-amount" }, x2.amount != null ? money(x2.amount) : ""))), help.some((x2) => x2.amount != null) && /* @__PURE__ */ _("div", { class: "sh2-row sh2-total" }, /* @__PURE__ */ _("span", null, "Total"), /* @__PURE__ */ _("span", { class: "sh2-amount" }, money(total))));
+}
+function PrivateTab({ app, component, m: m3, act }) {
+  const p3 = m3.private;
+  const prose = (title, text) => /* @__PURE__ */ _("section", { class: "sh2-section" }, /* @__PURE__ */ _("div", { class: "sh2-section-head" }, /* @__PURE__ */ _("span", { class: "sh2-section-title" }, title), /* @__PURE__ */ _("button", { type: "button", class: "sh2-link", onClick: () => act.editPrivate(title) }, text ? "Edit" : "Write")), /* @__PURE__ */ _("div", { class: "sh2-group" }, text ? /* @__PURE__ */ _("div", { class: "sh2-row" }, /* @__PURE__ */ _(Markdown, { app, component, text, path: m3.file.path })) : /* @__PURE__ */ _("div", { class: "sh2-row sh2-muted" }, "Nothing written")));
+  return /* @__PURE__ */ _("div", { class: "sh2-tab sh2-private" }, prose("Repentance & recovery", p3.recovery), /* @__PURE__ */ _("section", { class: "sh2-section" }, /* @__PURE__ */ _("div", { class: "sh2-section-head" }, /* @__PURE__ */ _("span", { class: "sh2-section-title" }, "Membership"), /* @__PURE__ */ _("button", { type: "button", class: "sh2-link", onClick: act.addRestriction }, "+ Add")), /* @__PURE__ */ _("div", { class: "sh2-group" }, p3.membership.length ? p3.membership.map((r3, i3) => /* @__PURE__ */ _(RestrictionRow, { r: r3, i: i3, act })) : /* @__PURE__ */ _("div", { class: "sh2-row sh2-muted" }, "No restrictions"))), /* @__PURE__ */ _("section", { class: "sh2-section" }, /* @__PURE__ */ _("div", { class: "sh2-section-head" }, /* @__PURE__ */ _("span", { class: "sh2-section-title" }, "Help given"), /* @__PURE__ */ _("button", { type: "button", class: "sh2-link", onClick: act.addHelp }, "+ Add")), /* @__PURE__ */ _("div", { class: "sh2-group" }, p3.help.length ? /* @__PURE__ */ _(HelpRows, { help: p3.help }) : /* @__PURE__ */ _("div", { class: "sh2-row sh2-muted" }, "None recorded"))), prose("Mental health", p3.mentalHealth));
+}
+function People({ label, people, act }) {
+  if (!people.length)
+    return null;
+  return /* @__PURE__ */ _(Labeled, { label }, people.map((x2, i3) => /* @__PURE__ */ _("span", null, x2.file ? /* @__PURE__ */ _("a", { class: "sh2-person", onClick: () => act.open(x2.file) }, x2.name) : x2.name, i3 < people.length - 1 ? ", " : "")));
+}
+function WardTab({ m: m3, people, act }) {
+  const callings = callingList(m3.calling);
+  return /* @__PURE__ */ _("div", { class: "sh2-tab" }, /* @__PURE__ */ _("div", { class: "sh2-group" }, /* @__PURE__ */ _(Labeled, { label: "Calling", date: m3.callingSince }, callings.length ? callings.join(" \xB7 ") : /* @__PURE__ */ _("span", { class: "sh2-muted" }, "None")), /* @__PURE__ */ _(People, { label: "Housemates", people: people.housemates, act }), /* @__PURE__ */ _(People, { label: "Ministered by", people: people.ministeredBy, act }), /* @__PURE__ */ _(People, { label: "Ministers to", people: people.ministersTo, act }), m3.movedIn && /* @__PURE__ */ _(Labeled, { label: "Moved in" }, shortDate(m3.movedIn), m3.priorUnit ? ` from ${m3.priorUnit}` : "")), /* @__PURE__ */ _("div", { class: "sh2-group" }, m3.phone && /* @__PURE__ */ _(Labeled, { label: "Phone" }, m3.phone), m3.email && /* @__PURE__ */ _(Labeled, { label: "Email" }, m3.email), m3.address && /* @__PURE__ */ _(Labeled, { label: "Address" }, m3.address)), /* @__PURE__ */ _("div", { class: "sh2-footnote" }, "Talks, prayers and welcome-form answers will show here once the ward app sync is connected."));
+}
+function MemberPanel({ app, component, member, photoUrl, people, tab, onTab, act }) {
+  return /* @__PURE__ */ _("div", { class: "sh2" }, /* @__PURE__ */ _(Header, { m: member, photoUrl, act }), /* @__PURE__ */ _("div", { class: "sh2-body" }, /* @__PURE__ */ _(Threads, { tasks: member.tasks, act }), /* @__PURE__ */ _(Segmented, { tab, onTab }), tab === "facts" && /* @__PURE__ */ _(FactsTab, { m: member, act }), tab === "private" && /* @__PURE__ */ _(PrivateTab, { app, component, m: member, act }), tab === "ward" && /* @__PURE__ */ _(WardTab, { m: member, people, act })));
 }
 
 // src/services/MemberService.ts
-var import_obsidian4 = require("obsidian");
+var import_obsidian2 = require("obsidian");
+
+// src/services/sections.ts
+var FACT_LABELS = [
+  "Background",
+  "Work",
+  "School",
+  "Family",
+  "Living",
+  "Relationships",
+  "Health",
+  "Temple",
+  "Activity"
+];
+var PRIVATE_SUBSECTIONS = {
+  recovery: "Repentance & recovery",
+  membership: "Membership",
+  help: "Help given",
+  mentalHealth: "Mental health"
+};
+var DATE = String.raw`\d{4}-\d{2}(?:-\d{2})?`;
+var DASH = String.raw`\s+[—–-]\s+`;
+function escapeRe(s3) {
+  return s3.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+function sectionRange(lines, heading, level = 2, from = 0, to = lines.length) {
+  const hashes = "#".repeat(level);
+  const re = new RegExp(`^${hashes}\\s+${escapeRe(heading)}\\s*$`, "i");
+  const stop = new RegExp(`^#{1,${level}}\\s`);
+  for (let i3 = from; i3 < to; i3++) {
+    if (!re.test(lines[i3]))
+      continue;
+    let j3 = i3 + 1;
+    while (j3 < to && !stop.test(lines[j3]))
+      j3++;
+    return [i3 + 1, j3];
+  }
+  return null;
+}
+function sectionText(lines, range) {
+  if (!range)
+    return "";
+  return lines.slice(range[0], range[1]).join("\n").trim();
+}
+function splitBody(content) {
+  const m3 = content.match(/^---\n[\s\S]*?\n---\n/);
+  if (!m3)
+    return { body: content, offset: 0 };
+  return { body: content.slice(m3[0].length), offset: m3[0].split("\n").length - 1 };
+}
+var DUE_RE = new RegExp(String.raw`\s*(?:📅\s*|\bby\s+|·\s*)(${DATE})\s*$`, "i");
+function parseTasks(body) {
+  const lines = body.split("\n");
+  const range = sectionRange(lines, "Open threads") || sectionRange(lines, "Next Steps");
+  if (!range)
+    return [];
+  const tasks = [];
+  for (let i3 = range[0]; i3 < range[1]; i3++) {
+    const m3 = lines[i3].match(/^\s*- \[([ xX])\]\s+(.*)$/);
+    if (!m3)
+      continue;
+    let text = m3[2].trim();
+    let due = "";
+    const d3 = text.match(DUE_RE);
+    if (d3) {
+      due = d3[1];
+      text = text.slice(0, d3.index).trim();
+    }
+    tasks.push({ completed: m3[1] !== " ", text, line: i3, due });
+  }
+  return tasks;
+}
+var FACT_RE = new RegExp(
+  String.raw`^\s*-\s+(?:\*\*(.+?)\*\*:?|([A-Z][\w &/]*?):)\s*(?:[—–-]\s*)?(.*?)\s*(?:\*?\((${DATE})\)\*?)?\s*$`
+);
+function parseFacts(body) {
+  const lines = body.split("\n");
+  const range = sectionRange(lines, "Standing facts");
+  if (!range)
+    return [];
+  const facts = [];
+  for (let i3 = range[0]; i3 < range[1]; i3++) {
+    const m3 = lines[i3].match(FACT_RE);
+    if (!m3)
+      continue;
+    const label = (m3[1] || m3[2] || "").trim();
+    const value = (m3[3] || "").trim();
+    if (!label || !value)
+      continue;
+    facts.push({ label, value, date: m3[4] || "" });
+  }
+  return facts;
+}
+function listLines(lines, range) {
+  if (!range)
+    return [];
+  return lines.slice(range[0], range[1]).filter((l3) => /^\s*-\s+/.test(l3)).map((l3) => l3.replace(/^\s*-\s+/, "").trim());
+}
+function parseRestriction(item) {
+  let rest = item;
+  let since = "";
+  let lifted = "";
+  const lm = rest.match(new RegExp(String.raw`\s*[·,]?\s*lifted\s+(${DATE})\s*$`, "i"));
+  if (lm) {
+    lifted = lm[1];
+    rest = rest.slice(0, lm.index).trim();
+  }
+  const sm = rest.match(new RegExp(`^(${DATE})${DASH}(.*)$`));
+  if (sm) {
+    since = sm[1];
+    rest = sm[2].trim();
+  }
+  return { text: rest, since, lifted };
+}
+function parseHelp(item) {
+  const parts = item.split(/\s+[—–]\s+/).map((p3) => p3.trim());
+  let date = "";
+  if (parts.length && new RegExp(`^${DATE}$`).test(parts[0]))
+    date = parts.shift();
+  let amount = null;
+  let amountText = "";
+  const ai = parts.findIndex((p3) => /^\$\s*[\d,]+(?:\.\d+)?$/.test(p3));
+  if (ai >= 0) {
+    amountText = parts[ai].replace(/\s+/g, "");
+    amount = Number(amountText.replace(/[$,]/g, ""));
+    parts.splice(ai, 1);
+  }
+  return { date, amount, amountText, purpose: parts.join(" \u2014 ") };
+}
+function parsePrivate(body) {
+  const lines = body.split("\n");
+  const priv = sectionRange(lines, "Private");
+  if (!priv)
+    return { recovery: "", membership: [], help: [], mentalHealth: "", present: false };
+  const sub = (name) => sectionRange(lines, name, 3, priv[0], priv[1]);
+  return {
+    present: true,
+    recovery: sectionText(lines, sub(PRIVATE_SUBSECTIONS.recovery)),
+    membership: listLines(lines, sub(PRIVATE_SUBSECTIONS.membership)).map(parseRestriction),
+    help: listLines(lines, sub(PRIVATE_SUBSECTIONS.help)).map(parseHelp),
+    mentalHealth: sectionText(lines, sub(PRIVATE_SUBSECTIONS.mentalHealth))
+  };
+}
+var ORDER = ["Open threads", "Standing facts", "Private", "Interactions", "Earlier notes"];
+function ensureSection(lines, heading) {
+  const found = sectionRange(lines, heading);
+  if (found)
+    return { lines, range: found };
+  const later = ORDER.slice(ORDER.indexOf(heading) + 1);
+  let at = -1;
+  for (const h3 of later) {
+    const r3 = sectionRange(lines, h3);
+    if (r3 && (at < 0 || r3[0] - 1 < at))
+      at = r3[0] - 1;
+  }
+  const out = lines.slice();
+  if (at < 0) {
+    while (out.length && out[out.length - 1].trim() === "")
+      out.pop();
+    out.push("", `## ${heading}`, "");
+  } else {
+    out.splice(at, 0, `## ${heading}`, "", "");
+  }
+  return { lines: out, range: sectionRange(out, heading) };
+}
+function ensureSubsection(lines, parent, sub) {
+  const p3 = ensureSection(lines, parent);
+  let out = p3.lines;
+  const found = sectionRange(out, sub, 3, p3.range[0], p3.range[1]);
+  if (found)
+    return { lines: out, range: found };
+  let end = p3.range[1];
+  while (end > p3.range[0] && out[end - 1].trim() === "")
+    end--;
+  out = out.slice();
+  out.splice(end, 0, "", `### ${sub}`, "");
+  const pr = sectionRange(out, parent);
+  return { lines: out, range: sectionRange(out, sub, 3, pr[0], pr[1]) };
+}
+function appendListItem(lines, range, item, prepend = false) {
+  const out = lines.slice();
+  let at = range[0];
+  while (at < range[1] && out[at].trim() === "" && at === range[0])
+    at++;
+  if (!prepend) {
+    for (let i3 = range[0]; i3 < range[1]; i3++)
+      if (/^\s*- /.test(out[i3]))
+        at = i3 + 1;
+  }
+  out.splice(at, 0, item);
+  if (at + 1 < out.length && /^#/.test(out[at + 1]))
+    out.splice(at + 1, 0, "");
+  return out;
+}
+function addTask(content, text) {
+  let lines = content.split("\n");
+  const legacy = sectionRange(lines, "Open threads") ? null : sectionRange(lines, "Next Steps");
+  const target = legacy ? { lines, range: legacy } : ensureSection(lines, "Open threads");
+  lines = appendListItem(target.lines, target.range, `- [ ] ${text}`);
+  return lines.join("\n");
+}
+function upsertFact(content, label, value, date) {
+  const { lines, range } = ensureSection(content.split("\n"), "Standing facts");
+  const line = `- **${label}** \u2014 ${value} *(${date})*`;
+  for (let i3 = range[0]; i3 < range[1]; i3++) {
+    const m3 = lines[i3].match(FACT_RE);
+    if (m3 && (m3[1] || m3[2] || "").trim().toLowerCase() === label.toLowerCase()) {
+      const out = lines.slice();
+      out[i3] = line;
+      return out.join("\n");
+    }
+  }
+  return appendListItem(lines, range, line).join("\n");
+}
+function addHelp(content, date, amount, purpose) {
+  const { lines, range } = ensureSubsection(content.split("\n"), "Private", PRIVATE_SUBSECTIONS.help);
+  const amt = amount.trim() ? `$${amount.trim().replace(/^\$/, "")}` : "";
+  const item = ["- " + date, amt, purpose.trim()].filter(Boolean).join(" \u2014 ");
+  return appendListItem(lines, range, item).join("\n");
+}
+function addRestriction(content, date, text) {
+  const { lines, range } = ensureSubsection(content.split("\n"), "Private", PRIVATE_SUBSECTIONS.membership);
+  return appendListItem(lines, range, `- ${date} \u2014 ${text.trim()}`).join("\n");
+}
+function liftRestriction(content, index, date) {
+  const lines = content.split("\n");
+  const priv = sectionRange(lines, "Private");
+  if (!priv)
+    return content;
+  const r3 = sectionRange(lines, PRIVATE_SUBSECTIONS.membership, 3, priv[0], priv[1]);
+  if (!r3)
+    return content;
+  let n2 = 0;
+  for (let i3 = r3[0]; i3 < r3[1]; i3++) {
+    if (!/^\s*-\s+/.test(lines[i3]))
+      continue;
+    if (n2++ !== index)
+      continue;
+    if (/lifted\s+\d{4}-/i.test(lines[i3]))
+      return content;
+    lines[i3] = `${lines[i3].trimEnd()} \xB7 lifted ${date}`;
+    return lines.join("\n");
+  }
+  return content;
+}
+function ensurePrivateHeading(content, sub) {
+  return ensureSubsection(content.split("\n"), "Private", sub).lines.join("\n");
+}
+
+// src/services/MemberService.ts
 var MemberService = class {
   constructor(app, settings) {
     this.app = app;
     this.settings = settings;
     this.index = null;
     this.indexInvalidationRef = this.app.metadataCache.on("changed", (file) => {
-      if (file instanceof import_obsidian4.TFile && this.isMemberFile(file)) {
+      if (file instanceof import_obsidian2.TFile && this.isMemberFile(file)) {
         this.index = null;
       }
     });
@@ -1015,13 +1022,13 @@ var MemberService = class {
     const cache = this.app.metadataCache.getFileCache(file);
     const fm = (cache == null ? void 0 : cache.frontmatter) || {};
     const content = await this.app.vault.read(file);
-    const bodyMatch = content.match(/^---[\s\S]*?---\n([\s\S]*)$/);
-    const body = bodyMatch ? bodyMatch[1] : content;
-    const tasks = this.parseTasks(body);
+    const { body } = splitBody(content);
+    const tasks = parseTasks(body);
     const interactions = this.parseInteractions(body);
-    const whereTheyAre = this.parseSection(body, "Where They Are");
     const lastContact = String(fm["last-contact"] || "");
-    const daysSinceContact = this.daysSince(lastContact);
+    const newestEntry = interactions.map((i3) => i3.date).filter(Boolean).sort().pop() || "";
+    const lastTalked = [lastContact.slice(0, 10), newestEntry].filter(Boolean).sort().pop() || "";
+    const daysSinceContact = this.daysSince(lastTalked);
     const ministering = parseMinistering(String(fm["ministering-assignment"] || ""));
     return {
       file,
@@ -1059,7 +1066,12 @@ var MemberService = class {
       isOverdue: this.checkOverdue(fm.priority, daysSinceContact),
       tasks,
       interactions,
-      whereTheyAre
+      facts: parseFacts(body),
+      private: parsePrivate(body),
+      callingSince: String(fm["calling-since"] || ""),
+      priorUnit: String(fm["prior-unit"] || ""),
+      mission: String(fm.mission || ""),
+      lastTalked
     };
   }
   daysSince(dateStr) {
@@ -1076,35 +1088,6 @@ var MemberService = class {
       return false;
     const highPriority = priority === "top-10" || priority === "high";
     return highPriority && days > this.settings.overdueThreshold;
-  }
-  parseTasks(body) {
-    const tasks = [];
-    const section = this.findSection(body, "Next Steps");
-    if (!section)
-      return tasks;
-    const lines = body.split("\n");
-    let inSection = false;
-    for (let i3 = 0; i3 < lines.length; i3++) {
-      const line = lines[i3];
-      if (line.match(/^##\s+Next Steps/)) {
-        inSection = true;
-        continue;
-      }
-      if (inSection && line.match(/^##\s/))
-        break;
-      if (!inSection)
-        continue;
-      const taskMatch = line.match(/^- \[([ xX])\]\s+(.*)/);
-      if (taskMatch) {
-        tasks.push({
-          completed: taskMatch[1] !== " ",
-          text: taskMatch[2],
-          line: i3
-          // relative to body start
-        });
-      }
-    }
-    return tasks;
   }
   parseInteractions(body) {
     const interactions = [];
@@ -1145,12 +1128,6 @@ var MemberService = class {
       interactions.push(current);
     return interactions;
   }
-  parseSection(body, sectionName) {
-    const section = this.findSection(body, sectionName);
-    if (!section)
-      return "";
-    return section.trim().substring(0, 300);
-  }
   /** All other member files sharing a normalized address, excluding moved-out members. */
   getHousemates(member) {
     const targetAddress = normalizeAddress(member.address);
@@ -1186,16 +1163,6 @@ var MemberService = class {
         status: String(fm.status || "")
       };
     });
-  }
-  findSection(body, name) {
-    const regex = new RegExp(`^##\\s+${name}\\s*$`, "m");
-    const match = body.match(regex);
-    if (!match || match.index === void 0)
-      return null;
-    const start = match.index + match[0].length;
-    const nextSection = body.slice(start).match(/^##\s/m);
-    const end = nextSection && nextSection.index !== void 0 ? start + nextSection.index : body.length;
-    return body.slice(start, end);
   }
 };
 
@@ -1266,10 +1233,10 @@ var WriteService = class {
     });
   }
   async markContacted(file) {
-    const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+    const day = today();
     const content = await this.app.vault.read(file);
     const lines = content.split("\n");
-    if (!this.hasInteractionHeadingFor(lines, today)) {
+    if (!this.hasInteractionHeadingFor(lines, day)) {
       let insertIdx = -1;
       for (let i3 = 0; i3 < lines.length; i3++) {
         if (lines[i3].match(/^##\s+Interactions/)) {
@@ -1279,14 +1246,14 @@ var WriteService = class {
       }
       if (insertIdx >= 0) {
         const entry = `
-### ${today} \u2014 Contact
+### ${day} \u2014 Contact
 `;
         lines.splice(insertIdx, 0, entry);
         await this.app.vault.modify(file, lines.join("\n"));
       }
     }
     await this.app.fileManager.processFrontMatter(file, (fm) => {
-      fm["last-contact"] = today;
+      fm["last-contact"] = day;
     });
   }
   hasInteractionHeadingFor(lines, isoDate) {
@@ -1322,32 +1289,25 @@ var WriteService = class {
     }
   }
   async addTask(file, text) {
-    const content = await this.app.vault.read(file);
-    const lines = content.split("\n");
-    let insertIdx = -1;
-    let inSection = false;
-    for (let i3 = 0; i3 < lines.length; i3++) {
-      if (lines[i3].match(/^##\s+Next Steps/)) {
-        inSection = true;
-        insertIdx = i3 + 1;
-        continue;
-      }
-      if (inSection) {
-        if (lines[i3].match(/^##\s/))
-          break;
-        if (lines[i3].match(/^- \[/))
-          insertIdx = i3 + 1;
-        else if (lines[i3].trim() === "" && insertIdx === i3)
-          insertIdx = i3 + 1;
-      }
-    }
-    if (insertIdx >= 0) {
-      lines.splice(insertIdx, 0, `- [ ] ${text}`);
-      await this.app.vault.modify(file, lines.join("\n"));
-    }
+    await this.app.vault.process(file, (c3) => addTask(c3, text.trim()));
+  }
+  async upsertFact(file, label, value) {
+    await this.app.vault.process(file, (c3) => upsertFact(c3, label, value.trim(), today()));
+  }
+  async addHelp(file, date, amount, purpose) {
+    await this.app.vault.process(file, (c3) => addHelp(c3, date || today(), amount, purpose));
+  }
+  async addRestriction(file, date, text) {
+    await this.app.vault.process(file, (c3) => addRestriction(c3, date || today(), text));
+  }
+  async liftRestriction(file, index) {
+    await this.app.vault.process(file, (c3) => liftRestriction(c3, index, today()));
+  }
+  async ensurePrivateHeading(file, sub) {
+    await this.app.vault.process(file, (c3) => ensurePrivateHeading(c3, sub));
   }
   async logInteraction(file, note) {
-    const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+    const day = today();
     const content = await this.app.vault.read(file);
     const lines = content.split("\n");
     let insertIdx = -1;
@@ -1359,7 +1319,7 @@ var WriteService = class {
     }
     if (insertIdx >= 0) {
       const entry = `
-### ${today} \u2014 Note
+### ${day} \u2014 Note
 ${note}
 `;
       lines.splice(insertIdx, 0, entry);
@@ -1368,15 +1328,249 @@ ${note}
     await this.markContacted(file);
   }
 };
+function today() {
+  const d3 = /* @__PURE__ */ new Date();
+  return `${d3.getFullYear()}-${String(d3.getMonth() + 1).padStart(2, "0")}-${String(d3.getDate()).padStart(2, "0")}`;
+}
+
+// src/folds.ts
+var import_obsidian3 = require("obsidian");
+var PANEL_SECTIONS = ["Open threads", "Standing facts", "Private", "Earlier notes"];
+function sectionFolds(view, headings) {
+  const editor = view.editor;
+  if (!editor)
+    return [];
+  const n2 = editor.lineCount();
+  const lines = [];
+  for (let i3 = 0; i3 < n2; i3++)
+    lines.push(editor.getLine(i3));
+  const folds = [];
+  for (const h3 of headings) {
+    const i3 = lines.findIndex((l3) => l3.trim().toLowerCase() === `## ${h3}`.toLowerCase());
+    if (i3 < 0)
+      continue;
+    let j3 = i3 + 1;
+    while (j3 < n2 && !/^#{1,2}\s/.test(lines[j3]) && lines[j3].trim() !== "---")
+      j3++;
+    let end = j3 - 1;
+    while (end > i3 && !lines[end].trim())
+      end--;
+    if (end > i3)
+      folds.push({ from: i3, to: end });
+  }
+  return folds;
+}
+function views(ws, file) {
+  return ws.getLeavesOfType("markdown").map((l3) => l3.view).filter((v3) => {
+    var _a;
+    return v3 instanceof import_obsidian3.MarkdownView && ((_a = v3.file) == null ? void 0 : _a.path) === file.path;
+  });
+}
+function foldPanelSections(ws, file) {
+  var _a, _b;
+  for (const view of views(ws, file)) {
+    const mode = view.currentMode;
+    if (!mode.getFoldInfo || !mode.applyFoldInfo)
+      continue;
+    try {
+      const want = sectionFolds(view, PANEL_SECTIONS);
+      const have = (_b = (_a = mode.getFoldInfo()) == null ? void 0 : _a.folds) != null ? _b : [];
+      const merged = [...have.filter((f3) => !want.some((w3) => w3.from === f3.from)), ...want];
+      mode.applyFoldInfo({ folds: merged, lines: view.editor.lineCount() });
+    } catch (e3) {
+    }
+  }
+}
+function unfoldSection(ws, file, heading) {
+  for (const view of views(ws, file)) {
+    const mode = view.currentMode;
+    if (!mode.getFoldInfo || !mode.applyFoldInfo)
+      continue;
+    try {
+      const target = sectionFolds(view, [heading])[0];
+      const info = mode.getFoldInfo();
+      if (!target || !info)
+        continue;
+      mode.applyFoldInfo({ folds: info.folds.filter((f3) => f3.from !== target.from), lines: view.editor.lineCount() });
+    } catch (e3) {
+    }
+  }
+}
+
+// src/menus.ts
+var import_obsidian4 = require("obsidian");
+
+// src/models/types.ts
+var PRIORITIES = ["top-10", "high", "normal", "new-move-in"];
+var STATUSES = ["new", "active", "inactive"];
+var PASTORAL_STATES = ["", "working-with", "under-restrictions", "non-responsive", "resolved", "dating-seriously", "getting-married", "preparing-for-baptism"];
+var CHECK_INS = ["none", "daily", "weekly"];
+var CHECK_IN_STYLES = ["gif", "quick-text", "encouragement", "scripture", "write-myself"];
+var ORDINANCES = [
+  "unknown",
+  "baptism",
+  "confirmation",
+  "aaronic-priesthood",
+  "melchizedek-priesthood",
+  "endowment",
+  "sealing"
+];
+var RECOMMENDS = [
+  "current",
+  "expiring",
+  "expired",
+  "none",
+  "unknown"
+];
+var DEFAULT_SETTINGS = {
+  memberDir: "Church/Members",
+  dashboardPath: "Church/_system/views/_dashboard.md",
+  overdueThreshold: 14,
+  showContactBar: true,
+  autoOpenPanel: true
+};
+
+// src/menus.ts
+var TITLE = (s3) => s3 ? s3.replace(/-/g, " ").replace(/^./, (c3) => c3.toUpperCase()) : "None";
+var FormModal = class extends import_obsidian4.Modal {
+  constructor(app, heading, fields, onSave, required = []) {
+    super(app);
+    this.heading = heading;
+    this.fields = fields;
+    this.onSave = onSave;
+    this.required = required;
+  }
+  onOpen() {
+    var _a;
+    this.titleEl.setText(this.heading);
+    const values = {};
+    let first = null;
+    const save = () => {
+      if (this.required.some((k3) => !(values[k3] || "").trim()))
+        return;
+      this.close();
+      this.onSave(values);
+    };
+    for (const f3 of this.fields) {
+      values[f3.key] = (_a = f3.initial) != null ? _a : f3.options ? f3.options[0] : "";
+      const s3 = new import_obsidian4.Setting(this.contentEl).setName(f3.label);
+      if (f3.options) {
+        s3.addDropdown((d3) => {
+          f3.options.forEach((o3) => d3.addOption(o3, o3));
+          d3.setValue(values[f3.key]).onChange((v3) => {
+            values[f3.key] = v3;
+          });
+          first = first != null ? first : d3.selectEl;
+        });
+      } else if (f3.multiline) {
+        s3.addTextArea((ta) => {
+          var _a2;
+          ta.setPlaceholder((_a2 = f3.placeholder) != null ? _a2 : "").setValue(values[f3.key]).onChange((v3) => {
+            values[f3.key] = v3;
+          });
+          ta.inputEl.rows = 4;
+          first = first != null ? first : ta.inputEl;
+        });
+      } else {
+        s3.addText((tx) => {
+          var _a2;
+          tx.setPlaceholder((_a2 = f3.placeholder) != null ? _a2 : "").setValue(values[f3.key]).onChange((v3) => {
+            values[f3.key] = v3;
+          });
+          tx.inputEl.addEventListener("keydown", (e3) => {
+            if (e3.key === "Enter") {
+              e3.preventDefault();
+              save();
+            }
+          });
+          first = first != null ? first : tx.inputEl;
+        });
+      }
+    }
+    new import_obsidian4.Setting(this.contentEl).addButton((b) => b.setButtonText("Save").setCta().onClick(save));
+    window.setTimeout(() => first == null ? void 0 : first.focus(), 0);
+  }
+  onClose() {
+    this.contentEl.empty();
+  }
+};
+function logInteraction(app, writer, member) {
+  new FormModal(
+    app,
+    `Log a conversation \xB7 ${member.name}`,
+    [{ key: "note", label: "What did you talk about?", multiline: true, placeholder: "Leave blank to just mark that you talked today" }],
+    (v3) => {
+      const note = (v3.note || "").trim();
+      void (note ? writer.logInteraction(member.file, note) : writer.markContacted(member.file));
+    }
+  ).open();
+}
+function addFact(app, writer, member, label) {
+  var _a;
+  const current = label ? (_a = member.facts.find((f3) => f3.label === label)) == null ? void 0 : _a.value : "";
+  new FormModal(app, label ? `${label} \xB7 ${member.name}` : `Add a fact \xB7 ${member.name}`, [
+    { key: "label", label: "Topic", options: label ? [label] : FACT_LABELS },
+    { key: "value", label: "What\u2019s true now", initial: current || "", placeholder: "e.g. Line cook at a Provo diner" }
+  ], (v3) => void writer.upsertFact(member.file, v3.label, v3.value), ["value"]).open();
+}
+function addHelp2(app, writer, member) {
+  new FormModal(app, `Help given \xB7 ${member.name}`, [
+    { key: "date", label: "Date", initial: today() },
+    { key: "amount", label: "Amount", placeholder: "450" },
+    { key: "purpose", label: "For", placeholder: "Rent (fast offering)" }
+  ], (v3) => void writer.addHelp(member.file, v3.date, v3.amount, v3.purpose), ["purpose"]).open();
+}
+function addRestriction2(app, writer, member) {
+  new FormModal(app, `Membership restriction \xB7 ${member.name}`, [
+    { key: "date", label: "Since", initial: today() },
+    { key: "text", label: "Restriction", placeholder: "No temple recommend use" }
+  ], (v3) => void writer.addRestriction(member.file, v3.date, v3.text), ["text"]).open();
+}
+function showMoreMenu(app, writer, member, e3) {
+  const file = member.file;
+  const menu = new import_obsidian4.Menu();
+  const group = (title, opts, current, write) => {
+    menu.addItem((i3) => i3.setTitle(title).setIsLabel(true));
+    for (const o3 of opts) {
+      menu.addItem((i3) => i3.setTitle(TITLE(o3)).setChecked(o3 === current).onClick(() => void write(o3)));
+    }
+    menu.addSeparator();
+  };
+  menu.addItem((i3) => i3.setTitle("Mark talked today").setIcon("check").onClick(() => void writer.markContacted(file)));
+  menu.addSeparator();
+  menu.addItem((i3) => i3.setTitle("Met").setIsLabel(true));
+  menu.addItem((i3) => i3.setTitle("I know them").setChecked(member.met === true).onClick(() => void writer.setMet(file, true)));
+  menu.addItem((i3) => i3.setTitle("Haven't met").setChecked(member.met === false).onClick(() => void writer.setMet(file, false)));
+  menu.addSeparator();
+  group("Priority", PRIORITIES, member.priority, (v3) => writer.setPriority(file, v3));
+  group("Pastoral", PASTORAL_STATES, member.pastoralState, (v3) => writer.setPastoralState(file, v3));
+  group("Recommend", RECOMMENDS, member.recommend, (v3) => writer.setRecommend(file, v3));
+  group("Next ordinance", ORDINANCES, member.nextOrdinance, (v3) => writer.setOrdinance(file, v3));
+  group("Presence", STATUSES, member.status, (v3) => writer.setStatus(file, v3));
+  group("Check-in", CHECK_INS, member.checkIn, (v3) => writer.setCheckIn(file, v3));
+  if (member.checkIn !== "none") {
+    group("Message", CHECK_IN_STYLES, member.checkInStyle, (v3) => writer.setCheckInStyle(file, v3));
+    if (member.checkInStyle === "gif") {
+      menu.addItem((i3) => i3.setTitle(member.gifPrompt ? `GIF prompt: ${member.gifPrompt}` : "Set GIF prompt\u2026").setIcon("image").onClick(() => new FormModal(
+        app,
+        "GIF prompt",
+        [{ key: "p", label: "Prompt", initial: member.gifPrompt, placeholder: "e.g. locked in, you got this" }],
+        (v3) => void writer.setGifPrompt(file, v3.p || "")
+      ).open()));
+    }
+  }
+  menu.showAtMouseEvent(e3);
+}
 
 // src/ShepherdView.tsx
 var VIEW_TYPE_SHEPHERD = "shepherd-view";
 var ShepherdView = class extends import_obsidian5.ItemView {
   constructor(leaf, settings) {
     super(leaf);
-    this.currentFile = null;
-    this.expandLogSignal = 0;
     this.settings = settings;
+    this.currentFile = null;
+    this.member = null;
+    this.tab = "facts";
     this.memberService = new MemberService(this.app, settings);
     this.registerEvent(this.memberService.indexInvalidationRef);
     this.writeService = new WriteService(this.app);
@@ -1390,417 +1584,157 @@ var ShepherdView = class extends import_obsidian5.ItemView {
   getIcon() {
     return "heart";
   }
+  get host() {
+    return this.containerEl.children[1];
+  }
   async onOpen() {
+    this.host.addClass("shepherd-view");
+    this.host.tabIndex = -1;
+    this.registerDomEvent(this.host, "keydown", (e3) => this.onKey(e3));
     const file = this.app.workspace.getActiveFile();
-    if (file && this.memberService.isMemberFile(file)) {
+    if (file && this.memberService.isMemberFile(file))
       await this.showMember(file);
-    } else {
+    else
       this.showEmpty();
-    }
   }
   async onClose() {
-    const container = this.containerEl.children[1];
-    J(null, container);
+    J(null, this.host);
+  }
+  /** 1/2/3 switch tabs, L logs, C/T/E call/text/email: only while focus is in the panel and not typing. */
+  onKey(e3) {
+    if (!this.member || e3.metaKey || e3.ctrlKey || e3.altKey)
+      return;
+    const t3 = e3.target;
+    if (t3 && (t3.tagName === "INPUT" || t3.tagName === "TEXTAREA" || t3.tagName === "SELECT" || t3.isContentEditable))
+      return;
+    const k3 = e3.key.toLowerCase();
+    const tab = TABS.find((x2) => x2.key === k3);
+    if (tab) {
+      e3.preventDefault();
+      this.setTab(tab.id);
+      return;
+    }
+    if (k3 === "l") {
+      e3.preventDefault();
+      this.triggerLogExpand();
+      return;
+    }
+    const label = { c: "Call", t: "Text", e: "Email" }[k3];
+    if (label) {
+      const a3 = this.host.querySelector(`.sh2-actions a[aria-label="${label}"]`);
+      if (a3) {
+        e3.preventDefault();
+        a3.click();
+      }
+    }
+  }
+  setTab(tab) {
+    this.tab = tab;
+    if (this.member)
+      this.renderPanel(this.member);
   }
   async showMember(file) {
+    var _a;
     this.currentFile = file;
-    const container = this.containerEl.children[1];
     try {
       const member = await this.memberService.buildMemberState(file);
-      this.renderPanel(container, member);
+      if (((_a = this.currentFile) == null ? void 0 : _a.path) !== file.path)
+        return;
+      this.member = member;
+      this.renderPanel(member);
     } catch (e3) {
-      container.empty();
-      const errDiv = container.createDiv({ cls: "shepherd-empty" });
+      this.member = null;
+      J(null, this.host);
+      this.host.empty();
+      const errDiv = this.host.createDiv({ cls: "shepherd-empty" });
       errDiv.createDiv({ text: `Error loading member: ${e3}`, cls: "shepherd-empty-text" });
     }
   }
   showEmpty() {
     this.currentFile = null;
-    const container = this.containerEl.children[1];
+    this.member = null;
     const dashPath = this.settings.dashboardPath;
     J(
       _(
         "div",
         { class: "shepherd-empty" },
-        _("div", { class: "shepherd-empty-icon" }, "\u{1F411}"),
-        _("div", { class: "shepherd-empty-text" }, "Open a member file to see pastoral controls."),
-        _("span", {
+        _("div", { class: "shepherd-empty-text" }, "Open a member note to see them here."),
+        _("a", {
           class: "shepherd-empty-link",
           onClick: () => {
-            const f3 = this.app.vault.getAbstractFileByPath(dashPath);
-            if (f3 instanceof import_obsidian5.TFile) {
+            if (this.app.vault.getAbstractFileByPath(dashPath) instanceof import_obsidian5.TFile) {
               this.app.workspace.openLinkText(dashPath, "", false);
             }
           }
-        }, "\u{1F4C2} Open Dashboard")
+        }, "Open the dashboard")
       ),
-      container
+      this.host
     );
   }
   async refresh(file) {
     const target = file || this.currentFile;
-    if (target && this.memberService.isMemberFile(target)) {
+    if (target && this.memberService.isMemberFile(target))
       await this.showMember(target);
-    } else {
+    else
       this.showEmpty();
-    }
   }
+  /** Open the log form (command and the L key). */
   triggerLogExpand() {
-    this.expandLogSignal++;
-    if (this.currentFile) {
-      this.showMember(this.currentFile);
-    }
+    if (this.member)
+      logInteraction(this.app, this.writeService, this.member);
   }
-  renderPanel(container, member) {
+  noteLeaf() {
+    var _a;
+    return (_a = this.app.workspace.getMostRecentLeaf()) != null ? _a : this.app.workspace.getLeaf(false);
+  }
+  renderPanel(member) {
     const file = member.file;
-    const refresh = () => this.showMember(file);
-    const housemates = this.memberService.getHousemates(member);
-    const ministeredBy = member.ministeredBy.map((name) => ({
-      name,
-      file: this.memberService.resolveMemberByName(name)
-    }));
-    const ministersTo = member.ministersTo.map((name) => ({
-      name,
-      file: this.memberService.resolveMemberByName(name)
-    }));
+    const w3 = this.writeService;
+    const after = (p3) => void p3.then(() => this.showMember(file));
+    const photo = member.photo ? this.app.vault.getAbstractFileByPath(member.photo) : null;
+    const photoUrl = photo instanceof import_obsidian5.TFile ? this.app.vault.getResourcePath(photo) : null;
+    const person = (name) => ({ name, file: this.memberService.resolveMemberByName(name) });
+    const act = {
+      log: () => logInteraction(this.app, w3, member),
+      more: (e3) => showMoreMenu(this.app, w3, member, e3),
+      toggleTask: (line) => after(w3.toggleTask(file, line)),
+      addTask: (text) => after(w3.addTask(file, text)),
+      addFact: (label) => addFact(this.app, w3, member, label),
+      addHelp: () => addHelp2(this.app, w3, member),
+      addRestriction: () => addRestriction2(this.app, w3, member),
+      liftRestriction: (i3, e3) => {
+        const menu = new import_obsidian5.Menu();
+        menu.addItem((it) => it.setTitle("Mark lifted today").setIcon("check").onClick(() => after(w3.liftRestriction(file, i3))));
+        menu.showAtMouseEvent(e3);
+      },
+      editPrivate: (sub) => {
+        void w3.ensurePrivateHeading(file, sub).then(() => this.noteLeaf().openFile(file, { eState: { subpath: `#${sub}` } })).then(() => unfoldSection(this.app.workspace, file, "Private"));
+      },
+      open: (target) => void this.noteLeaf().openFile(target)
+    };
     J(
-      _(ShepherdPanel, {
+      _(MemberPanel, {
         app: this.app,
+        component: this,
         member,
-        housemates,
-        ministeredBy,
-        ministersTo,
-        expandLogSignal: this.expandLogSignal,
-        onPriorityChange: async (p3) => {
-          await this.writeService.setPriority(file, p3);
-          await refresh();
+        photoUrl,
+        people: {
+          housemates: this.memberService.getHousemates(member),
+          ministeredBy: member.ministeredBy.map(person),
+          ministersTo: member.ministersTo.map(person)
         },
-        onStatusChange: async (s3) => {
-          await this.writeService.setStatus(file, s3);
-          await refresh();
-        },
-        onPastoralStateChange: async (s3) => {
-          await this.writeService.setPastoralState(file, s3);
-          await refresh();
-        },
-        onOrdinanceChange: async (o3) => {
-          await this.writeService.setOrdinance(file, o3);
-          await refresh();
-        },
-        onRecommendChange: async (r3) => {
-          await this.writeService.setRecommend(file, r3);
-          await refresh();
-        },
-        onCheckInChange: async (c3) => {
-          await this.writeService.setCheckIn(file, c3);
-          await refresh();
-        },
-        onCheckInStyleChange: async (s3) => {
-          await this.writeService.setCheckInStyle(file, s3);
-          await refresh();
-        },
-        onGifPromptChange: async (prompt) => {
-          await this.writeService.setGifPrompt(file, prompt);
-          await refresh();
-        },
-        onMarkContacted: async () => {
-          await this.writeService.markContacted(file);
-          await refresh();
-        },
-        onToggleTask: async (line) => {
-          await this.writeService.toggleTask(file, line);
-          await refresh();
-        },
-        onAddTask: async (text) => {
-          await this.writeService.addTask(file, text);
-          await refresh();
-        },
-        onLogInteraction: async (note) => {
-          await this.writeService.logInteraction(file, note);
-          await refresh();
-        },
-        onOpenPerson: (target) => {
-          this.app.workspace.getLeaf(false).openFile(target);
-        }
+        tab: this.tab,
+        onTab: (t3) => this.setTab(t3),
+        act
       }),
-      container
+      this.host
     );
   }
 };
 
-// src/BandManager.ts
-var import_obsidian7 = require("obsidian");
-
-// src/components/MemberBand.tsx
-var import_obsidian6 = require("obsidian");
-function People({ label, people, onOpen, max = 4 }) {
-  if (!people.length)
-    return null;
-  const shown = people.slice(0, max);
-  return /* @__PURE__ */ _("span", { class: "shepherd-band-people-group" }, /* @__PURE__ */ _("span", { class: "shepherd-band-people-label" }, label), " ", shown.map((p3, i3) => /* @__PURE__ */ _("span", null, p3.file ? /* @__PURE__ */ _("a", { class: "shepherd-band-person", onClick: () => onOpen(p3.file) }, p3.name) : /* @__PURE__ */ _("span", null, p3.name), i3 < shown.length - 1 ? ", " : "")), people.length > max && /* @__PURE__ */ _("span", { class: "shepherd-band-sub" }, " +", people.length - max));
-}
-function TopRow({ member, photoUrl, onAction }) {
-  const bits = [];
-  if (member.age != null)
-    bits.push(String(member.age));
-  if (member.priesthood && member.priesthood !== "none")
-    bits.push(member.priesthood.replace(/-/g, " "));
-  const since = monthYear(member.movedIn);
-  if (since)
-    bits.push(`since ${since}`);
-  const digits = (member.phone || "").replace(/\D/g, "");
-  const city = parseCity(member.address);
-  const maps = member.address ? buildMapsUrl(member.address, import_obsidian6.Platform.isMacOS || import_obsidian6.Platform.isIosApp) : "";
-  return /* @__PURE__ */ _("div", { class: "shepherd-band-top" }, photoUrl ? /* @__PURE__ */ _("img", { class: "shepherd-band-avatar", src: photoUrl, alt: "" }) : /* @__PURE__ */ _("div", { class: "shepherd-band-avatar is-empty" }), /* @__PURE__ */ _("div", { class: "shepherd-band-who" }, bits.join(" \xB7 ")), /* @__PURE__ */ _("div", { class: "shepherd-band-actions" }, digits && /* @__PURE__ */ _("a", { class: "shepherd-band-link", href: `tel:${digits}` }, "Call"), digits && /* @__PURE__ */ _("a", { class: "shepherd-band-link", href: `sms:${digits}` }, "Text"), member.email && /* @__PURE__ */ _("a", { class: "shepherd-band-link", href: `mailto:${member.email}` }, "Email"), city && /* @__PURE__ */ _("a", { class: "shepherd-band-link", href: maps, target: "_blank", title: member.address }, city), onAction && /* @__PURE__ */ _("button", { type: "button", class: "shepherd-band-btn mod-cta", onClick: (e3) => onAction("log", e3) }, "Log interaction"), onAction && /* @__PURE__ */ _("button", { type: "button", class: "shepherd-band-btn", "aria-label": "Presence and check-in", title: "Presence and check-in", onClick: (e3) => onAction("more", e3) }, "\u22EF")));
-}
-var ORDINANCE = {
-  unknown: "Unknown",
-  baptism: "Baptism",
-  confirmation: "Confirmation",
-  "aaronic-priesthood": "Aaronic Priesthood",
-  "melchizedek-priesthood": "Melchizedek Priesthood",
-  endowment: "Endowment",
-  sealing: "Sealing"
-};
-var RECOMMEND = {
-  current: { label: "Current", tone: "ok" },
-  expiring: { label: "Expiring", tone: "warn" },
-  expired: { label: "Expired", tone: "danger" },
-  none: { label: "None", tone: "muted" },
-  unknown: { label: "Unknown", tone: "muted" }
-};
-var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-function monthYear(iso) {
-  const m3 = /^(\d{4})-(\d{2})/.exec(iso || "");
-  if (!m3)
-    return "";
-  const mi = parseInt(m3[2], 10) - 1;
-  return mi >= 0 && mi < 12 ? `${MONTHS[mi]} ${m3[1]}` : "";
-}
-function callingNames(raw) {
-  return (raw || "").split("/").map((c3) => c3.replace(/\s*\([^)]*\)\s*$/, "").trim()).filter(Boolean).join(" \xB7 ");
-}
-var PRIORITY = {
-  "top-10": { label: "Top 10", tone: "warn" },
-  high: { label: "High", tone: "warn" },
-  normal: { label: "Normal", tone: "" },
-  "new-move-in": { label: "New move-in", tone: "info" }
-};
-function Cell({ label, field, onPick, children }) {
-  const inner = /* @__PURE__ */ _("div", null, /* @__PURE__ */ _("div", { class: "shepherd-band-label" }, label), /* @__PURE__ */ _("div", { class: "shepherd-band-value" }, children));
-  if (!field || !onPick)
-    return /* @__PURE__ */ _("div", { class: "shepherd-band-cell" }, inner);
-  return /* @__PURE__ */ _(
-    "button",
-    {
-      type: "button",
-      class: "shepherd-band-cell is-editable",
-      "aria-label": `Change ${label.toLowerCase()}`,
-      onClick: (e3) => onPick(field, e3)
-    },
-    inner
-  );
-}
-function MemberBand({ member, onPick, onAction, onOpen, photoUrl = null, people }) {
-  const open = onOpen != null ? onOpen : () => {
-  };
-  const hasPeople = !!people && people.ministeredBy.length + people.ministersTo.length + people.housemates.length > 0;
-  return /* @__PURE__ */ _("div", { class: "shepherd-band-wrap" }, /* @__PURE__ */ _(TopRow, { member, photoUrl, onAction }), /* @__PURE__ */ _(StatusCells, { member, onPick }), hasPeople && /* @__PURE__ */ _("div", { class: "shepherd-band-people" }, /* @__PURE__ */ _(People, { label: "Ministered by", people: people.ministeredBy, onOpen: open }), /* @__PURE__ */ _(People, { label: "Ministers to", people: people.ministersTo, onOpen: open, max: 3 }), /* @__PURE__ */ _(People, { label: "Housemates", people: people.housemates, onOpen: open })));
-}
-function StatusCells({ member, onPick }) {
-  var _a, _b, _c;
-  const rec = (_a = RECOMMEND[member.recommend]) != null ? _a : RECOMMEND.unknown;
-  const exp = monthYear(member.recommendExp);
-  const calling = callingNames(member.calling);
-  const contact = formatLastContact(member.lastContact || null);
-  const pri = (_b = PRIORITY[member.priority]) != null ? _b : PRIORITY.normal;
-  return /* @__PURE__ */ _("div", { class: "shepherd-band-inner" }, /* @__PURE__ */ _(Cell, { label: "Recommend", field: "recommend", onPick }, /* @__PURE__ */ _("span", { class: `shepherd-band-pill is-${rec.tone}` }, rec.label), exp && member.recommend !== "none" && /* @__PURE__ */ _("span", { class: "shepherd-band-sub" }, member.recommend === "expired" ? "since" : "until", " ", exp)), /* @__PURE__ */ _(Cell, { label: "Next ordinance", field: "ordinance", onPick }, (_c = ORDINANCE[member.nextOrdinance]) != null ? _c : "\u2014"), /* @__PURE__ */ _(Cell, { label: "Last contact", field: "contact", onPick }, /* @__PURE__ */ _("span", { class: contact === "never" ? "shepherd-band-none" : "" }, contact === "never" ? "Never logged" : contact)), /* @__PURE__ */ _(Cell, { label: "Flags", field: "flags", onPick }, pri.tone && /* @__PURE__ */ _("span", { class: `shepherd-band-pill is-${pri.tone}` }, pri.label), member.pastoralState && /* @__PURE__ */ _("span", { class: "shepherd-band-pill is-info" }, member.pastoralState.replace(/-/g, " ")), !pri.tone && !member.pastoralState && /* @__PURE__ */ _("span", { class: "shepherd-band-none" }, "None")), /* @__PURE__ */ _("div", { class: "shepherd-band-cell is-calling", title: member.calling || void 0 }, /* @__PURE__ */ _("div", { class: "shepherd-band-label" }, "Calling"), /* @__PURE__ */ _("div", { class: "shepherd-band-value" }, calling ? /* @__PURE__ */ _("span", { class: "shepherd-band-text" }, calling) : /* @__PURE__ */ _("span", { class: "shepherd-band-none" }, "None"))));
-}
-
-// src/BandManager.ts
-var TITLE = (s3) => s3 ? s3.replace(/-/g, " ").replace(/^./, (c3) => c3.toUpperCase()) : "None";
-var TextModal = class extends import_obsidian7.Modal {
-  constructor(app, heading, initial, multiline, placeholder, onSave) {
-    super(app);
-    this.heading = heading;
-    this.initial = initial;
-    this.multiline = multiline;
-    this.placeholder = placeholder;
-    this.onSave = onSave;
-  }
-  onOpen() {
-    this.titleEl.setText(this.heading);
-    let value = this.initial;
-    const input = this.multiline ? this.contentEl.createEl("textarea", { cls: "shepherd-modal-input", attr: { rows: "5", placeholder: this.placeholder } }) : this.contentEl.createEl("input", { cls: "shepherd-modal-input", attr: { type: "text", placeholder: this.placeholder } });
-    input.value = value;
-    input.addEventListener("input", () => {
-      value = input.value;
-    });
-    const save = () => {
-      this.close();
-      if (value.trim() || !this.multiline)
-        this.onSave(value);
-    };
-    input.addEventListener("keydown", (e3) => {
-      if (e3.key === "Enter" && !(this.multiline && e3.shiftKey)) {
-        e3.preventDefault();
-        save();
-      }
-    });
-    new import_obsidian7.Setting(this.contentEl).addButton((b) => b.setButtonText("Save").setCta().onClick(save));
-    window.setTimeout(() => input.focus(), 0);
-  }
-  onClose() {
-    this.contentEl.empty();
-  }
-};
-var BandManager = class {
-  constructor(app, memberService) {
-    this.app = app;
-    this.memberService = memberService;
-    this.writer = new WriteService(app);
-  }
-  pick(member, field, e3) {
-    const file = member.file;
-    const menu = new import_obsidian7.Menu();
-    const add = (opts, current, write) => {
-      for (const o3 of opts) {
-        menu.addItem((i3) => i3.setTitle(TITLE(o3)).setChecked(o3 === current).onClick(() => void write(o3)));
-      }
-    };
-    if (field === "recommend")
-      add(RECOMMENDS, member.recommend, (v3) => this.writer.setRecommend(file, v3));
-    if (field === "ordinance")
-      add(ORDINANCES, member.nextOrdinance, (v3) => this.writer.setOrdinance(file, v3));
-    if (field === "flags") {
-      menu.addItem((i3) => i3.setTitle("Priority").setIsLabel(true));
-      add(PRIORITIES, member.priority, (v3) => this.writer.setPriority(file, v3));
-      menu.addSeparator();
-      menu.addItem((i3) => i3.setTitle("Pastoral").setIsLabel(true));
-      add(PASTORAL_STATES, member.pastoralState, (v3) => this.writer.setPastoralState(file, v3));
-    }
-    if (field === "contact") {
-      menu.addItem((i3) => i3.setTitle("Mark contacted today").setIcon("check").onClick(() => void this.writer.markContacted(file)));
-      menu.addItem((i3) => i3.setTitle("Log interaction\u2026").setIcon("pencil").onClick(() => this.logInteraction(member)));
-    }
-    menu.showAtMouseEvent(e3);
-  }
-  logInteraction(member) {
-    new TextModal(
-      this.app,
-      `Log interaction \xB7 ${member.name}`,
-      "",
-      true,
-      "What happened?",
-      (note) => void this.writer.logInteraction(member.file, note.trim())
-    ).open();
-  }
-  action(member, a3, e3) {
-    if (a3 === "log") {
-      this.logInteraction(member);
-      return;
-    }
-    const file = member.file;
-    const menu = new import_obsidian7.Menu();
-    const add = (opts, current, write) => {
-      for (const o3 of opts) {
-        menu.addItem((i3) => i3.setTitle(TITLE(o3)).setChecked(o3 === current).onClick(() => void write(o3)));
-      }
-    };
-    menu.addItem((i3) => i3.setTitle("Met").setIsLabel(true));
-    menu.addItem((i3) => i3.setTitle("I know them").setChecked(member.met === true).onClick(() => void this.writer.setMet(file, true)));
-    menu.addItem((i3) => i3.setTitle("Haven't met").setChecked(member.met === false).onClick(() => void this.writer.setMet(file, false)));
-    menu.addSeparator();
-    menu.addItem((i3) => i3.setTitle("Presence").setIsLabel(true));
-    add(STATUSES, member.status, (v3) => this.writer.setStatus(file, v3));
-    menu.addSeparator();
-    menu.addItem((i3) => i3.setTitle("Check-in").setIsLabel(true));
-    add(CHECK_INS, member.checkIn, (v3) => this.writer.setCheckIn(file, v3));
-    if (member.checkIn !== "none") {
-      menu.addSeparator();
-      menu.addItem((i3) => i3.setTitle("Message").setIsLabel(true));
-      add(CHECK_IN_STYLES, member.checkInStyle, (v3) => this.writer.setCheckInStyle(file, v3));
-      if (member.checkInStyle === "gif") {
-        menu.addItem((i3) => i3.setTitle(member.gifPrompt ? `GIF prompt: ${member.gifPrompt}` : "Set GIF prompt\u2026").setIcon("image").onClick(() => new TextModal(
-          this.app,
-          "GIF prompt",
-          member.gifPrompt,
-          false,
-          "e.g. locked in, you got this",
-          (v3) => void this.writer.setGifPrompt(file, v3)
-        ).open()));
-      }
-    }
-    menu.showAtMouseEvent(e3);
-  }
-  /** Re-render the band in every markdown leaf (cheap: a handful of leaves). */
-  refreshAll() {
-    this.app.workspace.getLeavesOfType("markdown").forEach((leaf) => {
-      if (leaf.view instanceof import_obsidian7.MarkdownView)
-        void this.refreshView(leaf.view);
-    });
-  }
-  /** Re-render only the leaves showing this file. */
-  refreshFile(file) {
-    this.app.workspace.getLeavesOfType("markdown").forEach((leaf) => {
-      var _a;
-      if (leaf.view instanceof import_obsidian7.MarkdownView && ((_a = leaf.view.file) == null ? void 0 : _a.path) === file.path) {
-        void this.refreshView(leaf.view);
-      }
-    });
-  }
-  async refreshView(view) {
-    var _a;
-    const host = view.contentEl;
-    let band = host.querySelector(":scope > .shepherd-band");
-    const file = view.file;
-    if (!file || !this.memberService.isMemberFile(file)) {
-      if (band) {
-        J(null, band);
-        band.remove();
-      }
-      return;
-    }
-    if (!band) {
-      band = createDiv({ cls: "shepherd-band" });
-      host.prepend(band);
-    }
-    try {
-      const member = await this.memberService.buildMemberState(file);
-      if (((_a = view.file) == null ? void 0 : _a.path) !== file.path)
-        return;
-      const photo = member.photo ? this.app.vault.getAbstractFileByPath(member.photo) : null;
-      const photoUrl = photo instanceof import_obsidian7.TFile ? this.app.vault.getResourcePath(photo) : null;
-      const person = (name) => ({ name, file: this.memberService.resolveMemberByName(name) });
-      const people = {
-        ministeredBy: member.ministeredBy.map(person),
-        ministersTo: member.ministersTo.map(person),
-        housemates: this.memberService.getHousemates(member)
-      };
-      J(_(MemberBand, {
-        member,
-        photoUrl,
-        people,
-        onPick: (f3, e3) => this.pick(member, f3, e3),
-        onAction: (a3, e3) => this.action(member, a3, e3),
-        onOpen: (target) => void view.leaf.openFile(target)
-      }), band);
-    } catch (e3) {
-      J(null, band);
-      band.remove();
-    }
-  }
-  removeAll() {
-    document.querySelectorAll(".shepherd-band").forEach((el) => {
-      J(null, el);
-      el.remove();
-    });
-  }
-};
-
 // src/MetSweepModal.ts
-var import_obsidian8 = require("obsidian");
-var MetSweepModal = class extends import_obsidian8.Modal {
+var import_obsidian6 = require("obsidian");
+var MetSweepModal = class extends import_obsidian6.Modal {
   constructor(app, members, writer, memberDir) {
     super(app);
     this.members = members;
@@ -1880,7 +1814,7 @@ var MetSweepModal = class extends import_obsidian8.Modal {
     el.createDiv({ cls: "shepherd-sweep-progress", text: `${this.pos + 1} of ${this.queue.length}` });
     const card = el.createDiv({ cls: "shepherd-sweep-card" });
     const photo = m3.photo ? this.app.vault.getAbstractFileByPath(m3.photo) : null;
-    if (photo instanceof import_obsidian8.TFile)
+    if (photo instanceof import_obsidian6.TFile)
       card.createEl("img", { cls: "shepherd-sweep-photo", attr: { src: this.app.vault.getResourcePath(photo), alt: "" } });
     else
       card.createDiv({ cls: "shepherd-sweep-photo is-empty", text: m3.name.split(/\s+/).map((w3) => w3[0]).slice(0, 2).join("") });
@@ -1916,8 +1850,8 @@ var MetSweepModal = class extends import_obsidian8.Modal {
 };
 
 // src/SettingsTab.ts
-var import_obsidian9 = require("obsidian");
-var ShepherdSettingTab = class extends import_obsidian9.PluginSettingTab {
+var import_obsidian7 = require("obsidian");
+var ShepherdSettingTab = class extends import_obsidian7.PluginSettingTab {
   constructor(app, plugin) {
     super(app, plugin);
     this.plugin = plugin;
@@ -1925,20 +1859,20 @@ var ShepherdSettingTab = class extends import_obsidian9.PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    new import_obsidian9.Setting(containerEl).setName("Member folder").setDesc("Vault-relative folder holding member files. Files outside it get the empty panel.").addText(
+    new import_obsidian7.Setting(containerEl).setName("Member folder").setDesc("Vault-relative folder holding member files. Files outside it get the empty panel.").addText(
       (text) => text.setPlaceholder("Church/Members").setValue(this.plugin.settings.memberDir).onChange(async (value) => {
         this.plugin.settings.memberDir = value.replace(/\/+$/, "").trim();
         await this.plugin.saveSettings();
         this.plugin.refreshView();
       })
     );
-    new import_obsidian9.Setting(containerEl).setName("Dashboard path").setDesc('Note opened by the "Open Dashboard" link in the empty state.').addText(
+    new import_obsidian7.Setting(containerEl).setName("Dashboard path").setDesc('Note opened by the "Open Dashboard" link in the empty state.').addText(
       (text) => text.setPlaceholder("Church/_system/views/_dashboard.md").setValue(this.plugin.settings.dashboardPath).onChange(async (value) => {
         this.plugin.settings.dashboardPath = value.trim();
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian9.Setting(containerEl).setName("Overdue threshold (days)").setDesc("Days without contact before a top-10 or high-priority member is flagged overdue.").addText(
+    new import_obsidian7.Setting(containerEl).setName("Overdue threshold (days)").setDesc("Days without contact before a top-10 or high-priority member is flagged overdue.").addText(
       (text) => text.setPlaceholder("14").setValue(String(this.plugin.settings.overdueThreshold)).onChange(async (value) => {
         const n2 = Number(value);
         if (!Number.isFinite(n2) || n2 <= 0)
@@ -1948,23 +1882,21 @@ var ShepherdSettingTab = class extends import_obsidian9.PluginSettingTab {
         this.plugin.refreshView();
       })
     );
-    new import_obsidian9.Setting(containerEl).setName("Show contact bar").setDesc("Display call / text / email chips on the member panel.").addToggle(
-      (toggle) => toggle.setValue(this.plugin.settings.showContactBar).onChange(async (value) => {
-        this.plugin.settings.showContactBar = value;
+    new import_obsidian7.Setting(containerEl).setName("Open the panel with member notes").setDesc("Opens the Shepherd panel in the right sidebar when you open a member note and it isn\u2019t already there.").addToggle(
+      (toggle) => toggle.setValue(this.plugin.settings.autoOpenPanel).onChange(async (value) => {
+        this.plugin.settings.autoOpenPanel = value;
         await this.plugin.saveSettings();
-        this.plugin.refreshView();
       })
     );
   }
 };
 
 // src/main.ts
-var ShepherdPlugin = class extends import_obsidian10.Plugin {
+var ShepherdPlugin = class extends import_obsidian8.Plugin {
   constructor() {
     super(...arguments);
     this.settings = DEFAULT_SETTINGS;
     this.modifyTimeout = null;
-    this.bands = null;
   }
   async onload() {
     console.log("Loading Shepherd");
@@ -2029,32 +1961,17 @@ var ShepherdPlugin = class extends import_obsidian10.Plugin {
         return true;
       }
     });
-    const bandMembers = new MemberService(this.app, this.settings);
-    this.registerEvent(bandMembers.indexInvalidationRef);
-    this.bands = new BandManager(this.app, bandMembers);
-    document.body.addClass("shepherd-band-on");
-    this.app.workspace.onLayoutReady(() => {
-      var _a;
-      return (_a = this.bands) == null ? void 0 : _a.refreshAll();
-    });
-    this.registerEvent(this.app.workspace.on("layout-change", () => {
-      var _a;
-      return (_a = this.bands) == null ? void 0 : _a.refreshAll();
-    }));
-    this.registerEvent(this.app.workspace.on("file-open", () => {
-      var _a;
-      return (_a = this.bands) == null ? void 0 : _a.refreshAll();
-    }));
-    this.registerEvent(
-      this.app.metadataCache.on("changed", (file) => {
-        var _a;
-        if (file instanceof import_obsidian10.TFile && this.isMemberFile(file))
-          (_a = this.bands) == null ? void 0 : _a.refreshFile(file);
-      })
-    );
+    document.body.addClass("shepherd-panel-on");
     this.registerEvent(
       this.app.workspace.on("file-open", (file) => {
-        if (file instanceof import_obsidian10.TFile) {
+        if (file instanceof import_obsidian8.TFile) {
+          if (this.settings.autoOpenPanel && this.isMemberFile(file) && !this.getView()) {
+            void this.openPanelQuietly();
+          }
+          if (this.isMemberFile(file)) {
+            for (const ms of [150, 900])
+              window.setTimeout(() => foldPanelSections(this.app.workspace, file), ms);
+          }
           this.scheduleRefresh(file);
         }
       })
@@ -2067,7 +1984,7 @@ var ShepherdPlugin = class extends import_obsidian10.Plugin {
     );
     this.registerEvent(
       this.app.vault.on("modify", (file) => {
-        if (!(file instanceof import_obsidian10.TFile) || !this.isMemberFile(file))
+        if (!(file instanceof import_obsidian8.TFile) || !this.isMemberFile(file))
           return;
         const view = this.getView();
         if (!view)
@@ -2079,10 +1996,8 @@ var ShepherdPlugin = class extends import_obsidian10.Plugin {
     );
   }
   async onunload() {
-    var _a;
     console.log("Unloading Shepherd");
-    (_a = this.bands) == null ? void 0 : _a.removeAll();
-    document.body.removeClass("shepherd-band-on");
+    document.body.removeClass("shepherd-panel-on");
   }
   isMemberFile(file) {
     return file.path.startsWith(this.settings.memberDir + "/") && file.extension === "md";
@@ -2121,6 +2036,18 @@ var ShepherdPlugin = class extends import_obsidian10.Plugin {
       await leaf.setViewState({ type: VIEW_TYPE_SHEPHERD, active: true });
       this.app.workspace.revealLeaf(leaf);
     }
+  }
+  /** Create the panel in the right sidebar without taking focus from the note. */
+  async openPanelQuietly() {
+    if (this.app.workspace.getLeavesOfType(VIEW_TYPE_SHEPHERD).length)
+      return;
+    const leaf = this.app.workspace.getRightLeaf(false);
+    if (!leaf)
+      return;
+    await leaf.setViewState({ type: VIEW_TYPE_SHEPHERD, active: false });
+    if (this.app.workspace.rightSplit.collapsed)
+      this.app.workspace.rightSplit.expand();
+    this.app.workspace.revealLeaf(leaf);
   }
   async loadSettings() {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
