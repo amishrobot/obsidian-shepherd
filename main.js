@@ -534,6 +534,85 @@ function callingNames(raw) {
   return (raw || "").split("/").map((c3) => c3.replace(/\s*\([^)]*\)\s*$/, "").trim()).filter(Boolean).join(" \xB7 ");
 }
 
+// src/services/wardSheet.ts
+var WARD_SHEET_PATH = "Church/_system/cache/ward-sheet.json";
+function isObject(v3) {
+  return typeof v3 === "object" && v3 !== null && !Array.isArray(v3);
+}
+function str(v3) {
+  return typeof v3 === "string" ? v3.trim() : "";
+}
+function events(v3) {
+  if (!Array.isArray(v3))
+    return [];
+  const out = [];
+  for (const e3 of v3) {
+    if (!isObject(e3))
+      continue;
+    const date = str(e3.date);
+    if (!date)
+      continue;
+    out.push({ date, kind: str(e3.kind), topic: str(e3.topic) });
+  }
+  return out;
+}
+function welcomeForm(v3) {
+  if (!isObject(v3))
+    return null;
+  const f3 = {
+    submitted: str(v3.submitted),
+    situation: str(v3.situation),
+    acceptCalling: str(v3.accept_calling),
+    teach: str(v3.teach),
+    music: str(v3.music),
+    pastCallings: str(v3.past_callings),
+    hobbies: str(v3.hobbies),
+    forBishopric: str(v3.for_bishopric)
+  };
+  return Object.values(f3).some(Boolean) ? f3 : null;
+}
+function memberSheet(v3) {
+  if (!isObject(v3))
+    return null;
+  return {
+    lastTalk: str(v3.last_talk),
+    lastPrayer: str(v3.last_prayer),
+    talks: events(v3.talks),
+    prayers: events(v3.prayers),
+    upcoming: events(v3.upcoming),
+    welcomeForm: welcomeForm(v3.welcome_form)
+  };
+}
+function parseWardSheet(text) {
+  let raw;
+  try {
+    raw = JSON.parse(text);
+  } catch (e3) {
+    return null;
+  }
+  if (!isObject(raw) || raw.schema !== 1 || !isObject(raw.members))
+    return null;
+  const members = {};
+  for (const [name, v3] of Object.entries(raw.members)) {
+    const m3 = memberSheet(v3);
+    if (m3)
+      members[name] = m3;
+  }
+  return { generated: str(raw.generated), members };
+}
+function sheetFor(sheet, basename) {
+  if (!sheet)
+    return null;
+  return Object.prototype.hasOwnProperty.call(sheet.members, basename) ? sheet.members[basename] : null;
+}
+function sheetIsEmpty(s3) {
+  return !s3.lastTalk && !s3.lastPrayer && !s3.talks.length && !s3.prayers.length && !s3.upcoming.length && !s3.welcomeForm;
+}
+function kindLabel(kind, fallback) {
+  const k3 = kind || fallback;
+  return k3.charAt(0).toUpperCase() + k3.slice(1);
+}
+
 // src/components/MemberPanel.tsx
 var TABS = [
   { id: "facts", label: "Facts", key: "1" },
@@ -743,12 +822,34 @@ function People({ label, people, act }) {
     return null;
   return /* @__PURE__ */ _(Labeled, { label }, people.map((x2, i3) => /* @__PURE__ */ _("span", null, x2.file ? /* @__PURE__ */ _("a", { class: "sh2-person", onClick: () => act.open(x2.file) }, x2.name) : x2.name, i3 < people.length - 1 ? ", " : "")));
 }
-function WardTab({ m: m3, people, act }) {
-  const callings = callingList(m3.calling);
-  return /* @__PURE__ */ _("div", { class: "sh2-tab" }, /* @__PURE__ */ _("div", { class: "sh2-group" }, /* @__PURE__ */ _(Labeled, { label: "Calling", date: m3.callingSince }, callings.length ? callings.join(" \xB7 ") : /* @__PURE__ */ _("span", { class: "sh2-muted" }, "None")), /* @__PURE__ */ _(People, { label: "Housemates", people: people.housemates, act }), /* @__PURE__ */ _(People, { label: "Ministered by", people: people.ministeredBy, act }), /* @__PURE__ */ _(People, { label: "Ministers to", people: people.ministersTo, act }), m3.movedIn && /* @__PURE__ */ _(Labeled, { label: "Moved in" }, shortDate(m3.movedIn), m3.priorUnit ? ` from ${m3.priorUnit}` : "")), /* @__PURE__ */ _("div", { class: "sh2-group" }, m3.phone && /* @__PURE__ */ _(Labeled, { label: "Phone" }, m3.phone), m3.email && /* @__PURE__ */ _(Labeled, { label: "Email" }, m3.email), m3.address && /* @__PURE__ */ _(Labeled, { label: "Address" }, m3.address)), /* @__PURE__ */ _("div", { class: "sh2-footnote" }, "Talks, prayers and welcome-form answers will show here once the ward app sync is connected."));
+function EventRows({ events: events2, fallback }) {
+  return /* @__PURE__ */ _(k, null, events2.map((e3) => /* @__PURE__ */ _("div", { class: "sh2-row sh2-fact" }, /* @__PURE__ */ _("div", { class: "sh2-fact-body" }, /* @__PURE__ */ _("div", { class: "sh2-value" }, e3.topic || kindLabel(e3.kind, fallback)), e3.topic && /* @__PURE__ */ _("div", { class: "sh2-sub" }, kindLabel(e3.kind, fallback))), /* @__PURE__ */ _("span", { class: "sh2-date" }, shortDate(e3.date)))));
 }
-function MemberPanel({ app, component, member, photoUrl, people, tab, onTab, act }) {
-  return /* @__PURE__ */ _("div", { class: "sh2" }, /* @__PURE__ */ _(Header, { m: member, photoUrl, act }), /* @__PURE__ */ _("div", { class: "sh2-body" }, /* @__PURE__ */ _(Threads, { tasks: member.tasks, act }), /* @__PURE__ */ _(Segmented, { tab, onTab }), tab === "facts" && /* @__PURE__ */ _(FactsTab, { m: member, act }), tab === "private" && /* @__PURE__ */ _(PrivateTab, { app, component, m: member, act }), tab === "ward" && /* @__PURE__ */ _(WardTab, { m: member, people, act })));
+function Folded({ label, text }) {
+  const [open, setOpen] = d2(false);
+  return /* @__PURE__ */ _("div", { class: "sh2-row sh2-fact sh2-folded" }, /* @__PURE__ */ _("div", { class: "sh2-fact-body" }, /* @__PURE__ */ _("div", { class: "sh2-label" }, /* @__PURE__ */ _(Icon, { name: "lock", class: "sh2-fold-lock" }), " ", label), open && /* @__PURE__ */ _("div", { class: "sh2-value" }, text)), /* @__PURE__ */ _("button", { type: "button", class: "sh2-link", "aria-expanded": open, onClick: () => setOpen(!open) }, open ? "Hide" : "Show"));
+}
+var PRAYERS_SHOWN = 3;
+function SheetSections({ sheet }) {
+  var _a, _b;
+  const [allPrayers, setAllPrayers] = d2(false);
+  if (!sheet)
+    return /* @__PURE__ */ _("div", { class: "sh2-footnote" }, "Not in the ward sheet.");
+  if (sheetIsEmpty(sheet))
+    return /* @__PURE__ */ _("div", { class: "sh2-footnote" }, "No talks, prayers or welcome form in the ward sheet.");
+  const f3 = sheet.welcomeForm;
+  const lastTalk = sheet.lastTalk || ((_a = sheet.talks[0]) == null ? void 0 : _a.date) || "";
+  const lastPrayer = sheet.lastPrayer || ((_b = sheet.prayers[0]) == null ? void 0 : _b.date) || "";
+  const prayers = allPrayers ? sheet.prayers : sheet.prayers.slice(0, PRAYERS_SHOWN);
+  const never = /* @__PURE__ */ _("span", { class: "sh2-muted" }, "Not on record");
+  return /* @__PURE__ */ _(k, null, /* @__PURE__ */ _("section", { class: "sh2-section" }, /* @__PURE__ */ _("div", { class: "sh2-section-head" }, /* @__PURE__ */ _("span", { class: "sh2-section-title" }, "Sacrament meeting")), /* @__PURE__ */ _("div", { class: "sh2-group" }, /* @__PURE__ */ _(Labeled, { label: "Last talk", date: lastTalk }, lastTalk ? lastTalkedLabel(lastTalk) : never), /* @__PURE__ */ _(Labeled, { label: "Last prayer", date: lastPrayer }, lastPrayer ? lastTalkedLabel(lastPrayer) : never))), sheet.upcoming.length > 0 && /* @__PURE__ */ _("section", { class: "sh2-section" }, /* @__PURE__ */ _("div", { class: "sh2-section-head" }, /* @__PURE__ */ _("span", { class: "sh2-section-title" }, "Coming up")), /* @__PURE__ */ _("div", { class: "sh2-group" }, /* @__PURE__ */ _(EventRows, { events: sheet.upcoming, fallback: "Assignment" }))), sheet.talks.length > 0 && /* @__PURE__ */ _("section", { class: "sh2-section" }, /* @__PURE__ */ _("div", { class: "sh2-section-head" }, /* @__PURE__ */ _("span", { class: "sh2-section-title" }, "Talks"), /* @__PURE__ */ _("span", { class: "sh2-tally" }, sheet.talks.length)), /* @__PURE__ */ _("div", { class: "sh2-group" }, /* @__PURE__ */ _(EventRows, { events: sheet.talks, fallback: "Talk" }))), sheet.prayers.length > 0 && /* @__PURE__ */ _("section", { class: "sh2-section" }, /* @__PURE__ */ _("div", { class: "sh2-section-head" }, /* @__PURE__ */ _("span", { class: "sh2-section-title" }, "Prayers"), /* @__PURE__ */ _("span", { class: "sh2-tally" }, sheet.prayers.length), sheet.prayers.length > PRAYERS_SHOWN && /* @__PURE__ */ _("button", { type: "button", class: "sh2-link", onClick: () => setAllPrayers(!allPrayers) }, allPrayers ? "Show fewer" : "Show all")), /* @__PURE__ */ _("div", { class: "sh2-group" }, /* @__PURE__ */ _(EventRows, { events: prayers, fallback: "Prayer" }))), f3 && /* @__PURE__ */ _("section", { class: "sh2-section" }, /* @__PURE__ */ _("div", { class: "sh2-section-head" }, /* @__PURE__ */ _("span", { class: "sh2-section-title" }, "Welcome form"), f3.submitted && /* @__PURE__ */ _("span", { class: "sh2-tally" }, shortDate(f3.submitted))), /* @__PURE__ */ _("div", { class: "sh2-group" }, f3.acceptCalling && /* @__PURE__ */ _(Labeled, { label: "Would accept a calling" }, f3.acceptCalling), f3.teach && /* @__PURE__ */ _(Labeled, { label: "Teaching" }, f3.teach), f3.music && /* @__PURE__ */ _(Labeled, { label: "Music" }, f3.music), f3.pastCallings && /* @__PURE__ */ _(Labeled, { label: "Past callings" }, f3.pastCallings), f3.hobbies && /* @__PURE__ */ _(Labeled, { label: "Hobbies" }, f3.hobbies), f3.situation && /* @__PURE__ */ _(Folded, { label: "Situation", text: f3.situation }), f3.forBishopric && /* @__PURE__ */ _(Folded, { label: "For the bishopric", text: f3.forBishopric }))));
+}
+function WardTab({ m: m3, people, sheet, act }) {
+  const callings = callingList(m3.calling);
+  return /* @__PURE__ */ _("div", { class: "sh2-tab" }, /* @__PURE__ */ _("div", { class: "sh2-group" }, /* @__PURE__ */ _(Labeled, { label: "Calling", date: m3.callingSince }, callings.length ? callings.join(" \xB7 ") : /* @__PURE__ */ _("span", { class: "sh2-muted" }, "None")), /* @__PURE__ */ _(People, { label: "Housemates", people: people.housemates, act }), /* @__PURE__ */ _(People, { label: "Ministered by", people: people.ministeredBy, act }), /* @__PURE__ */ _(People, { label: "Ministers to", people: people.ministersTo, act }), m3.movedIn && /* @__PURE__ */ _(Labeled, { label: "Moved in" }, shortDate(m3.movedIn), m3.priorUnit ? ` from ${m3.priorUnit}` : "")), /* @__PURE__ */ _("div", { class: "sh2-group" }, m3.phone && /* @__PURE__ */ _(Labeled, { label: "Phone" }, m3.phone), m3.email && /* @__PURE__ */ _(Labeled, { label: "Email" }, m3.email), m3.address && /* @__PURE__ */ _(Labeled, { label: "Address" }, m3.address)), /* @__PURE__ */ _(SheetSections, { sheet }));
+}
+function MemberPanel({ app, component, member, photoUrl, people, sheet, tab, onTab, act }) {
+  return /* @__PURE__ */ _("div", { class: "sh2" }, /* @__PURE__ */ _(Header, { m: member, photoUrl, act }), /* @__PURE__ */ _("div", { class: "sh2-body" }, /* @__PURE__ */ _(Threads, { tasks: member.tasks, act }), /* @__PURE__ */ _(Segmented, { tab, onTab }), tab === "facts" && /* @__PURE__ */ _(FactsTab, { m: member, act }), tab === "private" && /* @__PURE__ */ _(PrivateTab, { app, component, m: member, act }), tab === "ward" && /* @__PURE__ */ _(WardTab, { key: member.file.path, m: member, people, sheet, act })));
 }
 
 // src/services/MemberService.ts
@@ -1591,6 +1692,8 @@ var ShepherdView = class extends import_obsidian5.ItemView {
     this.currentFile = null;
     this.member = null;
     this.tab = "facts";
+    this.wardSheet = null;
+    this.wardSheetMtime = -1;
     this.memberService = new MemberService(this.app, settings);
     this.registerEvent(this.memberService.indexInvalidationRef);
     this.writeService = new WriteService(this.app);
@@ -1653,12 +1756,38 @@ var ShepherdView = class extends import_obsidian5.ItemView {
     if (this.member)
       this.renderPanel(this.member);
   }
+  /**
+   * Read the nightly ward sheet cache, re-reading only when the file changed.
+   * Never throws: a missing or unreadable file just means no sheet, and the
+   * Ward tab says so quietly.
+   */
+  async loadWardSheet() {
+    try {
+      const adapter = this.app.vault.adapter;
+      const stat = await adapter.stat(WARD_SHEET_PATH);
+      if (!stat || stat.type !== "file") {
+        this.wardSheet = null;
+        this.wardSheetMtime = -1;
+        return;
+      }
+      if (stat.mtime === this.wardSheetMtime)
+        return;
+      this.wardSheet = parseWardSheet(await adapter.read(WARD_SHEET_PATH));
+      this.wardSheetMtime = stat.mtime;
+    } catch (e3) {
+      this.wardSheet = null;
+      this.wardSheetMtime = -1;
+    }
+  }
   async showMember(file) {
-    var _a;
+    var _a, _b;
     this.currentFile = file;
+    await this.loadWardSheet();
+    if (((_a = this.currentFile) == null ? void 0 : _a.path) !== file.path)
+      return;
     try {
       const member = await this.memberService.buildMemberState(file);
-      if (((_a = this.currentFile) == null ? void 0 : _a.path) !== file.path)
+      if (((_b = this.currentFile) == null ? void 0 : _b.path) !== file.path)
         return;
       this.member = member;
       this.renderPanel(member);
@@ -1743,6 +1872,7 @@ var ShepherdView = class extends import_obsidian5.ItemView {
           ministeredBy: member.ministeredBy.map(person),
           ministersTo: member.ministersTo.map(person)
         },
+        sheet: sheetFor(this.wardSheet, member.file.basename),
         tab: this.tab,
         onTab: (t3) => this.setTab(t3),
         act
