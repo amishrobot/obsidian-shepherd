@@ -5,6 +5,7 @@ import { MemberService } from './services/MemberService';
 import { WriteService } from './services/WriteService';
 import { MemberState, ShepherdSettings } from './models/types';
 import { unfoldSection } from './folds';
+import { WARD_SHEET_PATH, WardSheet, parseWardSheet, sheetFor } from './services/wardSheet';
 import { addFact, addHelp, addRestriction, logInteraction, showMoreMenu } from './menus';
 
 export const VIEW_TYPE_SHEPHERD = 'shepherd-view';
@@ -15,6 +16,8 @@ export class ShepherdView extends ItemView {
   private currentFile: TFile | null = null;
   private member: MemberState | null = null;
   private tab: Tab = 'facts';
+  private wardSheet: WardSheet | null = null;
+  private wardSheetMtime = -1;
 
   constructor(leaf: WorkspaceLeaf, private settings: ShepherdSettings) {
     super(leaf);
@@ -65,8 +68,29 @@ export class ShepherdView extends ItemView {
     if (this.member) this.renderPanel(this.member);
   }
 
+  /**
+   * Read the nightly ward sheet cache, re-reading only when the file changed.
+   * Never throws: a missing or unreadable file just means no sheet, and the
+   * Ward tab says so quietly.
+   */
+  private async loadWardSheet(): Promise<void> {
+    try {
+      const adapter = this.app.vault.adapter;
+      const stat = await adapter.stat(WARD_SHEET_PATH);
+      if (!stat || stat.type !== 'file') { this.wardSheet = null; this.wardSheetMtime = -1; return; }
+      if (stat.mtime === this.wardSheetMtime) return;
+      this.wardSheet = parseWardSheet(await adapter.read(WARD_SHEET_PATH));
+      this.wardSheetMtime = stat.mtime;
+    } catch {
+      this.wardSheet = null;
+      this.wardSheetMtime = -1;
+    }
+  }
+
   async showMember(file: TFile) {
     this.currentFile = file;
+    await this.loadWardSheet();
+    if (this.currentFile?.path !== file.path) return;
     try {
       const member = await this.memberService.buildMemberState(file);
       if (this.currentFile?.path !== file.path) return;
@@ -156,6 +180,7 @@ export class ShepherdView extends ItemView {
           ministeredBy: member.ministeredBy.map(person),
           ministersTo: member.ministersTo.map(person),
         },
+        sheet: sheetFor(this.wardSheet, member.file.basename),
         tab: this.tab,
         onTab: (t: Tab) => this.setTab(t),
         act,

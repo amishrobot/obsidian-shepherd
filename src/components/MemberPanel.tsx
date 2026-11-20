@@ -4,6 +4,7 @@ import { App, Component, MarkdownRenderer, Platform, TFile, setIcon } from 'obsi
 import { MemberState, RelationshipPerson, Task } from '../models/types';
 import { HelpEntry, Restriction } from '../services/sections';
 import { buildMapsUrl } from '../services/helpers';
+import { MemberSheet, SheetEvent, kindLabel, sheetIsEmpty } from '../services/wardSheet';
 
 // The member side panel (design 2c-D, "Native workbench"): a pinned header
 // with the calling and when you last talked, open threads always visible,
@@ -347,7 +348,109 @@ function People({ label, people, act }: { label: string; people: RelationshipPer
   );
 }
 
-function WardTab({ m, people, act }: { m: MemberState; people: PanelPeople; act: PanelActions }) {
+function EventRows({ events, fallback }: { events: SheetEvent[]; fallback: string }) {
+  return (
+    <>
+      {events.map((e) => (
+        <div class="sh2-row sh2-fact">
+          <div class="sh2-fact-body">
+            <div class="sh2-value">{e.topic || kindLabel(e.kind, fallback)}</div>
+            {e.topic && <div class="sh2-sub">{kindLabel(e.kind, fallback)}</div>}
+          </div>
+          <span class="sh2-date">{shortDate(e.date)}</span>
+        </div>
+      ))}
+    </>
+  );
+}
+
+/** A welcome-form answer that stays hidden until tapped (situation, the note to the bishopric). */
+function Folded({ label, text }: { label: string; text: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div class="sh2-row sh2-fact sh2-folded">
+      <div class="sh2-fact-body">
+        <div class="sh2-label"><Icon name="lock" class="sh2-fold-lock" /> {label}</div>
+        {open && <div class="sh2-value">{text}</div>}
+      </div>
+      <button type="button" class="sh2-link" aria-expanded={open} onClick={() => setOpen(!open)}>
+        {open ? 'Hide' : 'Show'}
+      </button>
+    </div>
+  );
+}
+
+const PRAYERS_SHOWN = 3;
+
+function SheetSections({ sheet }: { sheet: MemberSheet | null }) {
+  const [allPrayers, setAllPrayers] = useState(false);
+  if (!sheet) return <div class="sh2-footnote">Not in the ward sheet.</div>;
+  if (sheetIsEmpty(sheet)) return <div class="sh2-footnote">No talks, prayers or welcome form in the ward sheet.</div>;
+  const f = sheet.welcomeForm;
+  const lastTalk = sheet.lastTalk || sheet.talks[0]?.date || '';
+  const lastPrayer = sheet.lastPrayer || sheet.prayers[0]?.date || '';
+  const prayers = allPrayers ? sheet.prayers : sheet.prayers.slice(0, PRAYERS_SHOWN);
+  const never = <span class="sh2-muted">Not on record</span>;
+  return (
+    <>
+      <section class="sh2-section">
+        <div class="sh2-section-head"><span class="sh2-section-title">Sacrament meeting</span></div>
+        <div class="sh2-group">
+          <Labeled label="Last talk" date={lastTalk}>{lastTalk ? lastTalkedLabel(lastTalk) : never}</Labeled>
+          <Labeled label="Last prayer" date={lastPrayer}>{lastPrayer ? lastTalkedLabel(lastPrayer) : never}</Labeled>
+        </div>
+      </section>
+      {sheet.upcoming.length > 0 && (
+        <section class="sh2-section">
+          <div class="sh2-section-head"><span class="sh2-section-title">Coming up</span></div>
+          <div class="sh2-group"><EventRows events={sheet.upcoming} fallback="Assignment" /></div>
+        </section>
+      )}
+      {sheet.talks.length > 0 && (
+        <section class="sh2-section">
+          <div class="sh2-section-head">
+            <span class="sh2-section-title">Talks</span>
+            <span class="sh2-tally">{sheet.talks.length}</span>
+          </div>
+          <div class="sh2-group"><EventRows events={sheet.talks} fallback="Talk" /></div>
+        </section>
+      )}
+      {sheet.prayers.length > 0 && (
+        <section class="sh2-section">
+          <div class="sh2-section-head">
+            <span class="sh2-section-title">Prayers</span>
+            <span class="sh2-tally">{sheet.prayers.length}</span>
+            {sheet.prayers.length > PRAYERS_SHOWN && (
+              <button type="button" class="sh2-link" onClick={() => setAllPrayers(!allPrayers)}>
+                {allPrayers ? 'Show fewer' : 'Show all'}
+              </button>
+            )}
+          </div>
+          <div class="sh2-group"><EventRows events={prayers} fallback="Prayer" /></div>
+        </section>
+      )}
+      {f && (
+        <section class="sh2-section">
+          <div class="sh2-section-head">
+            <span class="sh2-section-title">Welcome form</span>
+            {f.submitted && <span class="sh2-tally">{shortDate(f.submitted)}</span>}
+          </div>
+          <div class="sh2-group">
+            {f.acceptCalling && <Labeled label="Would accept a calling">{f.acceptCalling}</Labeled>}
+            {f.teach && <Labeled label="Teaching">{f.teach}</Labeled>}
+            {f.music && <Labeled label="Music">{f.music}</Labeled>}
+            {f.pastCallings && <Labeled label="Past callings">{f.pastCallings}</Labeled>}
+            {f.hobbies && <Labeled label="Hobbies">{f.hobbies}</Labeled>}
+            {f.situation && <Folded label="Situation" text={f.situation} />}
+            {f.forBishopric && <Folded label="For the bishopric" text={f.forBishopric} />}
+          </div>
+        </section>
+      )}
+    </>
+  );
+}
+
+function WardTab({ m, people, sheet, act }: { m: MemberState; people: PanelPeople; sheet: MemberSheet | null; act: PanelActions }) {
   const callings = callingList(m.calling);
   return (
     <div class="sh2-tab">
@@ -363,14 +466,14 @@ function WardTab({ m, people, act }: { m: MemberState; people: PanelPeople; act:
         {m.email && <Labeled label="Email">{m.email}</Labeled>}
         {m.address && <Labeled label="Address">{m.address}</Labeled>}
       </div>
-      <div class="sh2-footnote">Talks, prayers and welcome-form answers will show here once the ward app sync is connected.</div>
+      <SheetSections sheet={sheet} />
     </div>
   );
 }
 
-export function MemberPanel({ app, component, member, photoUrl, people, tab, onTab, act }: {
+export function MemberPanel({ app, component, member, photoUrl, people, sheet, tab, onTab, act }: {
   app: App; component: Component; member: MemberState; photoUrl: string | null;
-  people: PanelPeople; tab: Tab; onTab: (t: Tab) => void; act: PanelActions;
+  people: PanelPeople; sheet: MemberSheet | null; tab: Tab; onTab: (t: Tab) => void; act: PanelActions;
 }) {
   return (
     <div class="sh2">
@@ -380,7 +483,7 @@ export function MemberPanel({ app, component, member, photoUrl, people, tab, onT
         <Segmented tab={tab} onTab={onTab} />
         {tab === 'facts' && <FactsTab m={member} act={act} />}
         {tab === 'private' && <PrivateTab app={app} component={component} m={member} act={act} />}
-        {tab === 'ward' && <WardTab m={member} people={people} act={act} />}
+        {tab === 'ward' && <WardTab key={member.file.path} m={member} people={people} sheet={sheet} act={act} />}
       </div>
     </div>
   );

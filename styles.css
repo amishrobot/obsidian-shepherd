@@ -212,6 +212,13 @@ body.is-mobile .sh2-kbd { display: none; }
 .sh2-person { color: var(--text-accent); cursor: pointer; }
 .sh2-footnote { font-size: var(--sh-small); color: var(--text-faint); padding: 0 4px; }
 
+/* Ward sheet: talks, prayers, welcome form */
+.sh2-tally { font-size: var(--sh-small); color: var(--text-faint); font-variant-numeric: tabular-nums; }
+.sh2-folded { align-items: flex-start; }
+.sh2-folded .sh2-label { display: flex; align-items: center; gap: 4px; }
+.sh2-folded .sh2-value { margin-top: 2px; white-space: pre-wrap; }
+.sh2-fold-lock svg { width: 11px; height: 11px; }
+
 /* The generated [!member-card] callout repeats what the panel shows. */
 body.shepherd-panel-on .member-profile .callout[data-callout="member-card"] { display: none; }
 
