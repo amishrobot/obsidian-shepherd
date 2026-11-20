@@ -1,12 +1,21 @@
 // The ward sheet cache: talks, prayers, upcoming assignments and welcome-form
 // answers per member, written nightly by JoshOS (ward_sheet_sync) as JSON so
-// the search index never sees it. Keys are member note basenames.
+// the search index never sees it. Keys are the filenames (no .md) of the
+// current-member notes directly inside Church/Members — the one folder the
+// sync reads. A key names that exact note, never any note with the same name.
 //
 // Everything here is pure and forgiving. A missing file, bad JSON, an unknown
 // schema or a wrong-typed field all come back as "nothing for this member",
 // never as a thrown error: the panel shows one quiet line instead.
 
 export const WARD_SHEET_PATH = 'Church/_system/cache/ward-sheet.json';
+
+/**
+ * The folder ward_sheet_sync reads (top level only, `_`-prefixed names
+ * skipped). Fixed by the sync, not by the plugin's member-folder setting:
+ * the sheet's keys only mean something for notes in this exact folder.
+ */
+export const SHEET_MEMBER_DIR = 'Church/Members';
 
 export interface SheetEvent {
   date: string;
@@ -99,10 +108,31 @@ export function parseWardSheet(text: string): WardSheet | null {
   return { generated: str(raw.generated), members };
 }
 
-/** One member's entry, by note basename. Null when the sheet doesn't have them. */
-export function sheetFor(sheet: WardSheet | null, basename: string): MemberSheet | null {
+/**
+ * The sheet key for a vault path, or null when the note isn't a current-member
+ * note the sync could have keyed. Archived (`_archive/`), outreach
+ * (`_outreach/`), any other subfolder, any other root, and `_`-prefixed notes
+ * all come back null, so a note that merely shares a basename with a current
+ * member never borrows that member's sheet.
+ */
+export function sheetKeyForPath(path: string): string | null {
+  const prefix = SHEET_MEMBER_DIR + '/';
+  if (!path.startsWith(prefix) || !path.endsWith('.md')) return null;
+  const key = path.slice(prefix.length, -'.md'.length);
+  if (!key || key.includes('/') || key.startsWith('_')) return null;
+  return key;
+}
+
+/**
+ * One member's entry, by the note's full vault path. Null when the path isn't
+ * a canonical current-member note or the sheet doesn't have that key. Exact
+ * match only: a case or spelling difference is no match, never a guess.
+ */
+export function sheetFor(sheet: WardSheet | null, path: string): MemberSheet | null {
   if (!sheet) return null;
-  return Object.prototype.hasOwnProperty.call(sheet.members, basename) ? sheet.members[basename] : null;
+  const key = sheetKeyForPath(path);
+  if (key === null) return null;
+  return Object.prototype.hasOwnProperty.call(sheet.members, key) ? sheet.members[key] : null;
 }
 
 /** True when the entry has nothing to show (matched in the sheet, but never spoke, prayed or filled the form). */
