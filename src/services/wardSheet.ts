@@ -3,6 +3,10 @@
 // the search index never sees it. Keys are the filenames (no .md) of the
 // current-member notes directly inside Church/Members — the one folder the
 // sync reads. A key names that exact note, never any note with the same name.
+// Each entry also carries the creation time of the note it was matched to
+// (schema 2, AMI-2621); an entry is shown only when the note at that path
+// still has that creation time, so a same-name note created after the sync
+// (an archive-then-replace between nightly runs) gets nothing.
 //
 // Everything here is pure and forgiving. A missing file, bad JSON, an unknown
 // schema or a wrong-typed field all come back as "nothing for this member",
@@ -35,6 +39,8 @@ export interface WelcomeForm {
 }
 
 export interface MemberSheet {
+  /** Creation time (epoch ms) of the note this entry was matched to; null = unbound, never shown. */
+  noteCreated: number | null;
   lastTalk: string;
   lastPrayer: string;
   talks: SheetEvent[];
@@ -85,7 +91,9 @@ function welcomeForm(v: unknown): WelcomeForm | null {
 
 function memberSheet(v: unknown): MemberSheet | null {
   if (!isObject(v)) return null;
+  const created = v.note_created_ms;
   return {
+    noteCreated: typeof created === 'number' && Number.isFinite(created) && created > 0 ? created : null,
     lastTalk: str(v.last_talk),
     lastPrayer: str(v.last_prayer),
     talks: events(v.talks),
@@ -95,11 +103,14 @@ function memberSheet(v: unknown): MemberSheet | null {
   };
 }
 
-/** Parse the cache file's text. Null when it isn't a schema-1 ward sheet. */
+/**
+ * Parse the cache file's text. Null when it isn't a schema-2 ward sheet:
+ * schema 1 has no note identity, so it is refused rather than trusted.
+ */
 export function parseWardSheet(text: string): WardSheet | null {
   let raw: unknown;
   try { raw = JSON.parse(text); } catch { return null; }
-  if (!isObject(raw) || raw.schema !== 1 || !isObject(raw.members)) return null;
+  if (!isObject(raw) || raw.schema !== 2 || !isObject(raw.members)) return null;
   const members: Record<string, MemberSheet> = {};
   for (const [name, v] of Object.entries(raw.members)) {
     const m = memberSheet(v);
@@ -124,15 +135,29 @@ export function sheetKeyForPath(path: string): string | null {
 }
 
 /**
- * One member's entry, by the note's full vault path. Null when the path isn't
- * a canonical current-member note or the sheet doesn't have that key. Exact
- * match only: a case or spelling difference is no match, never a guess.
+ * How far a note's creation time may drift from the one the sync recorded
+ * and still count as the same note. Python's st_birthtime and Node's
+ * birthtimeMs agree to the microsecond on APFS (measured 2026-11-20); the
+ * sync rounds to whole ms, so the window only absorbs rounding. A person
+ * creating a replacement note never lands inside it.
  */
-export function sheetFor(sheet: WardSheet | null, path: string): MemberSheet | null {
+export const NOTE_IDENTITY_TOLERANCE_MS = 5;
+
+/**
+ * One member's entry, for the note at `path` created at `noteCreated` (the
+ * note's `TFile.stat.ctime`). Null unless all three hold: the path is a
+ * canonical current-member note, the sheet has that key, and the entry's
+ * recorded creation time matches this note's. Exact path match only; a
+ * missing or mismatched creation time is no match, never a guess.
+ */
+export function sheetFor(sheet: WardSheet | null, path: string, noteCreated: number): MemberSheet | null {
   if (!sheet) return null;
   const key = sheetKeyForPath(path);
   if (key === null) return null;
-  return Object.prototype.hasOwnProperty.call(sheet.members, key) ? sheet.members[key] : null;
+  if (!Object.prototype.hasOwnProperty.call(sheet.members, key)) return null;
+  const entry = sheet.members[key];
+  if (entry.noteCreated === null || !Number.isFinite(noteCreated)) return null;
+  return Math.abs(entry.noteCreated - noteCreated) < NOTE_IDENTITY_TOLERANCE_MS ? entry : null;
 }
 
 /** True when the entry has nothing to show (matched in the sheet, but never spoke, prayed or filled the form). */

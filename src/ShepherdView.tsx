@@ -180,7 +180,7 @@ export class ShepherdView extends ItemView {
           ministeredBy: member.ministeredBy.map(person),
           ministersTo: member.ministersTo.map(person),
         },
-        sheet: sheetFor(this.wardSheet, member.file.path),
+        sheet: sheetFor(this.wardSheet, member.file.path, member.file.stat.ctime),
         tab: this.tab,
         onTab: (t: Tab) => this.setTab(t),
         act,
