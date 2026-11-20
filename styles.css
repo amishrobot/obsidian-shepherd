@@ -51,15 +51,15 @@ body.is-mobile .sh2 {
   flex-direction: column;
   gap: 10px;
 }
-.sh2-id { display: flex; gap: 12px; align-items: flex-start; }
+.sh2-id { display: flex; gap: 14px; align-items: center; }
 .sh2-avatar {
-  width: 56px; height: 56px; flex: none;
+  width: 96px; height: 96px; flex: none;
   border-radius: 50%; object-fit: cover;
   background: var(--background-modifier-hover);
 }
 .sh2-avatar.is-empty {
   display: flex; align-items: center; justify-content: center;
-  color: var(--text-muted); font-weight: 600; font-size: 1.1em;
+  color: var(--text-muted); font-weight: 600; font-size: 1.8em;
 }
 .sh2-id-text { min-width: 0; flex: 1; }
 .sh2-name { font-size: var(--sh-name); font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; }
