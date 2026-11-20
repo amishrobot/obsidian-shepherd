@@ -536,6 +536,7 @@ function callingNames(raw) {
 
 // src/services/wardSheet.ts
 var WARD_SHEET_PATH = "Church/_system/cache/ward-sheet.json";
+var SHEET_MEMBER_DIR = "Church/Members";
 function isObject(v3) {
   return typeof v3 === "object" && v3 !== null && !Array.isArray(v3);
 }
@@ -600,10 +601,22 @@ function parseWardSheet(text) {
   }
   return { generated: str(raw.generated), members };
 }
-function sheetFor(sheet, basename) {
+function sheetKeyForPath(path) {
+  const prefix = SHEET_MEMBER_DIR + "/";
+  if (!path.startsWith(prefix) || !path.endsWith(".md"))
+    return null;
+  const key = path.slice(prefix.length, -".md".length);
+  if (!key || key.includes("/") || key.startsWith("_"))
+    return null;
+  return key;
+}
+function sheetFor(sheet, path) {
   if (!sheet)
     return null;
-  return Object.prototype.hasOwnProperty.call(sheet.members, basename) ? sheet.members[basename] : null;
+  const key = sheetKeyForPath(path);
+  if (key === null)
+    return null;
+  return Object.prototype.hasOwnProperty.call(sheet.members, key) ? sheet.members[key] : null;
 }
 function sheetIsEmpty(s3) {
   return !s3.lastTalk && !s3.lastPrayer && !s3.talks.length && !s3.prayers.length && !s3.upcoming.length && !s3.welcomeForm;
@@ -1872,7 +1885,7 @@ var ShepherdView = class extends import_obsidian5.ItemView {
           ministeredBy: member.ministeredBy.map(person),
           ministersTo: member.ministersTo.map(person)
         },
-        sheet: sheetFor(this.wardSheet, member.file.basename),
+        sheet: sheetFor(this.wardSheet, member.file.path),
         tab: this.tab,
         onTab: (t3) => this.setTab(t3),
         act
