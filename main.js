@@ -575,7 +575,9 @@ function welcomeForm(v3) {
 function memberSheet(v3) {
   if (!isObject(v3))
     return null;
+  const created = v3.note_created_ms;
   return {
+    noteCreated: typeof created === "number" && Number.isFinite(created) && created > 0 ? created : null,
     lastTalk: str(v3.last_talk),
     lastPrayer: str(v3.last_prayer),
     talks: events(v3.talks),
@@ -591,7 +593,7 @@ function parseWardSheet(text) {
   } catch (e3) {
     return null;
   }
-  if (!isObject(raw) || raw.schema !== 1 || !isObject(raw.members))
+  if (!isObject(raw) || raw.schema !== 2 || !isObject(raw.members))
     return null;
   const members = {};
   for (const [name, v3] of Object.entries(raw.members)) {
@@ -610,13 +612,19 @@ function sheetKeyForPath(path) {
     return null;
   return key;
 }
-function sheetFor(sheet, path) {
+var NOTE_IDENTITY_TOLERANCE_MS = 5;
+function sheetFor(sheet, path, noteCreated) {
   if (!sheet)
     return null;
   const key = sheetKeyForPath(path);
   if (key === null)
     return null;
-  return Object.prototype.hasOwnProperty.call(sheet.members, key) ? sheet.members[key] : null;
+  if (!Object.prototype.hasOwnProperty.call(sheet.members, key))
+    return null;
+  const entry = sheet.members[key];
+  if (entry.noteCreated === null || !Number.isFinite(noteCreated))
+    return null;
+  return Math.abs(entry.noteCreated - noteCreated) < NOTE_IDENTITY_TOLERANCE_MS ? entry : null;
 }
 function sheetIsEmpty(s3) {
   return !s3.lastTalk && !s3.lastPrayer && !s3.talks.length && !s3.prayers.length && !s3.upcoming.length && !s3.welcomeForm;
@@ -1885,7 +1893,7 @@ var ShepherdView = class extends import_obsidian5.ItemView {
           ministeredBy: member.ministeredBy.map(person),
           ministersTo: member.ministersTo.map(person)
         },
-        sheet: sheetFor(this.wardSheet, member.file.path),
+        sheet: sheetFor(this.wardSheet, member.file.path, member.file.stat.ctime),
         tab: this.tab,
         onTab: (t3) => this.setTab(t3),
         act
