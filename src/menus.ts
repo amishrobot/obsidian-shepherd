@@ -1,4 +1,4 @@
-import { App, Menu, Modal, Setting } from 'obsidian';
+import { App, Menu, Modal, Platform } from 'obsidian';
 import { WriteService, today } from './services/WriteService';
 import { FACT_LABELS } from './services/sections';
 import {
@@ -17,7 +17,8 @@ interface Field {
   options?: string[];
 }
 
-/** A small form: one or more fields and a Save button. Enter saves from any single-line field. */
+/** A small form: stacked label-over-input fields, Cancel + Save. Enter saves from a single-line
+ *  field; Cmd/Ctrl+Enter saves from a textarea. */
 export class FormModal extends Modal {
   constructor(app: App, private heading: string, private fields: Field[],
               private onSave: (v: Record<string, string>) => void, private required: string[] = []) {
@@ -25,40 +26,58 @@ export class FormModal extends Modal {
   }
 
   onOpen(): void {
+    this.modalEl.addClass('sh-form-modal');
     this.titleEl.setText(this.heading);
     const values: Record<string, string> = {};
     let first: HTMLElement | null = null;
+    let saveBtn: HTMLButtonElement | null = null;
+    const ready = () => !this.required.some((k) => !(values[k] || '').trim());
+    const sync = () => { if (saveBtn) saveBtn.disabled = !ready(); };
     const save = () => {
-      if (this.required.some((k) => !(values[k] || '').trim())) return;
+      if (!ready()) return;
       this.close();
       this.onSave(values);
     };
+    const form = this.contentEl.createDiv({ cls: 'sh-form' });
     for (const f of this.fields) {
       values[f.key] = f.initial ?? (f.options ? f.options[0] : '');
-      const s = new Setting(this.contentEl).setName(f.label);
+      const row = form.createDiv({ cls: 'sh-form-field' });
+      const id = `sh-f-${f.key}-${Math.random().toString(36).slice(2, 7)}`;
+      row.createEl('label', { text: f.label, attr: { for: id } });
+      let el: HTMLElement;
       if (f.options) {
-        s.addDropdown((d) => {
-          f.options!.forEach((o) => d.addOption(o, o));
-          d.setValue(values[f.key]).onChange((v) => { values[f.key] = v; });
-          first = first ?? d.selectEl;
-        });
+        const sel = row.createEl('select', { cls: 'dropdown', attr: { id } });
+        f.options.forEach((o) => sel.createEl('option', { text: o, value: o }));
+        sel.value = values[f.key];
+        sel.addEventListener('change', () => { values[f.key] = sel.value; sync(); });
+        el = sel;
       } else if (f.multiline) {
-        s.addTextArea((ta) => {
-          ta.setPlaceholder(f.placeholder ?? '').setValue(values[f.key]).onChange((v) => { values[f.key] = v; });
-          ta.inputEl.rows = 4;
-          first = first ?? ta.inputEl;
+        const ta = row.createEl('textarea', { attr: { id, rows: '5', placeholder: f.placeholder ?? '' } });
+        ta.value = values[f.key];
+        ta.addEventListener('input', () => { values[f.key] = ta.value; sync(); });
+        ta.addEventListener('keydown', (e: KeyboardEvent) => {
+          if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); save(); }
         });
+        el = ta;
       } else {
-        s.addText((tx) => {
-          tx.setPlaceholder(f.placeholder ?? '').setValue(values[f.key]).onChange((v) => { values[f.key] = v; });
-          tx.inputEl.addEventListener('keydown', (e: KeyboardEvent) => {
-            if (e.key === 'Enter') { e.preventDefault(); save(); }
-          });
-          first = first ?? tx.inputEl;
+        const tx = row.createEl('input', { attr: { id, type: 'text', placeholder: f.placeholder ?? '' } });
+        tx.value = values[f.key];
+        tx.addEventListener('input', () => { values[f.key] = tx.value; sync(); });
+        tx.addEventListener('keydown', (e: KeyboardEvent) => {
+          if (e.key === 'Enter') { e.preventDefault(); save(); }
         });
+        el = tx;
       }
+      first = first ?? el;
     }
-    new Setting(this.contentEl).addButton((b) => b.setButtonText('Save').setCta().onClick(save));
+    const bar = this.contentEl.createDiv({ cls: 'sh-form-actions' });
+    if (this.fields.some((f) => f.multiline)) {
+      bar.createSpan({ cls: 'sh-form-hint', text: Platform.isMacOS ? '⌘↵ to save' : 'Ctrl+Enter to save' });
+    }
+    bar.createEl('button', { text: 'Cancel' }).addEventListener('click', () => this.close());
+    saveBtn = bar.createEl('button', { text: 'Save', cls: 'mod-cta' });
+    saveBtn.addEventListener('click', save);
+    sync();
     window.setTimeout(() => (first as HTMLElement | null)?.focus(), 0);
   }
 

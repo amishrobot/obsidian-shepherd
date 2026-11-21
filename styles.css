@@ -339,3 +339,16 @@ body.shepherd-panel-on .member-profile .callout[data-callout="member-card"] { di
 .member-profile .markdown-preview-section > div:has(> h2.sh-conv-h) ~ div:has(> hr) ~ div:has(> h3.sh-conf) ~ div:not(:has(> h1, > h2, > h3, > hr)) { padding-left: var(--sh-gutter); }
 .member-profile h3.sh-ev { padding-top: 0.7em; }
 .member-profile h3.sh-ev .sh-tile { top: 0.7em; }
+
+/* ---- FormModal: stacked label-over-input form ---- */
+.sh-form-modal { width: min(520px, 92vw); }
+.sh-form { display: flex; flex-direction: column; gap: 14px; }
+.sh-form-field { display: flex; flex-direction: column; gap: 6px; }
+.sh-form-field label { font-size: var(--font-ui-small); font-weight: var(--font-semibold); color: var(--text-muted); }
+.sh-form-field input,
+.sh-form-field select,
+.sh-form-field textarea { width: 100%; font-size: var(--font-ui-medium); }
+.sh-form-field textarea { min-height: 110px; resize: vertical; line-height: 1.45; padding: 8px 10px; }
+.sh-form-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+.sh-form-hint { margin-right: auto; font-size: var(--font-ui-smaller); color: var(--text-faint); }
+.sh-form-actions button:disabled { opacity: 0.5; cursor: default; }
