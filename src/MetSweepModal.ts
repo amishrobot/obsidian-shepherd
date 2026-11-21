@@ -9,6 +9,10 @@ import { callingNames, monthYear } from './services/helpers';
 // writes `met:` to the note; Skip leaves it for next time. The point is to
 // turn a 290-name roster into an honest "people I haven't met" list in about
 // ten minutes, on a phone, in the foyer.
+//
+// The card docks at the bottom and doesn't block the workspace: each card opens
+// that member's note behind it, so the timeline and the Shepherd panel show
+// whatever history exists before you answer.
 export class MetSweepModal extends Modal {
   private queue: TFile[] = [];
   private pos = 0;
@@ -21,6 +25,7 @@ export class MetSweepModal extends Modal {
 
   onOpen(): void {
     this.modalEl.addClass('shepherd-sweep-modal');
+    this.containerEl.addClass('shepherd-sweep-container');
     // Current members only: subfolders (_archive) hold people who moved out.
     const files = this.app.vault.getMarkdownFiles().filter((f) => f.parent?.path === this.memberDir);
     const fmOf = (f: TFile) => this.app.metadataCache.getFileCache(f)?.frontmatter ?? {};
@@ -33,9 +38,15 @@ export class MetSweepModal extends Modal {
       })
       // Faces first: a card without a photo is much harder to answer.
       .sort((a, b) => Number(!fmOf(a).photo) - Number(!fmOf(b).photo) || a.basename.localeCompare(b.basename));
-    this.scope.register([], 'k', () => { void this.answer(true); return false; });
-    this.scope.register([], 'n', () => { void this.answer(false); return false; });
-    this.scope.register([], 's', () => { this.next(); return false; });
+    // Keys only count while focus is on the card, not while typing in the note behind it.
+    const key = (fn: () => void) => () => {
+      if (!this.modalEl.contains(document.activeElement) && document.activeElement !== document.body) return true;
+      fn();
+      return false;
+    };
+    this.scope.register([], 'k', key(() => void this.answer(true)));
+    this.scope.register([], 'n', key(() => void this.answer(false)));
+    this.scope.register([], 's', key(() => this.next()));
     void this.draw();
   }
 
@@ -69,6 +80,17 @@ export class MetSweepModal extends Modal {
     void this.draw();
   }
 
+  /** Open the member's note in the main pane without taking focus from the card. */
+  private async showNote(file: TFile): Promise<void> {
+    const leaf = this.app.workspace.getMostRecentLeaf() ?? this.app.workspace.getLeaf(false);
+    if ((leaf.view as { file?: TFile }).file?.path !== file.path) {
+      await leaf.openFile(file, { active: false });
+    }
+    // Make the pane active (without focus) so the Shepherd panel follows it.
+    this.app.workspace.setActiveLeaf(leaf, { focus: false });
+    this.modalEl.focus();
+  }
+
   private async draw(): Promise<void> {
     const el = this.contentEl;
     el.empty();
@@ -80,6 +102,7 @@ export class MetSweepModal extends Modal {
         : 'Everyone is sorted.' });
       return;
     }
+    void this.showNote(file);
     const m: MemberState = await this.members.buildMemberState(file);
     el.createDiv({ cls: 'shepherd-sweep-progress', text: `${this.pos + 1} of ${this.queue.length}` });
 
@@ -88,15 +111,16 @@ export class MetSweepModal extends Modal {
     if (photo instanceof TFile) card.createEl('img', { cls: 'shepherd-sweep-photo', attr: { src: this.app.vault.getResourcePath(photo), alt: '' } });
     else card.createDiv({ cls: 'shepherd-sweep-photo is-empty', text: m.name.split(/\s+/).map((w) => w[0]).slice(0, 2).join('') });
 
-    card.createDiv({ cls: 'shepherd-sweep-name', text: m.name });
+    const info = card.createDiv({ cls: 'shepherd-sweep-info' });
+    info.createDiv({ cls: 'shepherd-sweep-name', text: m.name });
     const bits: string[] = [];
     if (m.age != null) bits.push(String(m.age));
     const since = monthYear(m.movedIn);
     if (since) bits.push(`in the ward since ${since}`);
-    if (bits.length) card.createDiv({ cls: 'shepherd-sweep-sub', text: bits.join(' · ') });
-    card.createDiv({ cls: 'shepherd-sweep-sub', text: callingNames(m.calling) || 'No calling' });
+    if (bits.length) info.createDiv({ cls: 'shepherd-sweep-sub', text: bits.join(' · ') });
+    info.createDiv({ cls: 'shepherd-sweep-sub', text: callingNames(m.calling) || 'No calling' });
     const housemates = this.members.getHousemates(m).map((p) => p.name);
-    if (housemates.length) card.createDiv({ cls: 'shepherd-sweep-sub', text: `Lives with ${housemates.slice(0, 4).join(', ')}` });
+    if (housemates.length) info.createDiv({ cls: 'shepherd-sweep-sub', text: `Lives with ${housemates.slice(0, 4).join(', ')}` });
 
     const row = el.createDiv({ cls: 'shepherd-sweep-actions' });
     const btn = (label: string, cls: string, fn: () => void) => {
