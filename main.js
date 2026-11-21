@@ -1583,53 +1583,78 @@ var FormModal = class extends import_obsidian4.Modal {
     this.required = required;
   }
   onOpen() {
-    var _a;
+    var _a, _b, _c;
+    this.modalEl.addClass("sh-form-modal");
     this.titleEl.setText(this.heading);
     const values = {};
     let first = null;
+    let saveBtn = null;
+    const ready = () => !this.required.some((k3) => !(values[k3] || "").trim());
+    const sync = () => {
+      if (saveBtn)
+        saveBtn.disabled = !ready();
+    };
     const save = () => {
-      if (this.required.some((k3) => !(values[k3] || "").trim()))
+      if (!ready())
         return;
       this.close();
       this.onSave(values);
     };
+    const form = this.contentEl.createDiv({ cls: "sh-form" });
     for (const f3 of this.fields) {
       values[f3.key] = (_a = f3.initial) != null ? _a : f3.options ? f3.options[0] : "";
-      const s3 = new import_obsidian4.Setting(this.contentEl).setName(f3.label);
+      const row = form.createDiv({ cls: "sh-form-field" });
+      const id = `sh-f-${f3.key}-${Math.random().toString(36).slice(2, 7)}`;
+      row.createEl("label", { text: f3.label, attr: { for: id } });
+      let el;
       if (f3.options) {
-        s3.addDropdown((d3) => {
-          f3.options.forEach((o3) => d3.addOption(o3, o3));
-          d3.setValue(values[f3.key]).onChange((v3) => {
-            values[f3.key] = v3;
-          });
-          first = first != null ? first : d3.selectEl;
+        const sel = row.createEl("select", { cls: "dropdown", attr: { id } });
+        f3.options.forEach((o3) => sel.createEl("option", { text: o3, value: o3 }));
+        sel.value = values[f3.key];
+        sel.addEventListener("change", () => {
+          values[f3.key] = sel.value;
+          sync();
         });
+        el = sel;
       } else if (f3.multiline) {
-        s3.addTextArea((ta) => {
-          var _a2;
-          ta.setPlaceholder((_a2 = f3.placeholder) != null ? _a2 : "").setValue(values[f3.key]).onChange((v3) => {
-            values[f3.key] = v3;
-          });
-          ta.inputEl.rows = 4;
-          first = first != null ? first : ta.inputEl;
+        const ta = row.createEl("textarea", { attr: { id, rows: "5", placeholder: (_b = f3.placeholder) != null ? _b : "" } });
+        ta.value = values[f3.key];
+        ta.addEventListener("input", () => {
+          values[f3.key] = ta.value;
+          sync();
         });
+        ta.addEventListener("keydown", (e3) => {
+          if (e3.key === "Enter" && (e3.metaKey || e3.ctrlKey)) {
+            e3.preventDefault();
+            save();
+          }
+        });
+        el = ta;
       } else {
-        s3.addText((tx) => {
-          var _a2;
-          tx.setPlaceholder((_a2 = f3.placeholder) != null ? _a2 : "").setValue(values[f3.key]).onChange((v3) => {
-            values[f3.key] = v3;
-          });
-          tx.inputEl.addEventListener("keydown", (e3) => {
-            if (e3.key === "Enter") {
-              e3.preventDefault();
-              save();
-            }
-          });
-          first = first != null ? first : tx.inputEl;
+        const tx = row.createEl("input", { attr: { id, type: "text", placeholder: (_c = f3.placeholder) != null ? _c : "" } });
+        tx.value = values[f3.key];
+        tx.addEventListener("input", () => {
+          values[f3.key] = tx.value;
+          sync();
         });
+        tx.addEventListener("keydown", (e3) => {
+          if (e3.key === "Enter") {
+            e3.preventDefault();
+            save();
+          }
+        });
+        el = tx;
       }
+      first = first != null ? first : el;
     }
-    new import_obsidian4.Setting(this.contentEl).addButton((b) => b.setButtonText("Save").setCta().onClick(save));
+    const bar = this.contentEl.createDiv({ cls: "sh-form-actions" });
+    if (this.fields.some((f3) => f3.multiline)) {
+      bar.createSpan({ cls: "sh-form-hint", text: import_obsidian4.Platform.isMacOS ? "\u2318\u21B5 to save" : "Ctrl+Enter to save" });
+    }
+    bar.createEl("button", { text: "Cancel" }).addEventListener("click", () => this.close());
+    saveBtn = bar.createEl("button", { text: "Save", cls: "mod-cta" });
+    saveBtn.addEventListener("click", save);
+    sync();
     window.setTimeout(() => first == null ? void 0 : first.focus(), 0);
   }
   onClose() {
