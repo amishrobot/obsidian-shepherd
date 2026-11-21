@@ -1943,6 +1943,7 @@ var MetSweepModal = class extends import_obsidian6.Modal {
   }
   onOpen() {
     this.modalEl.addClass("shepherd-sweep-modal");
+    this.containerEl.addClass("shepherd-sweep-container");
     const files = this.app.vault.getMarkdownFiles().filter((f3) => {
       var _a;
       return ((_a = f3.parent) == null ? void 0 : _a.path) === this.memberDir;
@@ -1957,18 +1958,15 @@ var MetSweepModal = class extends import_obsidian6.Modal {
       const isMember = Array.isArray(css) ? css.includes("member-profile") : String(css != null ? css : "").includes("member-profile");
       return isMember && fm.met !== true && fm.met !== false && fm.met !== "true" && fm.met !== "false";
     }).sort((a3, b) => Number(!fmOf(a3).photo) - Number(!fmOf(b).photo) || a3.basename.localeCompare(b.basename));
-    this.scope.register([], "k", () => {
-      void this.answer(true);
+    const key = (fn) => () => {
+      if (!this.modalEl.contains(document.activeElement) && document.activeElement !== document.body)
+        return true;
+      fn();
       return false;
-    });
-    this.scope.register([], "n", () => {
-      void this.answer(false);
-      return false;
-    });
-    this.scope.register([], "s", () => {
-      this.next();
-      return false;
-    });
+    };
+    this.scope.register([], "k", key(() => void this.answer(true)));
+    this.scope.register([], "n", key(() => void this.answer(false)));
+    this.scope.register([], "s", key(() => this.next()));
     void this.draw();
   }
   onClose() {
@@ -1997,6 +1995,16 @@ var MetSweepModal = class extends import_obsidian6.Modal {
     this.pos = this.queue.indexOf(file);
     void this.draw();
   }
+  /** Open the member's note in the main pane without taking focus from the card. */
+  async showNote(file) {
+    var _a, _b;
+    const leaf = (_a = this.app.workspace.getMostRecentLeaf()) != null ? _a : this.app.workspace.getLeaf(false);
+    if (((_b = leaf.view.file) == null ? void 0 : _b.path) !== file.path) {
+      await leaf.openFile(file, { active: false });
+    }
+    this.app.workspace.setActiveLeaf(leaf, { focus: false });
+    this.modalEl.focus();
+  }
   async draw() {
     const el = this.contentEl;
     el.empty();
@@ -2006,6 +2014,7 @@ var MetSweepModal = class extends import_obsidian6.Modal {
       el.createDiv({ cls: "shepherd-sweep-done", text: this.queue.length ? `Done. ${this.sorted} sorted this round${this.pos > this.sorted ? `, ${this.pos - this.sorted} skipped` : ""}.` : "Everyone is sorted." });
       return;
     }
+    void this.showNote(file);
     const m3 = await this.members.buildMemberState(file);
     el.createDiv({ cls: "shepherd-sweep-progress", text: `${this.pos + 1} of ${this.queue.length}` });
     const card = el.createDiv({ cls: "shepherd-sweep-card" });
@@ -2014,7 +2023,8 @@ var MetSweepModal = class extends import_obsidian6.Modal {
       card.createEl("img", { cls: "shepherd-sweep-photo", attr: { src: this.app.vault.getResourcePath(photo), alt: "" } });
     else
       card.createDiv({ cls: "shepherd-sweep-photo is-empty", text: m3.name.split(/\s+/).map((w3) => w3[0]).slice(0, 2).join("") });
-    card.createDiv({ cls: "shepherd-sweep-name", text: m3.name });
+    const info = card.createDiv({ cls: "shepherd-sweep-info" });
+    info.createDiv({ cls: "shepherd-sweep-name", text: m3.name });
     const bits = [];
     if (m3.age != null)
       bits.push(String(m3.age));
@@ -2022,11 +2032,11 @@ var MetSweepModal = class extends import_obsidian6.Modal {
     if (since)
       bits.push(`in the ward since ${since}`);
     if (bits.length)
-      card.createDiv({ cls: "shepherd-sweep-sub", text: bits.join(" \xB7 ") });
-    card.createDiv({ cls: "shepherd-sweep-sub", text: callingNames(m3.calling) || "No calling" });
+      info.createDiv({ cls: "shepherd-sweep-sub", text: bits.join(" \xB7 ") });
+    info.createDiv({ cls: "shepherd-sweep-sub", text: callingNames(m3.calling) || "No calling" });
     const housemates = this.members.getHousemates(m3).map((p3) => p3.name);
     if (housemates.length)
-      card.createDiv({ cls: "shepherd-sweep-sub", text: `Lives with ${housemates.slice(0, 4).join(", ")}` });
+      info.createDiv({ cls: "shepherd-sweep-sub", text: `Lives with ${housemates.slice(0, 4).join(", ")}` });
     const row = el.createDiv({ cls: "shepherd-sweep-actions" });
     const btn = (label, cls, fn) => {
       const b = row.createEl("button", { cls, text: label });
